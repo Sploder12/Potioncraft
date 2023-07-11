@@ -101,8 +101,7 @@ public class PotionCauldronBlock extends Block implements BlockEntityProvider {
 
         if (!world.isClient()) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
-            if (blockEntity instanceof PotionCauldronBlockEntity) {
-                PotionCauldronBlockEntity cauldronEntity = (PotionCauldronBlockEntity) blockEntity;
+            if (blockEntity instanceof PotionCauldronBlockEntity cauldronEntity) {
                 if (isEntityTouchingFluid(cauldronEntity.getLevel(), pos, entity)) {
                     // @TODO touch potion effects
 
@@ -115,8 +114,7 @@ public class PotionCauldronBlock extends Block implements BlockEntityProvider {
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity entity, Hand hand, BlockHitResult hit) {
         if (!world.isClient()) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
-            if (blockEntity instanceof PotionCauldronBlockEntity) {
-                PotionCauldronBlockEntity cauldronEntity = (PotionCauldronBlockEntity) blockEntity;
+            if (blockEntity instanceof PotionCauldronBlockEntity cauldronEntity) {
 
                 // @TODO use effects
 

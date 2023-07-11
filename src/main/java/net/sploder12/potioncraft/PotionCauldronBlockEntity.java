@@ -17,11 +17,11 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.stat.Stat;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 
 public class PotionCauldronBlockEntity extends BlockEntity {
@@ -29,7 +29,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
     private int level = PotionCauldronBlock.MIN_LEVEL;
 
-    private HashMap<StatusEffect, StatusEffectInstance> effects = new HashMap<StatusEffect, StatusEffectInstance>();
+    private HashMap<StatusEffect, PotionEffectInstance> effects = new HashMap<StatusEffect, PotionEffectInstance>();
 
     public static BlockEntityType<PotionCauldronBlockEntity> POTION_CAULDRON_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(PotionCauldronBlockEntity::new, PotionCauldronBlock.POTION_CAULDRON_BLOCK)
             .build();
@@ -51,19 +51,25 @@ public class PotionCauldronBlockEntity extends BlockEntity {
     }
 
     public int getColor() {
-        return PotionUtil.getColor(effects.values());
+        return PotionUtil.getColor(getEffects());
     }
 
     public ItemStack setEffects(ItemStack target) {
-        return PotionUtil.setCustomPotionEffects(target, effects.values().stream().toList());
+        return PotionUtil.setCustomPotionEffects(target, getEffects());
     }
 
     public Potion getPotion() {
-        return new Potion(effects.values().toArray(new StatusEffectInstance[0]));
+        return new Potion(getEffects().toArray(new StatusEffectInstance[0]));
     }
 
-    public List<StatusEffectInstance> getEffects() {
-        return this.effects.values().stream().toList();
+    public ArrayList<StatusEffectInstance> getEffects() {
+        ArrayList<StatusEffectInstance> effects = new ArrayList<>(this.effects.size());
+
+        for (PotionEffectInstance effect : this.effects.values()) {
+            effects.add(effect.asStatusEffect());
+        }
+
+        return effects;
     }
 
     public void setLevel(int newLevel) {
@@ -73,13 +79,45 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         }
     }
 
+    public boolean addLevel(Collection<StatusEffectInstance> effects) {
+        if (level == PotionCauldronBlock.MAX_LEVEL) return false;
+
+        level += 1;
+
+        float oldDilution = (float)(level - 1) / (float)(level);
+        for (PotionEffectInstance effect : this.effects.values()) {
+            effect.dilute(oldDilution);
+        }
+
+        float newDilution = 1.0f / (float)(level);
+        for (StatusEffectInstance effect : effects) {
+            PotionEffectInstance peffect = new PotionEffectInstance(effect);
+            peffect.dilute(newDilution);
+
+            if (this.effects.containsKey(effect.getEffectType())) {
+                PotionEffectInstance cur = this.effects.get(effect.getEffectType());
+
+                cur.duration += peffect.duration;
+                cur.amplifier += peffect.amplifier;
+                cur.showIcon |= peffect.showIcon;
+                cur.showParticles |= peffect.showParticles;
+                cur.ambient |= peffect.ambient;
+            }
+            else {
+                this.effects.put(effect.getEffectType(), peffect);
+            }
+        }
+
+        return true;
+    }
+
     @Override
     public void writeNbt(NbtCompound nbt) {
         nbt.putInt("level", level);
 
         NbtList nbtList = new NbtList();
 
-        for (StatusEffectInstance effect : effects.values()) {
+        for (PotionEffectInstance effect : this.effects.values()) {
             if (effect != null) {
                 nbtList.add(effect.writeNbt(new NbtCompound()));
             }
@@ -98,9 +136,9 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
         for (int i = 0; i < nbtList.size(); ++i) {
             NbtCompound nbtCompound = nbtList.getCompound(i);
-            StatusEffectInstance effect = StatusEffectInstance.fromNbt(nbtCompound);
+            PotionEffectInstance effect = PotionEffectInstance.fromNbt(nbtCompound);
             if (effect != null) {
-                effects.put(effect.getEffectType(), effect);
+                effects.put(effect.type, effect);
             }
         }
 
