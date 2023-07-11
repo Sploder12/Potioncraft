@@ -1,0 +1,33 @@
+{
+	"schemaVersion": 1,
+	"id": "potioncraft",
+	"version": "${version}",
+	"name": "PotionCraft",
+	"description": "Better Potions",
+	"authors": [
+		"Sploder12"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT-1.0",
+	"icon": "assets/potioncraft/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"net.sploder12.potioncraft.Main"
+		],
+		"client": [
+			"net.sploder12.potioncraft.MainClient"
+		]
+	},
+	"mixins": [
+	],
+	"depends": {
+		"fabricloader": ">=0.14.21",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*"
+	}
+}
