@@ -7,6 +7,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -18,6 +19,7 @@ import net.minecraft.potion.PotionUtil;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.stat.Stat;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,6 +35,10 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
     public static BlockEntityType<PotionCauldronBlockEntity> POTION_CAULDRON_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(PotionCauldronBlockEntity::new, PotionCauldronBlock.POTION_CAULDRON_BLOCK)
             .build();
+
+    public static Potion CRAFTED_POTION = Registry.register(Registries.POTION,
+            new Identifier("potioncraft", "crafted_potion"),
+            new Potion());
 
     public PotionCauldronBlockEntity(BlockPos pos, BlockState state) {
         super(POTION_CAULDRON_BLOCK_ENTITY, pos, state);
@@ -80,7 +86,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
     }
 
     public boolean addLevel(Collection<StatusEffectInstance> effects) {
-        if (level == PotionCauldronBlock.MAX_LEVEL) return false;
+        if (level >= PotionCauldronBlock.MAX_LEVEL) return false;
 
         level += 1;
 
@@ -108,7 +114,23 @@ public class PotionCauldronBlockEntity extends BlockEntity {
             }
         }
 
+        markDirty();
         return true;
+    }
+
+    public ItemStack pickupFluid() {
+        if (level <= PotionCauldronBlock.MIN_LEVEL) {
+            return null;
+        }
+
+        ItemStack potion = new ItemStack(Items.POTION);
+        PotionUtil.setPotion(potion, CRAFTED_POTION);
+        setEffects(potion);
+
+        level -= 1;
+
+        markDirty();
+        return potion;
     }
 
     @Override
@@ -156,4 +178,23 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         return createNbt();
     }
 
+    @Override
+    public void markDirty() {
+        super.markDirty();
+        if (world != null && !world.isClient()) {
+            BlockState state = world.getBlockState(pos);
+            world.updateListeners(pos, state, state, 1);
+        }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+
+        for (PotionEffectInstance effect : effects.values()) {
+            str.append(effect.toString());
+        }
+
+        return str.toString();
+    }
 }

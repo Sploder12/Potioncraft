@@ -5,9 +5,16 @@ import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ai.pathing.NavigationType;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.PotionItem;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionUtil;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.ActionResult;
@@ -21,6 +28,9 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Iterator;
+import java.util.List;
 
 public class PotionCauldronBlock extends Block implements BlockEntityProvider {
 
@@ -55,7 +65,6 @@ public class PotionCauldronBlock extends Block implements BlockEntityProvider {
     public boolean canPathfindThrough(BlockState state, BlockView world, BlockPos pos, NavigationType type) {
         return false;
     }
-
 
     public static void register() {
         Registry.register(
@@ -111,14 +120,51 @@ public class PotionCauldronBlock extends Block implements BlockEntityProvider {
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity entity, Hand hand, BlockHitResult hit) {
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if (!world.isClient()) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof PotionCauldronBlockEntity cauldronEntity) {
 
-                // @TODO use effects
+                ItemStack items = player.getStackInHand(hand);
+                if (items.getItem() == Items.POTION) {
 
-                return ActionResult.SUCCESS;
+                    if(cauldronEntity.addLevel(PotionUtil.getPotionEffects(items))) {
+
+                        if (!player.isCreative()) {
+
+                            items.decrement(1);
+                            if (items.isEmpty()) {
+                                player.setStackInHand(hand, new ItemStack(Items.GLASS_BOTTLE));
+                            } else {
+                                player.getInventory().insertStack(new ItemStack(Items.GLASS_BOTTLE));
+                            }
+                        }
+
+                        return ActionResult.SUCCESS;
+                    }
+
+                    return ActionResult.PASS;
+                }
+                else if (items.getItem() == Items.GLASS_BOTTLE) {
+
+                    ItemStack potion = cauldronEntity.pickupFluid();
+                    if (potion == null) {
+                        return ActionResult.PASS;
+                    }
+
+                    if (!player.isCreative()) {
+                        items.decrement(1);
+                    }
+
+                    if (items.isEmpty()) {
+                        player.setStackInHand(hand, potion);
+                    }
+                    else {
+                        player.getInventory().insertStack(potion);
+                    }
+
+                    return ActionResult.SUCCESS;
+                }
             }
         }
 
