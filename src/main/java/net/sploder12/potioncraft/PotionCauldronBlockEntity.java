@@ -16,9 +16,9 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
+import net.minecraft.potion.Potions;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.stat.Stat;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
@@ -30,6 +30,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
 
     private int level = PotionCauldronBlock.MIN_LEVEL;
+    private int cachedColor = 0;
 
     private HashMap<StatusEffect, PotionEffectInstance> effects = new HashMap<StatusEffect, PotionEffectInstance>();
 
@@ -57,7 +58,10 @@ public class PotionCauldronBlockEntity extends BlockEntity {
     }
 
     public int getColor() {
-        return PotionUtil.getColor(getEffects());
+        if (cachedColor == 0) {
+            cachedColor = PotionUtil.getColor(getEffects());
+        }
+        return cachedColor;
     }
 
     public ItemStack setEffects(ItemStack target) {
@@ -100,6 +104,11 @@ public class PotionCauldronBlockEntity extends BlockEntity {
             PotionEffectInstance peffect = new PotionEffectInstance(effect);
             peffect.dilute(newDilution);
 
+            // hacky fix for instant potions
+            if (peffect.duration < 1.0f) {
+                peffect.duration = 1.0f;
+            }
+
             if (this.effects.containsKey(effect.getEffectType())) {
                 PotionEffectInstance cur = this.effects.get(effect.getEffectType());
 
@@ -114,18 +123,28 @@ public class PotionCauldronBlockEntity extends BlockEntity {
             }
         }
 
+        // prune dead effects
+        for (PotionEffectInstance effect : this.effects.values()) {
+            if (effect.amplifier <= PotionEffectInstance.epsilon || effect.duration < PotionEffectInstance.epsilon) {
+                this.effects.remove(effect.type);
+            }
+        }
+
         markDirty();
         return true;
     }
 
     public ItemStack pickupFluid() {
-        if (level <= PotionCauldronBlock.MIN_LEVEL) {
-            return null;
-        }
 
         ItemStack potion = new ItemStack(Items.POTION);
-        PotionUtil.setPotion(potion, CRAFTED_POTION);
-        setEffects(potion);
+
+        if (effects.isEmpty()) {
+            PotionUtil.setPotion(potion, Potions.WATER);
+        }
+        else {
+            PotionUtil.setPotion(potion, CRAFTED_POTION);
+            setEffects(potion);
+        }
 
         level -= 1;
 
@@ -165,6 +184,8 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         }
 
         level = nbt.getInt("level");
+
+        cachedColor = PotionUtil.getColor(getEffects());
     }
 
     @Nullable
@@ -180,6 +201,8 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
     @Override
     public void markDirty() {
+        cachedColor = PotionUtil.getColor(getEffects());
+
         super.markDirty();
         if (world != null && !world.isClient()) {
             BlockState state = world.getBlockState(pos);

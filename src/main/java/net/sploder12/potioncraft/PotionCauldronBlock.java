@@ -5,15 +5,11 @@ import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ai.pathing.NavigationType;
-import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.PotionItem;
-import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -29,8 +25,6 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Iterator;
-import java.util.List;
 
 public class PotionCauldronBlock extends Block implements BlockEntityProvider {
 
@@ -148,9 +142,6 @@ public class PotionCauldronBlock extends Block implements BlockEntityProvider {
                 else if (items.getItem() == Items.GLASS_BOTTLE) {
 
                     ItemStack potion = cauldronEntity.pickupFluid();
-                    if (potion == null) {
-                        return ActionResult.PASS;
-                    }
 
                     if (!player.isCreative()) {
                         items.decrement(1);
@@ -161,6 +152,12 @@ public class PotionCauldronBlock extends Block implements BlockEntityProvider {
                     }
                     else {
                         player.getInventory().insertStack(potion);
+                    }
+
+                    // empty so force it to become cauldron
+                    if (cauldronEntity.getLevel() < PotionCauldronBlock.MIN_LEVEL) {
+                        BlockState cauldron = Blocks.CAULDRON.getDefaultState();
+                        world.setBlockState(pos, cauldron);
                     }
 
                     return ActionResult.SUCCESS;

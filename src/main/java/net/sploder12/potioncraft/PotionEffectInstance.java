@@ -16,7 +16,7 @@ public class PotionEffectInstance {
     public boolean showParticles;
     public boolean showIcon;
 
-    private static final float epsilon = 0.00001f;
+    public static final float epsilon = 0.001f;
 
     PotionEffectInstance(StatusEffect type) {
         this(type, 0.0f, 1.0f);
@@ -56,8 +56,6 @@ public class PotionEffectInstance {
             effectiveDuration = (int)(duration * (1.0f + fract)); // adjust duration based of fraction of amplifier
         }
 
-        Main.log(String.valueOf(effectiveDuration));
-        Main.log(String.valueOf(duration));
         // there is an implicit +1 to amplifiers (to make fractions work better)
 
         return new StatusEffectInstance(type, effectiveDuration, effectiveAmplifier, ambient, showParticles, showIcon);
@@ -66,8 +64,6 @@ public class PotionEffectInstance {
     public void dilute(float ratio) {
         duration *= ratio;
         amplifier *= ratio;
-
-        Main.log(String.valueOf(duration));
 
         if (duration - epsilon <= 0.0f) {
             duration = 0.0f;
