@@ -28,11 +28,10 @@ import java.util.*;
 
 public class PotionCauldronBlockEntity extends BlockEntity {
 
-
     private int level = PotionCauldronBlock.MIN_LEVEL;
     private int cachedColor = 0;
 
-    private HashMap<StatusEffect, PotionEffectInstance> effects = new HashMap<StatusEffect, PotionEffectInstance>();
+    private final HashMap<StatusEffect, PotionEffectInstance> effects = new HashMap<>();
 
     public static BlockEntityType<PotionCauldronBlockEntity> POTION_CAULDRON_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(PotionCauldronBlockEntity::new, PotionCauldronBlock.POTION_CAULDRON_BLOCK)
             .build();
@@ -103,6 +102,8 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         for (StatusEffectInstance effect : effects) {
             PotionEffectInstance peffect = new PotionEffectInstance(effect);
             peffect.dilute(newDilution);
+
+            Main.log(peffect.toString());
 
             // hacky fix for instant potions
             if (peffect.duration < 1.0f) {

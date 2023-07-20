@@ -1,7 +1,5 @@
 package net.sploder12.potioncraft;
 
-
-import jdk.jshell.Snippet;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.nbt.NbtCompound;
@@ -49,7 +47,7 @@ public class PotionEffectInstance {
 
         if (amplifier < 1.0f) {
             effectiveDuration = (int)(duration * amplifier);
-            effectiveAmplifier = 0;
+            effectiveAmplifier = 1;
         }
         else {
             float fract = amplifier - effectiveAmplifier;
@@ -58,7 +56,7 @@ public class PotionEffectInstance {
 
         // there is an implicit +1 to amplifiers (to make fractions work better)
 
-        return new StatusEffectInstance(type, effectiveDuration, effectiveAmplifier, ambient, showParticles, showIcon);
+        return new StatusEffectInstance(type, effectiveDuration, effectiveAmplifier - 1, ambient, showParticles, showIcon);
     }
 
     public void dilute(float ratio) {
@@ -138,6 +136,6 @@ public class PotionEffectInstance {
             icon = nbt.getBoolean("ShowIcon");
         }
 
-        return new PotionEffectInstance(type, amp, dur, ambient, particles, icon);
+        return new PotionEffectInstance(type, dur, amp, ambient, particles, icon);
     }
 }
