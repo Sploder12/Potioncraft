@@ -1,8 +1,5 @@
 package net.sploder12.potioncraft;
 
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.fabricmc.api.ModInitializer;
 
 import org.slf4j.Logger;
@@ -30,6 +27,8 @@ public class Main implements ModInitializer {
         LOGGER.info("Hello Fabric world!");
 
         PotionCauldronBlock.register();
+
+        OnUseData.register();
     }
 }
 

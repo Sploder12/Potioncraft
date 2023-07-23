@@ -5,9 +5,11 @@ import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.potion.PotionUtil;
@@ -25,12 +27,28 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.function.Function;
 
 public class PotionCauldronBlock extends Block implements BlockEntityProvider {
 
     public static final PotionCauldronBlock POTION_CAULDRON_BLOCK = new PotionCauldronBlock(
             FabricBlockSettings.copyOf(Blocks.CAULDRON)
     );
+
+    public static final HashMap<Item, Function<OnUseData, Boolean>> interactions = new HashMap<>();
+
+    public static Function<OnUseData, Boolean> addInteraction(Item item, Function<OnUseData, Boolean> func) {
+        return interactions.put(item, func);
+    }
+
+    public static boolean canInteract(Item item) {
+        return interactions.containsKey(item);
+    }
+
+    public static Function<OnUseData, Boolean> getInteraction(Item item) {
+        return interactions.get(item);
+    }
 
 
     public static final Identifier POTION_CAULDRON_ID = new Identifier("potioncraft", "potion_cauldron_block");
@@ -96,7 +114,7 @@ public class PotionCauldronBlock extends Block implements BlockEntityProvider {
     }
 
     protected boolean isEntityTouchingFluid(int level, BlockPos pos, Entity entity) {
-        return entity.getY() < (double)pos.getY() + this.getFluidHeight(level) && entity.getBoundingBox().maxY > (double)pos.getY() + 0.25;
+        return entity.getY() < (double)pos.getY() + getFluidHeight(level) && entity.getBoundingBox().maxY > (double)pos.getY() + 0.25;
     }
 
     @Override
@@ -104,11 +122,13 @@ public class PotionCauldronBlock extends Block implements BlockEntityProvider {
 
         if (!world.isClient()) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
-            if (blockEntity instanceof PotionCauldronBlockEntity cauldronEntity) {
-                if (isEntityTouchingFluid(cauldronEntity.getLevel(), pos, entity)) {
-                    // @TODO touch potion effects
+            if (blockEntity instanceof PotionCauldronBlockEntity cauldronEntity
+                    && isEntityTouchingFluid(cauldronEntity.getLevel(), pos, entity)
+                    && entity instanceof ItemEntity itemEntity) {
 
-                }
+                ItemStack items = itemEntity.getStack();
+
+                // @TODO item use
             }
         }
     }
@@ -160,6 +180,11 @@ public class PotionCauldronBlock extends Block implements BlockEntityProvider {
                         world.setBlockState(pos, cauldron);
                     }
 
+                    return ActionResult.SUCCESS;
+                }
+                else if (canInteract(items.getItem()) && getInteraction(items.getItem()).apply(
+                        new OnUseData(cauldronEntity, state, world, pos, player, hand, hit, true)
+                )) {
                     return ActionResult.SUCCESS;
                 }
             }

@@ -15,6 +15,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.sploder12.potioncraft.OnUseData;
 import net.sploder12.potioncraft.PotionCauldronBlock;
 import net.sploder12.potioncraft.PotionCauldronBlockEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -42,19 +43,19 @@ public abstract class CauldronMixin {
         ItemStack itemStack = user.getStackInHand(hand);
         Block block = state.getBlock();
 
+        int level = 0;
+        if (block instanceof LeveledCauldronBlock) {
+            level = state.get(LeveledCauldronBlock.LEVEL);
+            if (level >= PotionCauldronBlock.MAX_LEVEL) {
+                return;
+            }
+        }
+
         if (itemStack.getItem() == Items.POTION) {
 
             List<StatusEffectInstance> effects = PotionUtil.getPotionEffects(itemStack);
             if (effects.isEmpty()) {
                 return;
-            }
-
-            int level = 0;
-            if (block instanceof LeveledCauldronBlock) {
-                level = state.get(LeveledCauldronBlock.LEVEL);
-                if (level >= PotionCauldronBlock.MAX_LEVEL) {
-                    return;
-                }
             }
 
             BlockState potionCauldron = PotionCauldronBlock.POTION_CAULDRON_BLOCK.getDefaultState();
@@ -69,10 +70,39 @@ public abstract class CauldronMixin {
 
             BlockEntity dest = world.getBlockEntity(pos);
             assert dest != null;
+
             dest.readNbt(entity.createNbt());
 
             info.setReturnValue(ActionResult.SUCCESS);
             info.cancel();
+            return;
+        }
+        else if (level >= 1 && PotionCauldronBlock.canInteract(itemStack.getItem())) {
+
+            BlockState potionCauldron = PotionCauldronBlock.POTION_CAULDRON_BLOCK.getDefaultState();
+            PotionCauldronBlockEntity entity = (PotionCauldronBlockEntity) PotionCauldronBlock.POTION_CAULDRON_BLOCK.createBlockEntity(pos, potionCauldron);
+
+            assert entity != null;
+
+            entity.setLevel(level);
+
+            if (PotionCauldronBlock.getInteraction(itemStack.getItem()).apply(
+                    new OnUseData(entity, state, world, pos, user, hand, hit, false)
+            )) {
+                info.setReturnValue(ActionResult.SUCCESS);
+                info.cancel();
+            }
+            else {
+                return;
+            }
+
+            world.setBlockState(pos, potionCauldron);
+
+            BlockEntity dest = world.getBlockEntity(pos);
+            assert dest != null;
+
+            dest.readNbt(entity.createNbt());
+
             return;
         }
     }
