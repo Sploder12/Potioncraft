@@ -5,11 +5,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.LeveledCauldronBlock;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -22,9 +19,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.List;
-
 
 @Mixin(AbstractCauldronBlock.class)
 public abstract class CauldronMixin {
@@ -51,33 +45,7 @@ public abstract class CauldronMixin {
             }
         }
 
-        if (itemStack.getItem() == Items.POTION) {
-
-            List<StatusEffectInstance> effects = PotionUtil.getPotionEffects(itemStack);
-            if (effects.isEmpty()) {
-                return;
-            }
-
-            BlockState potionCauldron = PotionCauldronBlock.POTION_CAULDRON_BLOCK.getDefaultState();
-            PotionCauldronBlockEntity entity = (PotionCauldronBlockEntity) PotionCauldronBlock.POTION_CAULDRON_BLOCK.createBlockEntity(pos, potionCauldron);
-
-            assert entity != null;
-
-            entity.setLevel(level);
-            entity.addLevel(effects);
-
-            world.setBlockState(pos, potionCauldron);
-
-            BlockEntity dest = world.getBlockEntity(pos);
-            assert dest != null;
-
-            dest.readNbt(entity.createNbt());
-
-            info.setReturnValue(ActionResult.SUCCESS);
-            info.cancel();
-            return;
-        }
-        else if (level >= 1 && PotionCauldronBlock.canInteract(itemStack.getItem())) {
+        if (PotionCauldronBlock.canInteract(itemStack.getItem())) {
 
             BlockState potionCauldron = PotionCauldronBlock.POTION_CAULDRON_BLOCK.getDefaultState();
             PotionCauldronBlockEntity entity = (PotionCauldronBlockEntity) PotionCauldronBlock.POTION_CAULDRON_BLOCK.createBlockEntity(pos, potionCauldron);

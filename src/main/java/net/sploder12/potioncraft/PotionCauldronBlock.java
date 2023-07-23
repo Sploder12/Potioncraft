@@ -11,8 +11,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.ActionResult;
@@ -79,6 +77,8 @@ public class PotionCauldronBlock extends Block implements BlockEntityProvider {
     }
 
     public static void register() {
+        Main.log("Registering Potion Cauldron...");
+
         Registry.register(
                 Registries.BLOCK,
                 POTION_CAULDRON_ID,
@@ -140,49 +140,7 @@ public class PotionCauldronBlock extends Block implements BlockEntityProvider {
             if (blockEntity instanceof PotionCauldronBlockEntity cauldronEntity) {
 
                 ItemStack items = player.getStackInHand(hand);
-                if (items.getItem() == Items.POTION) {
-
-                    if(cauldronEntity.addLevel(PotionUtil.getPotionEffects(items))) {
-
-                        if (!player.isCreative()) {
-
-                            items.decrement(1);
-                            if (items.isEmpty()) {
-                                player.setStackInHand(hand, new ItemStack(Items.GLASS_BOTTLE));
-                            } else {
-                                player.getInventory().insertStack(new ItemStack(Items.GLASS_BOTTLE));
-                            }
-                        }
-
-                        return ActionResult.SUCCESS;
-                    }
-
-                    return ActionResult.PASS;
-                }
-                else if (items.getItem() == Items.GLASS_BOTTLE) {
-
-                    ItemStack potion = cauldronEntity.pickupFluid();
-
-                    if (!player.isCreative()) {
-                        items.decrement(1);
-                    }
-
-                    if (items.isEmpty()) {
-                        player.setStackInHand(hand, potion);
-                    }
-                    else {
-                        player.getInventory().insertStack(potion);
-                    }
-
-                    // empty so force it to become cauldron
-                    if (cauldronEntity.getLevel() < PotionCauldronBlock.MIN_LEVEL) {
-                        BlockState cauldron = Blocks.CAULDRON.getDefaultState();
-                        world.setBlockState(pos, cauldron);
-                    }
-
-                    return ActionResult.SUCCESS;
-                }
-                else if (canInteract(items.getItem()) && getInteraction(items.getItem()).apply(
+                if (canInteract(items.getItem()) && getInteraction(items.getItem()).apply(
                         new OnUseData(cauldronEntity, state, world, pos, player, hand, hit, true)
                 )) {
                     return ActionResult.SUCCESS;

@@ -3,13 +3,18 @@ package net.sploder12.potioncraft;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.LeveledCauldronBlock;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.potion.PotionUtil;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 // class for cauldron item interactions
 public class OnUseData {
@@ -34,7 +39,73 @@ public class OnUseData {
     }
 
     public static void register() {
+        Main.log("Registering Item Interactions...");
+
+        PotionCauldronBlock.addInteraction(Items.POTION, OnUseData::potionOnUse);
+        PotionCauldronBlock.addInteraction(Items.GLASS_BOTTLE, OnUseData::bottleOnUse);
+
         PotionCauldronBlock.addInteraction(Items.MILK_BUCKET, OnUseData::milkOnUse);
+    }
+
+    public static ItemStack itemUse(int amount, PlayerEntity player, Hand hand, ItemStack items, @Nullable ItemStack replace) {
+        if (!player.isCreative()) {
+            items.decrement(amount);
+        }
+
+        if (replace != null) {
+            if (items.isEmpty()) {
+                player.setStackInHand(hand, replace);
+            } else {
+                /*
+                   this is technically divergent from Vanilla,
+                   in creative will not give you a new item
+                   if it already exists in the inventory.
+                   I'm not doing this cause it's slow and nobody will notice.
+                */
+
+                player.getInventory().insertStack(replace);
+            }
+        }
+
+        return items;
+    }
+
+
+    private static Boolean potionOnUse(OnUseData data) {
+        ItemStack itemStack = data.user.getStackInHand(data.hand);
+
+        List<StatusEffectInstance> effects = PotionUtil.getPotionEffects(itemStack);
+        if (effects.isEmpty()) {
+            return false;
+        }
+
+        if (!data.entity.addLevel(effects)) {
+            return false;
+        }
+
+        itemUse(1, data.user, data.hand, itemStack, new ItemStack(Items.GLASS_BOTTLE));
+
+        return true;
+    }
+
+    private static Boolean bottleOnUse(OnUseData data) {
+        if (!data.fromPotionCauldron) {
+            return false;
+        }
+
+        ItemStack bottles = data.user.getStackInHand(data.hand);
+
+        ItemStack potion = data.entity.pickupFluid();
+
+        itemUse(1, data.user, data.hand, bottles, potion);
+
+        // empty so force it to become cauldron
+        if (data.entity.getLevel() < PotionCauldronBlock.MIN_LEVEL) {
+            BlockState cauldron = Blocks.CAULDRON.getDefaultState();
+            data.world.setBlockState(data.pos, cauldron);
+        }
+
+        return true;
     }
 
     private static Boolean milkOnUse(OnUseData data) {
@@ -42,17 +113,9 @@ public class OnUseData {
             return false;
         }
 
-        ItemStack bucket = data.user.getStackInHand(data.hand);
+        ItemStack milk = data.user.getStackInHand(data.hand);
 
-        if (!data.user.isCreative()) {
-            bucket.decrement(1);
-            if (bucket.isEmpty()) {
-                data.user.setStackInHand(data.hand, new ItemStack(Items.BUCKET));
-            }
-            else {
-                data.user.getInventory().insertStack(new ItemStack(Items.BUCKET));
-            }
-        }
+        itemUse(1, data.user, data.hand, milk, new ItemStack(Items.BUCKET));
 
         int level = data.entity.getLevel();
 
@@ -64,8 +127,6 @@ public class OnUseData {
             BlockState cauldron = Blocks.CAULDRON.getDefaultState();
             data.world.setBlockState(data.pos, cauldron);
         }
-
-
 
         return true;
     }

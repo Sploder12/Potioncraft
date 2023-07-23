@@ -45,6 +45,8 @@ public class PotionCauldronBlockEntity extends BlockEntity {
     }
 
     public static void register() {
+        Main.log("Registering Potion Cauldron Block Entity...");
+
         Registry.register(
                 Registries.BLOCK_ENTITY_TYPE,
                 PotionCauldronBlock.POTION_CAULDRON_ID,
