@@ -57,8 +57,8 @@ public class OnUseData {
                 player.setStackInHand(hand, replace);
             } else {
                 /*
-                   this is technically divergent from Vanilla,
-                   in creative will not give you a new item
+                   this is technically divergent from Vanilla;
+                   in creative, vanilla will not give you a new item
                    if it already exists in the inventory.
                    I'm not doing this cause it's slow and nobody will notice.
                 */

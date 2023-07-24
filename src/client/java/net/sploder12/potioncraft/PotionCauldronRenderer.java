@@ -14,10 +14,7 @@ import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.sploder12.potioncraft.PotionCauldronBlock;
-import net.sploder12.potioncraft.PotionCauldronBlockEntity;
 
 @Environment(EnvType.CLIENT)
 public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldronBlockEntity> {
@@ -27,7 +24,13 @@ public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldro
 
     private static final LightmapTextureManager lightmapManager = MinecraftClient.getInstance().gameRenderer.getLightmapTextureManager();
 
-    private static final float waterWidth = (12.0f / 16.0f) / 2.0f;
+    private static final float waterPixWidth = 12.0f;
+    private static final float texPixWidth = 16.0f;
+
+    private static final float waterWidth = (waterPixWidth / texPixWidth) / 2.0f;
+
+    private static final float uvCorrection = ((texPixWidth - waterPixWidth) / texPixWidth) / 2.0f;
+
 
     public PotionCauldronRenderer(BlockEntityRendererFactory.Context ctx) {
         //water = MinecraftClient.getInstance().getBakedModelManager().getAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).getSprite(SimpleFluidRenderHandler.WATER_STILL);
@@ -35,8 +38,6 @@ public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldro
 
     @Override
     public void render(PotionCauldronBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
-
-        BlockPos posUp = entity.getPos().add(0, 1, 0);
 
         World world = entity.getWorld();
 
@@ -65,10 +66,13 @@ public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldro
         lightmapManager.enable();
         buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
 
-        buffer.vertex(matrices.peek().getPositionMatrix(), -waterWidth, 0.0f, waterWidth).color(color).texture(water.getMinU(), water.getMaxV()).light(lightAbove).normal(0.0f, 1.0f, 0.0f).next();
-        buffer.vertex(matrices.peek().getPositionMatrix(), waterWidth, 0.0f, waterWidth).color(color).texture( water.getMaxU(), water.getMaxV()).light(lightAbove).normal(0.0f, 1.0f, 0.0f).next();
-        buffer.vertex(matrices.peek().getPositionMatrix(), waterWidth, 0.0f, -waterWidth).color(color).texture(water.getMaxU(), water.getMinV()).light(lightAbove).normal(0.0f, 1.0f, 0.0f).next();
-        buffer.vertex(matrices.peek().getPositionMatrix(), -waterWidth, 0.0f, -waterWidth).color(color).texture(water.getMinU(), water.getMinV()).light(lightAbove).normal(0.0f, 1.0f, 0.0f).next();
+        float uOffset = (water.getMaxU() - water.getMinU()) * uvCorrection;
+        float vOffset = (water.getMaxV() - water.getMinV()) * uvCorrection;
+
+        buffer.vertex(matrices.peek().getPositionMatrix(), -waterWidth, 0.0f, waterWidth).color(color).texture(water.getMinU() + uOffset, water.getMaxV() - vOffset).light(lightAbove).normal(0.0f, 1.0f, 0.0f).next();
+        buffer.vertex(matrices.peek().getPositionMatrix(), waterWidth, 0.0f, waterWidth).color(color).texture(water.getMaxU() - uOffset, water.getMaxV() - vOffset).light(lightAbove).normal(0.0f, 1.0f, 0.0f).next();
+        buffer.vertex(matrices.peek().getPositionMatrix(), waterWidth, 0.0f, -waterWidth).color(color).texture(water.getMaxU() - uOffset, water.getMinV() + vOffset).light(lightAbove).normal(0.0f, 1.0f, 0.0f).next();
+        buffer.vertex(matrices.peek().getPositionMatrix(), -waterWidth, 0.0f, -waterWidth).color(color).texture(water.getMinU() + uOffset, water.getMinV() + vOffset).light(lightAbove).normal(0.0f, 1.0f, 0.0f).next();
 
         tessellator.draw();
 
