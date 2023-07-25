@@ -57,10 +57,14 @@ public abstract class CauldronMixin {
             if (PotionCauldronBlock.getInteraction(itemStack.getItem()).apply(
                     new OnUseData(entity, state, world, pos, user, hand, hit, false)
             )) {
+                if (entity.getEffects().isEmpty()) { // for water and such
+                    return;
+                }
+
                 info.setReturnValue(ActionResult.SUCCESS);
                 info.cancel();
             }
-            else {
+            else{
                 return;
             }
 

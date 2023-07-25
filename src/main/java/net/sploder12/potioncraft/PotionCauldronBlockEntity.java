@@ -83,12 +83,64 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         return effects;
     }
 
+    public PotionEffectInstance getEffect(StatusEffect effect) {
+        return effects.get(effect);
+    }
+
+    public float getEffectNerf(StatusEffect effect) {
+        /*
+            scalar defined by the piecewise:
+
+            1.0 if amp <= 1.0,
+            1.0 / amp^3 otherwise
+        */
+
+        PotionEffectInstance cur = getEffect(effect);
+        if (cur == null) {
+            return 1.0f; // no nerf
+        }
+
+        if (cur.amplifier <= 1.0f) {
+            return 1.0f; // also no nerf
+        }
+
+        // nerf that scales heavily with amplifier,
+        // this doesn't take duration into account...
+        return 1.0f / (cur.amplifier * cur.amplifier * cur.amplifier);
+    }
+
+
     public void setLevel(int newLevel) {
         if (newLevel != level) {
             level = newLevel;
             markDirty();
         }
     }
+
+    public void addEffect(float dilution, PotionEffectInstance effect) {
+        effect.dilute(dilution);
+
+        // hacky fix for instant potions
+        if (effect.duration < 1.0f) {
+            effect.duration = 1.0f;
+        }
+
+        if (this.effects.containsKey(effect.type)) {
+            PotionEffectInstance cur = this.effects.get(effect.type);
+
+            cur.duration += effect.duration;
+            cur.amplifier += effect.amplifier;
+            cur.showIcon |= effect.showIcon;
+            cur.showParticles |= effect.showParticles;
+            cur.ambient |= effect.ambient;
+        }
+        else {
+            this.effects.put(effect.type, effect);
+        }
+
+        markDirty();
+    }
+
 
     public boolean addLevel(Collection<StatusEffectInstance> effects) {
         if (level >= PotionCauldronBlock.MAX_LEVEL) return false;
@@ -102,28 +154,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
         float newDilution = 1.0f / (float)(level);
         for (StatusEffectInstance effect : effects) {
-            PotionEffectInstance peffect = new PotionEffectInstance(effect);
-            peffect.dilute(newDilution);
-
-            Main.log(peffect.toString());
-
-            // hacky fix for instant potions
-            if (peffect.duration < 1.0f) {
-                peffect.duration = 1.0f;
-            }
-
-            if (this.effects.containsKey(effect.getEffectType())) {
-                PotionEffectInstance cur = this.effects.get(effect.getEffectType());
-
-                cur.duration += peffect.duration;
-                cur.amplifier += peffect.amplifier;
-                cur.showIcon |= peffect.showIcon;
-                cur.showParticles |= peffect.showParticles;
-                cur.ambient |= peffect.ambient;
-            }
-            else {
-                this.effects.put(effect.getEffectType(), peffect);
-            }
+            addEffect(newDilution, new PotionEffectInstance(effect));
         }
 
         // prune dead effects

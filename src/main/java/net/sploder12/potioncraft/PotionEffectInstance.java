@@ -32,6 +32,10 @@ public class PotionEffectInstance {
         this(effect.getEffectType(), effect.getDuration(), effect.getAmplifier() + 1, effect.isAmbient(), effect.shouldShowParticles(), effect.shouldShowIcon());
     }
 
+    PotionEffectInstance(PotionEffectInstance other) {
+        this(other.type, other.duration, other.amplifier, other.ambient, other.showParticles, other.showIcon);
+    }
+
     PotionEffectInstance(StatusEffect type, float duration, float amplifier, boolean ambient, boolean showParticles, boolean showIcon) {
         this.type = type;
         this.duration = duration;

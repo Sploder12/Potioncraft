@@ -4,7 +4,9 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.LeveledCauldronBlock;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.potion.PotionUtil;
@@ -15,6 +17,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Function;
 
 // class for cauldron item interactions
 public class OnUseData {
@@ -45,6 +48,16 @@ public class OnUseData {
         PotionCauldronBlock.addInteraction(Items.GLASS_BOTTLE, OnUseData::bottleOnUse);
 
         PotionCauldronBlock.addInteraction(Items.MILK_BUCKET, OnUseData::milkOnUse);
+
+        addInteraction(Items.MAGMA_CREAM, false, new PotionEffectInstance(
+                StatusEffects.FIRE_RESISTANCE,
+                3600.0f,
+                1.0f
+        ));
+    }
+
+    public static void addInteraction(Item item, Boolean ignoreVanilla, PotionEffectInstance effect) {
+        PotionCauldronBlock.addInteraction(item, buildBasicUse(ignoreVanilla, effect));
     }
 
     public static ItemStack itemUse(int amount, PlayerEntity player, Hand hand, ItemStack items, @Nullable ItemStack replace) {
@@ -70,15 +83,30 @@ public class OnUseData {
         return items;
     }
 
+    private static Function<OnUseData, Boolean> buildBasicUse(boolean ignoreVanilla, PotionEffectInstance effect) {
+        return (OnUseData data) -> {
+            if (data.entity.getLevel() <= 0 || (ignoreVanilla && !data.fromPotionCauldron)) {
+                return false;
+            }
+
+            ItemStack itemStack = data.user.getStackInHand(data.hand);
+
+            PotionEffectInstance eCopy = new PotionEffectInstance(effect);
+
+            float levelDilution = 1.0f / data.entity.getLevel();
+            data.entity.addEffect(levelDilution * data.entity.getEffectNerf(effect.type), eCopy);
+
+            itemUse(1, data.user, data.hand, itemStack, null);
+
+            return true;
+        };
+    }
+
 
     private static Boolean potionOnUse(OnUseData data) {
         ItemStack itemStack = data.user.getStackInHand(data.hand);
 
         List<StatusEffectInstance> effects = PotionUtil.getPotionEffects(itemStack);
-        if (effects.isEmpty()) {
-            return false;
-        }
-
         if (!data.entity.addLevel(effects)) {
             return false;
         }
