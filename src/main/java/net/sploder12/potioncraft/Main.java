@@ -26,6 +26,8 @@ public class Main implements ModInitializer {
 
         LOGGER.info("Welcome To PotionCraft!");
 
+        Config.loadConfig();
+
         PotionCauldronBlock.register();
 
         OnUseData.register();

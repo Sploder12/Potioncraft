@@ -85,7 +85,7 @@ public class OnUseData {
 
     private static Function<OnUseData, Boolean> buildBasicUse(boolean ignoreVanilla, PotionEffectInstance effect) {
         return (OnUseData data) -> {
-            if (data.entity.getLevel() <= 0 || (ignoreVanilla && !data.fromPotionCauldron)) {
+            if (!Config.canUseReagents || (data.entity.getLevel() <= 0 || (ignoreVanilla && !data.fromPotionCauldron))) {
                 return false;
             }
 
@@ -107,6 +107,18 @@ public class OnUseData {
         ItemStack itemStack = data.user.getStackInHand(data.hand);
 
         List<StatusEffectInstance> effects = PotionUtil.getPotionEffects(itemStack);
+
+        // config disallowing mixing of separate potions (water will always be mixable)
+        if (!Config.allowMixing && !effects.isEmpty() && !data.entity.getEffects().isEmpty()) {
+            if (data.entity.getEffects().size() > 1 || effects.size() > 1) {
+                return false;
+            }
+
+            if (data.entity.getEffects().get(0).getEffectType() != effects.get(0).getEffectType()) {
+                return false;
+            }
+        }
+
         if (!data.entity.addLevel(effects)) {
             return false;
         }
