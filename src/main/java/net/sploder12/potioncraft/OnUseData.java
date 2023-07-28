@@ -104,6 +104,11 @@ public class OnUseData {
 
 
     private static Boolean potionOnUse(OnUseData data) {
+        // full
+        if (data.entity.getLevel() >= PotionCauldronBlock.MAX_LEVEL) {
+            return false;
+        }
+
         ItemStack itemStack = data.user.getStackInHand(data.hand);
 
         List<StatusEffectInstance> effects = PotionUtil.getPotionEffects(itemStack);

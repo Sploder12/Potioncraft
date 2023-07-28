@@ -40,9 +40,6 @@ public abstract class CauldronMixin {
         int level = 0;
         if (block instanceof LeveledCauldronBlock) {
             level = state.get(LeveledCauldronBlock.LEVEL);
-            if (level >= PotionCauldronBlock.MAX_LEVEL) {
-                return;
-            }
         }
 
         if (PotionCauldronBlock.canInteract(itemStack.getItem())) {
@@ -74,8 +71,6 @@ public abstract class CauldronMixin {
             assert dest != null;
 
             dest.readNbt(entity.createNbt());
-
-            return;
         }
     }
 }
