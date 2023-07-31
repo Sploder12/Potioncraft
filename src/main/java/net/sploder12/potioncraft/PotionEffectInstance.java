@@ -3,6 +3,7 @@ package net.sploder12.potioncraft;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.potion.Potion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,6 +44,13 @@ public class PotionEffectInstance {
         this.ambient = ambient;
         this.showParticles = showParticles;
         this.showIcon = showIcon;
+    }
+
+    // WARNING: ONLY WORKS WITH POTIONS WITH ONLY 1 EFFECT
+    PotionEffectInstance(Potion potion) {
+        this(potion.getEffects().get(0));
+
+        assert potion.getEffects().size() == 1;
     }
 
     public StatusEffectInstance asStatusEffect() {

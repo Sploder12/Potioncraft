@@ -6,6 +6,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.LeveledCauldronBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -16,9 +18,19 @@ import net.sploder12.potioncraft.OnUseData;
 import net.sploder12.potioncraft.PotionCauldronBlock;
 import net.sploder12.potioncraft.PotionCauldronBlockEntity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+@Mixin (LeveledCauldronBlock.class)
+interface LeveledAccessor {
+
+    // Easiest way to check if a leveled cauldron is filled with not water.
+
+    @Invoker("canBeFilledByDripstone")
+    boolean canBeFilledByDripstone(Fluid fluid);
+}
 
 @Mixin(AbstractCauldronBlock.class)
 public abstract class CauldronMixin {
@@ -38,7 +50,13 @@ public abstract class CauldronMixin {
         Block block = state.getBlock();
 
         int level = 0;
-        if (block instanceof LeveledCauldronBlock) {
+        if (block instanceof LeveledCauldronBlock leveledBlock) {
+
+            // not a water cauldron (powdered snow).
+            if (!((LeveledAccessor)(leveledBlock)).canBeFilledByDripstone(Fluids.WATER)) {
+                return;
+            }
+
             level = state.get(LeveledCauldronBlock.LEVEL);
         }
 

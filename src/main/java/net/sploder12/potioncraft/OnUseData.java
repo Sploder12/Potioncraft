@@ -4,12 +4,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.LeveledCauldronBlock;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.potion.PotionUtil;
+import net.minecraft.potion.Potions;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -49,11 +49,40 @@ public class OnUseData {
 
         PotionCauldronBlock.addInteraction(Items.MILK_BUCKET, OnUseData::milkOnUse);
 
-        addInteraction(Items.MAGMA_CREAM, false, new PotionEffectInstance(
-                StatusEffects.FIRE_RESISTANCE,
-                3600.0f,
-                1.0f
-        ));
+
+
+        addInteraction(Items.SUGAR, false,
+                new PotionEffectInstance(Potions.SWIFTNESS));
+
+        addInteraction(Items.RABBIT_FOOT, false,
+                new PotionEffectInstance(Potions.LEAPING));
+
+        addInteraction(Items.GLISTERING_MELON_SLICE, false,
+                new PotionEffectInstance(Potions.HEALING));
+
+        addInteraction(Items.SPIDER_EYE, false,
+                new PotionEffectInstance(Potions.POISON));
+
+        addInteraction(Items.PUFFERFISH, false,
+                new PotionEffectInstance(Potions.WATER_BREATHING));
+
+        addInteraction(Items.MAGMA_CREAM, false,
+                new PotionEffectInstance(Potions.FIRE_RESISTANCE));
+
+        addInteraction(Items.GOLDEN_CARROT, false,
+                new PotionEffectInstance(Potions.NIGHT_VISION));
+
+        addInteraction(Items.BLAZE_POWDER, false,
+                new PotionEffectInstance(Potions.STRENGTH));
+
+        addInteraction(Items.GHAST_TEAR, false,
+                new PotionEffectInstance(Potions.REGENERATION));
+
+        // sorry no turtle master
+
+        addInteraction(Items.PHANTOM_MEMBRANE, false,
+                new PotionEffectInstance(Potions.SLOW_FALLING));
+
     }
 
     public static void addInteraction(Item item, Boolean ignoreVanilla, PotionEffectInstance effect) {

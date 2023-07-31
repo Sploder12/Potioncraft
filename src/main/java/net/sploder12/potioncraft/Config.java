@@ -17,6 +17,10 @@ public class Config {
     private static File configFile = null;
 
     // Config Fields
+
+    static boolean debug = false;
+    static final String debugStr = "debug";
+
     static boolean allowMixing = true;
     static final String allowMixingStr = "allow_mixing";
 
@@ -24,6 +28,7 @@ public class Config {
     static final String canUseReagentsStr = "can_use_reagents";
 
     static void loadDefaults() {
+        debug = false;
         allowMixing = true;
         canUseReagents = true;
     }
@@ -72,6 +77,13 @@ public class Config {
         boolean containsAll = true;
 
         // read and parse all data from config
+        if (config.containsKey(debugStr)) {
+           debug = Boolean.parseBoolean(config.get(debugStr));
+        }
+        else {
+            containsAll = false;
+        }
+
         if (config.containsKey(allowMixingStr)) {
             allowMixing = Boolean.parseBoolean(config.get(allowMixingStr));
         }
