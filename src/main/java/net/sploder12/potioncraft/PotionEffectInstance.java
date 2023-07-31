@@ -7,8 +7,10 @@ import net.minecraft.potion.Potion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+
 public class PotionEffectInstance {
-    public final StatusEffect type;
+    public StatusEffect type;
     public float duration;
     public float amplifier;
     public boolean ambient;
@@ -16,6 +18,17 @@ public class PotionEffectInstance {
     public boolean showIcon;
 
     public static final float epsilon = 0.001f;
+
+    public static final HashMap<StatusEffect, StatusEffect> inversions = new HashMap<>();
+
+    public static void addMutualInversion(StatusEffect first, StatusEffect second) {
+        inversions.put(first, second);
+        inversions.put(second, first);
+    }
+
+    public static void addInversion(StatusEffect from, StatusEffect to) {
+        inversions.put(from, to);
+    }
 
     PotionEffectInstance(StatusEffect type) {
         this(type, 0.0f, 1.0f);

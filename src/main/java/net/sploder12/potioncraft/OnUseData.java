@@ -4,6 +4,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.LeveledCauldronBlock;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -49,7 +50,9 @@ public class OnUseData {
 
         PotionCauldronBlock.addInteraction(Items.MILK_BUCKET, OnUseData::milkOnUse);
 
+        PotionCauldronBlock.addInteraction(Items.FERMENTED_SPIDER_EYE, OnUseData::fermSpiderEyeOnUse);
 
+        // Reagents
 
         addInteraction(Items.SUGAR, false,
                 new PotionEffectInstance(Potions.SWIFTNESS));
@@ -78,10 +81,30 @@ public class OnUseData {
         addInteraction(Items.GHAST_TEAR, false,
                 new PotionEffectInstance(Potions.REGENERATION));
 
-        // sorry no turtle master
+        // sorry, no turtle master
 
         addInteraction(Items.PHANTOM_MEMBRANE, false,
                 new PotionEffectInstance(Potions.SLOW_FALLING));
+
+
+        // Inversions
+        PotionEffectInstance.addMutualInversion(
+                StatusEffects.SPEED, StatusEffects.SLOWNESS);
+
+        PotionEffectInstance.addMutualInversion(
+                StatusEffects.JUMP_BOOST, StatusEffects.SLOW_FALLING);
+
+        PotionEffectInstance.addMutualInversion(
+                StatusEffects.INSTANT_HEALTH, StatusEffects.INSTANT_DAMAGE);
+
+        PotionEffectInstance.addMutualInversion(
+                StatusEffects.POISON, StatusEffects.REGENERATION);
+
+        PotionEffectInstance.addMutualInversion(
+                StatusEffects.NIGHT_VISION, StatusEffects.INVISIBILITY);
+
+        PotionEffectInstance.addMutualInversion(
+                StatusEffects.STRENGTH, StatusEffects.WEAKNESS);
 
     }
 
@@ -203,5 +226,20 @@ public class OnUseData {
         }
 
         return true;
+    }
+
+    private static Boolean fermSpiderEyeOnUse(OnUseData data) {
+        if (!data.fromPotionCauldron) {
+            return false;
+        }
+
+        ItemStack eye = data.user.getStackInHand(data.hand);
+
+        if (data.entity.invertEffects()) {
+            itemUse(1, data.user, data.hand, eye, null);
+            return true;
+        }
+
+        return false;
     }
 }

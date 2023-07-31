@@ -141,6 +141,36 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         markDirty();
     }
 
+    public boolean invertEffects() {
+        HashMap<StatusEffect, PotionEffectInstance> newEffects = new HashMap<>();
+
+        boolean changed = false;
+
+        for (PotionEffectInstance effect : this.effects.values()) {
+            if (PotionEffectInstance.inversions.containsKey(effect.type)) {
+                changed = true;
+                effect.type = PotionEffectInstance.inversions.get(effect.type);
+            }
+
+            if (newEffects.containsKey(effect.type)) {
+                PotionEffectInstance cur = this.effects.get(effect.type);
+
+                cur.duration += effect.duration;
+                cur.amplifier += effect.amplifier;
+                cur.showIcon |= effect.showIcon;
+                cur.showParticles |= effect.showParticles;
+                cur.ambient |= effect.ambient;
+            }
+            else {
+                newEffects.put(effect.type, effect);
+            }
+        }
+
+        markDirty();
+        return changed;
+    }
+
+
 
     public boolean addLevel(Collection<StatusEffectInstance> effects) {
         if (level >= PotionCauldronBlock.MAX_LEVEL) return false;
