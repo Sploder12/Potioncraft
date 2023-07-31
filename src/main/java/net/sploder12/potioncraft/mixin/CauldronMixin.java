@@ -28,8 +28,7 @@ interface LeveledAccessor {
 
     // Easiest way to check if a leveled cauldron is filled with not water.
 
-    @Invoker("canBeFilledByDripstone")
-    boolean canBeFilledByDripstone(Fluid fluid);
+    @Invoker boolean callCanBeFilledByDripstone(Fluid fluid);
 }
 
 @Mixin(AbstractCauldronBlock.class)
@@ -53,7 +52,7 @@ public abstract class CauldronMixin {
         if (block instanceof LeveledCauldronBlock leveledBlock) {
 
             // not a water cauldron (powdered snow).
-            if (!((LeveledAccessor)(leveledBlock)).canBeFilledByDripstone(Fluids.WATER)) {
+            if (!((LeveledAccessor)(leveledBlock)).callCanBeFilledByDripstone(Fluids.WATER)) {
                 return;
             }
 

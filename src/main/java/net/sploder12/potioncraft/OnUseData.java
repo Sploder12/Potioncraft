@@ -52,6 +52,9 @@ public class OnUseData {
 
         PotionCauldronBlock.addInteraction(Items.FERMENTED_SPIDER_EYE, OnUseData::fermSpiderEyeOnUse);
 
+        PotionCauldronBlock.addInteraction(Items.REDSTONE, OnUseData::redstoneOnUse);
+        PotionCauldronBlock.addInteraction(Items.GLOWSTONE_DUST, OnUseData::glowstoneOnUse);
+
         // Reagents
 
         addInteraction(Items.SUGAR, false,
@@ -241,5 +244,31 @@ public class OnUseData {
         }
 
         return false;
+    }
+
+    private static Boolean redstoneOnUse(OnUseData data) {
+        if (!data.fromPotionCauldron) {
+            return false;
+        }
+
+        ItemStack red = data.user.getStackInHand(data.hand);
+        itemUse(1, data.user, data.hand, red, null);
+
+        data.entity.extendDuration(6000.0f);
+
+        return true;
+    }
+
+    private static Boolean glowstoneOnUse(OnUseData data) {
+        if (!data.fromPotionCauldron) {
+            return false;
+        }
+
+        ItemStack glow = data.user.getStackInHand(data.hand);
+        itemUse(1, data.user, data.hand, glow, null);
+
+        data.entity.amplify(3.0f);
+
+        return true;
     }
 }

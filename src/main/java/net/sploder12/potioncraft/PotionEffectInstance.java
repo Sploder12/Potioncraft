@@ -66,6 +66,17 @@ public class PotionEffectInstance {
         assert potion.getEffects().size() == 1;
     }
 
+    public PotionEffectInstance combine(PotionEffectInstance other) {
+        this.duration += other.duration;
+        this.amplifier += other.amplifier;
+        this.showIcon |= other.showIcon;
+        this.showParticles |= other.showParticles;
+        this.ambient |= other.ambient;
+
+        return this;
+    }
+
+
     public StatusEffectInstance asStatusEffect() {
         int effectiveDuration;
         int effectiveAmplifier = (int)(amplifier);

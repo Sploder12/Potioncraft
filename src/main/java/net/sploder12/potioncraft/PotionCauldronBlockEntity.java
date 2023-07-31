@@ -31,7 +31,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
     private int level = PotionCauldronBlock.MIN_LEVEL;
     private int cachedColor = 0;
 
-    private final HashMap<StatusEffect, PotionEffectInstance> effects = new HashMap<>();
+    private HashMap<StatusEffect, PotionEffectInstance> effects = new HashMap<>();
 
     public static BlockEntityType<PotionCauldronBlockEntity> POTION_CAULDRON_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(PotionCauldronBlockEntity::new, PotionCauldronBlock.POTION_CAULDRON_BLOCK)
             .build();
@@ -126,13 +126,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         }
 
         if (this.effects.containsKey(effect.type)) {
-            PotionEffectInstance cur = this.effects.get(effect.type);
-
-            cur.duration += effect.duration;
-            cur.amplifier += effect.amplifier;
-            cur.showIcon |= effect.showIcon;
-            cur.showParticles |= effect.showParticles;
-            cur.ambient |= effect.ambient;
+            this.effects.get(effect.type).combine(effect);
         }
         else {
             this.effects.put(effect.type, effect);
@@ -153,21 +147,46 @@ public class PotionCauldronBlockEntity extends BlockEntity {
             }
 
             if (newEffects.containsKey(effect.type)) {
-                PotionEffectInstance cur = this.effects.get(effect.type);
-
-                cur.duration += effect.duration;
-                cur.amplifier += effect.amplifier;
-                cur.showIcon |= effect.showIcon;
-                cur.showParticles |= effect.showParticles;
-                cur.ambient |= effect.ambient;
-            }
-            else {
+                newEffects.get(effect.type).combine(effect);
+            } else {
                 newEffects.put(effect.type, effect);
             }
         }
 
-        markDirty();
+        if (changed) {
+            effects = newEffects;
+            markDirty();
+        }
+
         return changed;
+    }
+
+    private static final float falloff = 0.2f;
+
+    public void extendDuration(float dur) {
+        if (this.effects.isEmpty()) return;
+
+        float portion = (dur / this.effects.size()) / this.getLevel();
+
+        for (PotionEffectInstance effect : this.effects.values()) {
+            // there should be some balance but that's for future me to do
+            effect.duration += portion;
+        }
+
+        markDirty();
+    }
+
+    public void amplify(float amp) {
+        if (this.effects.isEmpty()) return;
+
+        float portion = (amp / this.effects.size()) / this.getLevel();
+
+        for (PotionEffectInstance effect : this.effects.values()) {
+            // there should be some balance but that's for future me to do
+            effect.amplifier += portion;
+        }
+
+        markDirty();
     }
 
 
