@@ -183,7 +183,9 @@ public class OnUseData {
             return false;
         }
 
-        itemUse(1, data.user, data.hand, itemStack, new ItemStack(Items.GLASS_BOTTLE));
+        if (!effects.isEmpty() || data.fromPotionCauldron) {
+            itemUse(1, data.user, data.hand, itemStack, new ItemStack(Items.GLASS_BOTTLE));
+        }
 
         return true;
     }

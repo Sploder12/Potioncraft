@@ -135,18 +135,17 @@ public class PotionCauldronBlock extends Block implements BlockEntityProvider {
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        if (!world.isClient()) {
-            BlockEntity blockEntity = world.getBlockEntity(pos);
-            if (blockEntity instanceof PotionCauldronBlockEntity cauldronEntity) {
+        BlockEntity blockEntity = world.getBlockEntity(pos);
+        if (blockEntity instanceof PotionCauldronBlockEntity cauldronEntity) {
 
-                ItemStack items = player.getStackInHand(hand);
-                if (canInteract(items.getItem()) && getInteraction(items.getItem()).apply(
-                        new OnUseData(cauldronEntity, state, world, pos, player, hand, hit, true)
-                )) {
-                    return ActionResult.SUCCESS;
-                }
+            ItemStack items = player.getStackInHand(hand);
+            if (canInteract(items.getItem()) && getInteraction(items.getItem()).apply(
+                    new OnUseData(cauldronEntity, state, world, pos, player, hand, hit, true)
+            )) {
+                return ActionResult.SUCCESS;
             }
         }
+
 
         return ActionResult.PASS;
     }

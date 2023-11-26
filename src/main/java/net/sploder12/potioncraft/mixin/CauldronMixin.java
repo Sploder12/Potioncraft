@@ -71,23 +71,20 @@ public abstract class CauldronMixin {
             if (PotionCauldronBlock.getInteraction(itemStack.getItem()).apply(
                     new OnUseData(entity, state, world, pos, user, hand, hit, false)
             )) {
-                if (entity.getEffects().isEmpty()) { // for water and such
-                    return;
+                if (!entity.getEffects().isEmpty()) { // for water and such
+
+                    info.setReturnValue(ActionResult.SUCCESS);
+                    info.cancel();
+
+                    world.setBlockState(pos, potionCauldron);
+
+                    BlockEntity dest = world.getBlockEntity(pos);
+                    assert dest != null;
+
+                    dest.readNbt(entity.createNbt());
                 }
-
-                info.setReturnValue(ActionResult.SUCCESS);
-                info.cancel();
-            }
-            else{
-                return;
             }
 
-            world.setBlockState(pos, potionCauldron);
-
-            BlockEntity dest = world.getBlockEntity(pos);
-            assert dest != null;
-
-            dest.readNbt(entity.createNbt());
         }
     }
 }
