@@ -4,6 +4,7 @@ import net.minecraft.block.AbstractCauldronBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.LeveledCauldronBlock;
+import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
@@ -23,13 +24,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin (LeveledCauldronBlock.class)
-interface LeveledAccessor {
-
-    // Easiest way to check if a leveled cauldron is filled with not water.
-
-    @Invoker boolean callCanBeFilledByDripstone(Fluid fluid);
-}
+import static net.sploder12.potioncraft.OnUseData.interactions;
 
 @Mixin(AbstractCauldronBlock.class)
 public abstract class CauldronMixin {
@@ -45,46 +40,19 @@ public abstract class CauldronMixin {
                     "Lnet/minecraft/util/ActionResult;",
             cancellable = true)
     public void onUse(BlockState state, World world, BlockPos pos, PlayerEntity user, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> info) {
-        ItemStack itemStack = user.getStackInHand(hand);
+
         Block block = state.getBlock();
+        if (block instanceof LeveledCauldronBlock) {
+            ItemStack itemStack = user.getStackInHand(hand);
 
-        int level = 0;
-        if (block instanceof LeveledCauldronBlock leveledBlock) {
+            CauldronBehavior behavior = interactions.get(itemStack.getItem());
 
-            // not a water cauldron (powdered snow).
-            if (!((LeveledAccessor)(leveledBlock)).callCanBeFilledByDripstone(Fluids.WATER)) {
-                return;
+            ActionResult res = behavior.interact(state, world, pos, user, hand, itemStack);
+
+            if (res == ActionResult.SUCCESS) {
+                info.setReturnValue(ActionResult.SUCCESS);
+                info.cancel();
             }
-
-            level = state.get(LeveledCauldronBlock.LEVEL);
-        }
-
-        if (PotionCauldronBlock.canInteract(itemStack.getItem())) {
-
-            BlockState potionCauldron = PotionCauldronBlock.POTION_CAULDRON_BLOCK.getDefaultState();
-            PotionCauldronBlockEntity entity = (PotionCauldronBlockEntity) PotionCauldronBlock.POTION_CAULDRON_BLOCK.createBlockEntity(pos, potionCauldron);
-
-            assert entity != null;
-
-            entity.setLevel(level);
-
-            if (PotionCauldronBlock.getInteraction(itemStack.getItem()).apply(
-                    new OnUseData(entity, state, world, pos, user, hand, hit, false)
-            )) {
-                if (!entity.getEffects().isEmpty()) { // for water and such
-
-                    info.setReturnValue(ActionResult.SUCCESS);
-                    info.cancel();
-
-                    world.setBlockState(pos, potionCauldron);
-
-                    BlockEntity dest = world.getBlockEntity(pos);
-                    assert dest != null;
-
-                    dest.readNbt(entity.createNbt());
-                }
-            }
-
         }
     }
 }

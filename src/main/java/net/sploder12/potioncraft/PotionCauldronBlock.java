@@ -6,53 +6,25 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.ai.pathing.NavigationType;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.function.BooleanBiFunction;
-import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.function.Function;
+import static net.sploder12.potioncraft.OnUseData.interactions;
 
-public class PotionCauldronBlock extends Block implements BlockEntityProvider {
+public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockEntityProvider {
 
     public static final PotionCauldronBlock POTION_CAULDRON_BLOCK = new PotionCauldronBlock(
             FabricBlockSettings.copyOf(Blocks.CAULDRON)
     );
 
-    public static final HashMap<Item, Function<OnUseData, Boolean>> interactions = new HashMap<>();
-
-    public static Function<OnUseData, Boolean> addInteraction(Item item, Function<OnUseData, Boolean> func) {
-        return interactions.put(item, func);
-    }
-
-    public static boolean canInteract(Item item) {
-        return interactions.containsKey(item);
-    }
-
-    public static Function<OnUseData, Boolean> getInteraction(Item item) {
-        return interactions.get(item);
-    }
-
-
     public static final Identifier POTION_CAULDRON_ID = new Identifier("potioncraft", "potion_cauldron_block");
 
-    private static final VoxelShape RAYCAST_SHAPE = createCuboidShape(2.0, 4.0, 2.0, 14.0, 16.0, 14.0);
-    protected static final VoxelShape OUTLINE_SHAPE = VoxelShapes.combineAndSimplify(VoxelShapes.fullCube(), VoxelShapes.union(createCuboidShape(0.0, 0.0, 4.0, 16.0, 3.0, 12.0), createCuboidShape(4.0, 0.0, 0.0, 12.0, 3.0, 16.0), createCuboidShape(2.0, 0.0, 2.0, 14.0, 3.0, 14.0), RAYCAST_SHAPE), BooleanBiFunction.ONLY_FIRST);
 
     /** Behavior of Potion Cauldron */
     public static final int MIN_LEVEL = 1;
@@ -60,21 +32,6 @@ public class PotionCauldronBlock extends Block implements BlockEntityProvider {
 
     private static final int BASE_FLUID_HEIGHT = 6;
     private static final double FLUID_HEIGHT_PER_LEVEL = (15.0 - BASE_FLUID_HEIGHT) / (MAX_LEVEL - MIN_LEVEL + 1.0);
-
-    @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return OUTLINE_SHAPE;
-    }
-
-    @Override
-    public VoxelShape getRaycastShape(BlockState state, BlockView world, BlockPos pos) {
-        return RAYCAST_SHAPE;
-    }
-
-    @Override
-    public boolean canPathfindThrough(BlockState state, BlockView world, BlockPos pos, NavigationType type) {
-        return false;
-    }
 
     public static void register() {
         Main.log("Registering Potion Cauldron...");
@@ -94,7 +51,25 @@ public class PotionCauldronBlock extends Block implements BlockEntityProvider {
     /********************************/
 
     public PotionCauldronBlock(AbstractBlock.Settings settings) {
-        super(settings);
+        super(settings, interactions);
+    }
+
+    @Override
+    public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
+        BlockEntity blockEntity = world.getBlockEntity(pos);
+        if (blockEntity instanceof PotionCauldronBlockEntity cauldronEntity) {
+            return cauldronEntity.getLevel();
+        }
+
+        return 0;
+    }
+
+
+    @Override
+    public boolean isFull(BlockState state) {
+        // Can't get block entity from here.
+        // Luckily, this function doesn't do anything
+        return false;
     }
 
     @Nullable
@@ -132,22 +107,4 @@ public class PotionCauldronBlock extends Block implements BlockEntityProvider {
             }
         }
     }
-
-    @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity instanceof PotionCauldronBlockEntity cauldronEntity) {
-
-            ItemStack items = player.getStackInHand(hand);
-            if (canInteract(items.getItem()) && getInteraction(items.getItem()).apply(
-                    new OnUseData(cauldronEntity, state, world, pos, player, hand, hit, true)
-            )) {
-                return ActionResult.SUCCESS;
-            }
-        }
-
-
-        return ActionResult.PASS;
-    }
-
 }
