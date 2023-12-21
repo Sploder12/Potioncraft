@@ -69,10 +69,6 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         return PotionUtil.setCustomPotionEffects(target, getEffects());
     }
 
-    public Potion getPotion() {
-        return new Potion(getEffects().toArray(new StatusEffectInstance[0]));
-    }
-
     public ArrayList<StatusEffectInstance> getEffects() {
         ArrayList<StatusEffectInstance> effects = new ArrayList<>(this.effects.size());
 
