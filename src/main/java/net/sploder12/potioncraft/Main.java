@@ -2,6 +2,7 @@ package net.sploder12.potioncraft;
 
 import net.fabricmc.api.ModInitializer;
 
+import net.sploder12.potioncraft.meta.MetaMixing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,9 @@ public class Main implements ModInitializer {
 
         PotionCauldronBlock.register();
 
-        OnUseData.register();
+        MetaMixing.register();
+
+        //OnUseData.register();
     }
 }
 

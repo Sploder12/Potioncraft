@@ -25,6 +25,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 
+import javax.swing.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,23 +51,27 @@ public class OnUseData {
     public static CauldronBehavior waterAddWater = null;
 
     public static Map<Item, CauldronBehavior> getBehavior(Identifier id) {
-        if (id == PotionCauldronBlock.POTION_CAULDRON_ID) {
+        if (id == null) {
+            return null;
+        }
+
+        if (id.equals(PotionCauldronBlock.POTION_CAULDRON_ID)) {
             return interactions;
         }
 
-        if (id == Registries.BLOCK.getId(Blocks.CAULDRON)) {
+        if (id.equals(Registries.BLOCK.getId(Blocks.CAULDRON))) {
             return CauldronBehavior.EMPTY_CAULDRON_BEHAVIOR;
         }
 
-        if (id == Registries.BLOCK.getId(Blocks.WATER_CAULDRON)) {
+        if (id.equals(Registries.BLOCK.getId(Blocks.WATER_CAULDRON))) {
             return CauldronBehavior.WATER_CAULDRON_BEHAVIOR;
         }
 
-        if (id == Registries.BLOCK.getId(Blocks.LAVA_CAULDRON)) {
+        if (id.equals(Registries.BLOCK.getId(Blocks.LAVA_CAULDRON))) {
             return CauldronBehavior.LAVA_CAULDRON_BEHAVIOR;
         }
 
-        if (id == Registries.BLOCK.getId(Blocks.POWDER_SNOW_CAULDRON)) {
+        if (id.equals(Registries.BLOCK.getId(Blocks.POWDER_SNOW_CAULDRON))) {
             return CauldronBehavior.POWDER_SNOW_CAULDRON_BEHAVIOR;
         }
 
@@ -174,12 +179,12 @@ public class OnUseData {
         addInteraction(item, buildBasicUse(effect), water);
     }
 
-    static private class BlockData {
-        boolean vanilla;
-        boolean valid; // in case of non-water leveled cauldron
-        PotionCauldronBlockEntity entity;
-        BlockState state;
-        int level;
+    static public class BlockData {
+        public boolean vanilla;
+        public boolean valid; // in case of non-water leveled cauldron
+        public PotionCauldronBlockEntity entity;
+        public BlockState state;
+        public int level;
 
         public BlockData() {
             vanilla = true;
@@ -239,7 +244,7 @@ public class OnUseData {
         return out;
     }
 
-    private static BlockData getBlockData(BlockState state, World world, BlockPos pos) {
+    public static BlockData getBlockData(BlockState state, World world, BlockPos pos) {
         Block block = state.getBlock();
 
         if (block instanceof LeveledCauldronBlock leveledBlock) {
@@ -260,13 +265,11 @@ public class OnUseData {
         return new BlockData();
     }
 
-    private static void itemUse(World world, Hand hand, ItemStack in, PlayerEntity player, ItemStack out) {
-        if (!world.isClient) {
-            Item item = in.getItem();
-            player.setStackInHand(hand, ItemUsage.exchangeStack(in, player, out));
-            player.incrementStat(Stats.USE_CAULDRON);
-            player.incrementStat(Stats.USED.getOrCreateStat(item));
-        }
+    public static void itemUse(Hand hand, ItemStack in, PlayerEntity player, ItemStack out) {
+        Item item = in.getItem();
+        player.setStackInHand(hand, ItemUsage.exchangeStack(in, player, out));
+        player.incrementStat(Stats.USE_CAULDRON);
+        player.incrementStat(Stats.USED.getOrCreateStat(item));
     }
 
     private static CauldronBehavior buildBasicUse(PotionEffectInstance effect) {
@@ -286,7 +289,7 @@ public class OnUseData {
                 float levelDilution = 1.0f / data.level;
                 data.entity.addEffect(levelDilution * data.entity.getEffectNerf(effect.type), eCopy);
 
-                itemUse(world, hand, itemStack, player, ItemStack.EMPTY);
+                itemUse(hand, itemStack, player, ItemStack.EMPTY);
                 world.playSound((PlayerEntity)null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
 
                 if (data.vanilla && !data.entity.getEffects().isEmpty()) {
@@ -346,7 +349,7 @@ public class OnUseData {
                 dest.readNbt(data.entity.createNbt());
             }
 
-            itemUse(world, hand, itemStack, player, new ItemStack(Items.GLASS_BOTTLE));
+            itemUse(hand, itemStack, player, new ItemStack(Items.GLASS_BOTTLE));
             world.playSound((PlayerEntity) null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
             world.emitGameEvent((Entity)null, GameEvent.FLUID_PLACE, pos);
         }
@@ -362,7 +365,7 @@ public class OnUseData {
 
         if (!world.isClient) {
             ItemStack potion = data.entity.pickupFluid();
-            itemUse(world, hand, bottles, player, potion);
+            itemUse(hand, bottles, player, potion);
             world.playSound((PlayerEntity) null, pos, SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
             world.emitGameEvent((Entity) null, GameEvent.FLUID_PICKUP, pos);
 
@@ -383,7 +386,7 @@ public class OnUseData {
         }
 
         if (!world.isClient) {
-            itemUse(world, hand, milk, player, new ItemStack(Items.BUCKET));
+            itemUse(hand, milk, player, new ItemStack(Items.BUCKET));
             world.playSound((PlayerEntity) null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
 
             if (data.level > 0) {
@@ -405,7 +408,7 @@ public class OnUseData {
         }
 
         if (data.entity.invertEffects()) {
-            itemUse(world, hand, eye, player, ItemStack.EMPTY);
+            itemUse(hand, eye, player, ItemStack.EMPTY);
             world.playSound((PlayerEntity) null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
 
             return ActionResult.success(world.isClient);
@@ -421,7 +424,7 @@ public class OnUseData {
         }
 
         if (!world.isClient) {
-            itemUse(world, hand, red, player, ItemStack.EMPTY);
+            itemUse(hand, red, player, ItemStack.EMPTY);
             world.playSound((PlayerEntity) null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
 
             data.entity.extendDuration(6000.0f);
@@ -437,7 +440,7 @@ public class OnUseData {
         }
 
         if (!world.isClient) {
-            itemUse(world, hand, glow, player, ItemStack.EMPTY);
+            itemUse(hand, glow, player, ItemStack.EMPTY);
             world.playSound((PlayerEntity) null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
 
             data.entity.amplify(3.0f);

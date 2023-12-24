@@ -1,0 +1,33 @@
+{
+  "recipes": {
+    "potioncraft:potion_cauldron_block": {
+      "minecraft:glass_bottle": {
+
+        "effects": [
+          {
+            "id": "HAS_LEVEL"
+          },
+          {
+            "id": "USE_ITEM",
+            "quickfail": "PASS",
+            "params": {
+              "id": "potion",
+              "applyPotion": true
+            }
+          },
+          {
+            "id": "PLAY_SOUND",
+            "quickfail": "PASS",
+            "params": {
+              "id": "item.bottle.fill"
+            }
+          },
+          {
+            "id": "REMOVE_LEVEL",
+            "quickfail": "PASS"
+          }
+        ]
+      }
+    }
+  }
+}

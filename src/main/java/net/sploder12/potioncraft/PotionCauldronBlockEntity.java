@@ -69,6 +69,10 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         return PotionUtil.setCustomPotionEffects(target, getEffects());
     }
 
+    public boolean hasEffects() {
+        return !this.effects.isEmpty();
+    }
+
     public ArrayList<StatusEffectInstance> getEffects() {
         ArrayList<StatusEffectInstance> effects = new ArrayList<>(this.effects.size());
 
@@ -77,6 +81,11 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         }
 
         return effects;
+    }
+
+    public void clearEffects() {
+        this.effects.clear();
+        this.markDirty();
     }
 
     public PotionEffectInstance getEffect(StatusEffect effect) {
@@ -208,6 +217,40 @@ public class PotionCauldronBlockEntity extends BlockEntity {
                 this.effects.remove(effect.type);
             }
         }
+
+        markDirty();
+        return true;
+    }
+
+    public boolean addLevel(boolean dilute) {
+        if (level >= PotionCauldronBlock.MAX_LEVEL) return false;
+
+        level += 1;
+
+        if (dilute) {
+            float oldDilution = (float) (level - 1) / (float) (level);
+            for (PotionEffectInstance effect : this.effects.values()) {
+                effect.dilute(oldDilution);
+            }
+
+            // prune dead effects
+            for (PotionEffectInstance effect : this.effects.values()) {
+                if (effect.amplifier <= PotionEffectInstance.epsilon || effect.duration < PotionEffectInstance.epsilon) {
+                    this.effects.remove(effect.type);
+                }
+            }
+        }
+
+        markDirty();
+        return true;
+    }
+
+    public boolean removeLevel() {
+        if (level < PotionCauldronBlock.MIN_LEVEL) {
+            return false;
+        }
+
+        level -= 1;
 
         markDirty();
         return true;

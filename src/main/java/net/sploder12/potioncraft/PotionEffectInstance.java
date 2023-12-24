@@ -50,7 +50,7 @@ public class PotionEffectInstance {
         this(other.type, other.duration, other.amplifier, other.ambient, other.showParticles, other.showIcon);
     }
 
-    PotionEffectInstance(StatusEffect type, float duration, float amplifier, boolean ambient, boolean showParticles, boolean showIcon) {
+    public PotionEffectInstance(StatusEffect type, float duration, float amplifier, boolean ambient, boolean showParticles, boolean showIcon) {
         this.type = type;
         this.duration = duration;
         this.amplifier = amplifier;
@@ -60,7 +60,7 @@ public class PotionEffectInstance {
     }
 
     // WARNING: ONLY WORKS WITH POTIONS WITH ONLY 1 EFFECT
-    PotionEffectInstance(Potion potion) {
+    public PotionEffectInstance(Potion potion) {
         this(potion.getEffects().get(0));
 
         assert potion.getEffects().size() == 1;

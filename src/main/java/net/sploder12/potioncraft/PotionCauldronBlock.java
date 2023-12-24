@@ -17,7 +17,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import static net.sploder12.potioncraft.OnUseData.interactions;
+import static net.sploder12.potioncraft.meta.MetaMixing.interactions;
 
 public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockEntityProvider {
 

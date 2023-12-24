@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 public class Config {
-    static final String filename = "potioncraft";
+    static final String filename = "potioncraft/potioncraft";
 
     private static File configFile = null;
 
