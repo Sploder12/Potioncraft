@@ -45,76 +45,8 @@ public class OnUseData {
         }
     }
 
-    public static HashMap<Identifier, Map<Item, CauldronBehavior>> customBehaviors = new HashMap<>();
-
-    public static CauldronBehavior emptyAddWater = null;
-    public static CauldronBehavior waterAddWater = null;
-
-    public static Map<Item, CauldronBehavior> getBehavior(Identifier id) {
-        if (id == null) {
-            return null;
-        }
-
-        if (id.equals(PotionCauldronBlock.POTION_CAULDRON_ID)) {
-            return interactions;
-        }
-
-        if (id.equals(Registries.BLOCK.getId(Blocks.CAULDRON))) {
-            return CauldronBehavior.EMPTY_CAULDRON_BEHAVIOR;
-        }
-
-        if (id.equals(Registries.BLOCK.getId(Blocks.WATER_CAULDRON))) {
-            return CauldronBehavior.WATER_CAULDRON_BEHAVIOR;
-        }
-
-        if (id.equals(Registries.BLOCK.getId(Blocks.LAVA_CAULDRON))) {
-            return CauldronBehavior.LAVA_CAULDRON_BEHAVIOR;
-        }
-
-        if (id.equals(Registries.BLOCK.getId(Blocks.POWDER_SNOW_CAULDRON))) {
-            return CauldronBehavior.POWDER_SNOW_CAULDRON_BEHAVIOR;
-        }
-
-        if (customBehaviors.containsKey(id)) {
-            return customBehaviors.get(id);
-        }
-
-        return null;
-    }
-
-    public static CauldronBehavior addInteraction(Identifier id, Item item, CauldronBehavior func) {
-        Map<Item, CauldronBehavior> behavior = getBehavior(id);
-        if (behavior == null) {
-            return null;
-        }
-
-        return behavior.put(item, func);
-    }
-
-
     public static void register() {
         Main.log("Registering Item Interactions...");
-
-        if (waterAddWater == null) {
-            waterAddWater = addInteraction(Items.POTION, OnUseData::potionOnUse, true);
-        }
-        else {
-            addInteraction(Items.POTION, OnUseData::potionOnUse, true);
-        }
-
-        if (emptyAddWater == null) {
-            emptyAddWater = addInteraction(Registries.BLOCK.getId(Blocks.CAULDRON), Items.POTION, OnUseData::potionOnUse);
-        }
-        else {
-            addInteraction(Registries.BLOCK.getId(Blocks.CAULDRON), Items.POTION, OnUseData::potionOnUse);
-        }
-
-
-        addInteraction(Items.GLASS_BOTTLE, OnUseData::bottleOnUse, false);
-
-        addInteraction(Items.MILK_BUCKET, OnUseData::milkOnUse, false);
-
-        addInteraction(Items.FERMENTED_SPIDER_EYE, OnUseData::fermSpiderEyeOnUse, false);
 
         addInteraction(Items.REDSTONE, OnUseData::redstoneOnUse, false);
         addInteraction(Items.GLOWSTONE_DUST, OnUseData::glowstoneOnUse, false);
@@ -152,27 +84,6 @@ public class OnUseData {
 
         addInteraction(Items.PHANTOM_MEMBRANE, true,
                 new PotionEffectInstance(Potions.SLOW_FALLING));
-
-
-        // Inversions
-        PotionEffectInstance.addMutualInversion(
-                StatusEffects.SPEED, StatusEffects.SLOWNESS);
-
-        PotionEffectInstance.addMutualInversion(
-                StatusEffects.JUMP_BOOST, StatusEffects.SLOW_FALLING);
-
-        PotionEffectInstance.addMutualInversion(
-                StatusEffects.INSTANT_HEALTH, StatusEffects.INSTANT_DAMAGE);
-
-        PotionEffectInstance.addMutualInversion(
-                StatusEffects.POISON, StatusEffects.REGENERATION);
-
-        PotionEffectInstance.addMutualInversion(
-                StatusEffects.NIGHT_VISION, StatusEffects.INVISIBILITY);
-
-        PotionEffectInstance.addMutualInversion(
-                StatusEffects.STRENGTH, StatusEffects.WEAKNESS);
-
     }
 
     public static void addInteraction(Item item, boolean water, PotionEffectInstance effect) {
@@ -303,118 +214,6 @@ public class OnUseData {
 
             return ActionResult.success(world.isClient);
         };
-    }
-
-
-    private static ActionResult potionOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack itemStack) {
-
-        BlockData data = getBlockData(state, world, pos);
-        if (!data.valid || data.level >= PotionCauldronBlock.MAX_LEVEL) {
-            return ActionResult.PASS;
-        }
-
-        List<StatusEffectInstance> effects = PotionUtil.getPotionEffects(itemStack);
-        if (effects.isEmpty() && data.vanilla) {
-            if (data.level == 0) {
-                return emptyAddWater.interact(state, world, pos, player, hand, itemStack);
-            }
-
-            return waterAddWater.interact(state, world, pos, player, hand, itemStack);
-        }
-
-        if (data.level >= PotionCauldronBlock.MAX_LEVEL) {
-            return ActionResult.PASS;
-        }
-
-        // config disallowing mixing of separate potions (water will always be mixable)
-        if (!Config.allowMixing && !effects.isEmpty() && !data.entity.getEffects().isEmpty()) {
-            if (data.entity.getEffects().size() > 1 || effects.size() > 1) {
-                return ActionResult.PASS;
-            }
-
-            if (data.entity.getEffects().get(0).getEffectType() != effects.get(0).getEffectType()) {
-                return ActionResult.PASS;
-            }
-        }
-
-
-        if (!world.isClient) {
-            data.entity.addLevel(effects);
-
-            if (data.vanilla) {
-                world.setBlockState(pos, data.state);
-                BlockEntity dest = world.getBlockEntity(pos);
-                assert dest != null;
-
-                dest.readNbt(data.entity.createNbt());
-            }
-
-            itemUse(hand, itemStack, player, new ItemStack(Items.GLASS_BOTTLE));
-            world.playSound((PlayerEntity) null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
-            world.emitGameEvent((Entity)null, GameEvent.FLUID_PLACE, pos);
-        }
-
-        return ActionResult.success(world.isClient);
-    }
-
-    private static ActionResult bottleOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack bottles) {
-        BlockData data = getBlockData(state, world, pos);
-        if (!data.valid) {
-            return ActionResult.PASS;
-        }
-
-        if (!world.isClient) {
-            ItemStack potion = data.entity.pickupFluid();
-            itemUse(hand, bottles, player, potion);
-            world.playSound((PlayerEntity) null, pos, SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
-            world.emitGameEvent((Entity) null, GameEvent.FLUID_PICKUP, pos);
-
-            // empty so force it to become cauldron
-            if (data.entity.getLevel() < PotionCauldronBlock.MIN_LEVEL) {
-                BlockState cauldron = Blocks.CAULDRON.getDefaultState();
-                world.setBlockState(pos, cauldron);
-            }
-        }
-
-        return ActionResult.success(world.isClient);
-    }
-
-    private static ActionResult milkOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack milk) {
-        BlockData data = getBlockData(state, world, pos);
-        if (!data.valid) {
-            return ActionResult.PASS;
-        }
-
-        if (!world.isClient) {
-            itemUse(hand, milk, player, new ItemStack(Items.BUCKET));
-            world.playSound((PlayerEntity) null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
-
-            if (data.level > 0) {
-                BlockState cauldron = Blocks.WATER_CAULDRON.getDefaultState();
-                world.setBlockState(pos, cauldron.with(LeveledCauldronBlock.LEVEL, data.level));
-            } else {
-                BlockState cauldron = Blocks.CAULDRON.getDefaultState();
-                world.setBlockState(pos, cauldron);
-            }
-        }
-
-        return ActionResult.success(world.isClient);
-    }
-
-    private static ActionResult fermSpiderEyeOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack eye) {
-        BlockData data = getBlockData(state, world, pos);
-        if (!data.valid) {
-            return ActionResult.PASS;
-        }
-
-        if (data.entity.invertEffects()) {
-            itemUse(hand, eye, player, ItemStack.EMPTY);
-            world.playSound((PlayerEntity) null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
-
-            return ActionResult.success(world.isClient);
-        }
-
-        return ActionResult.PASS;
     }
 
     private static ActionResult redstoneOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack red) {

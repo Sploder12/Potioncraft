@@ -7,6 +7,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.LeveledCauldronBlock;
 import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -29,6 +30,7 @@ import net.sploder12.potioncraft.OnUseData.BlockData;
 import net.sploder12.potioncraft.PotionCauldronBlock;
 import net.sploder12.potioncraft.PotionEffectInstance;
 
+import java.util.List;
 import java.util.Optional;
 
 import static net.sploder12.potioncraft.PotionCauldronBlockEntity.CRAFTED_POTION;
@@ -163,6 +165,34 @@ public interface MetaEffectTemplate {
         };
     };
 
+    MetaEffectTemplate IS_FULL = (quickfail, params) -> {
+        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+            if (quickfail.isPresent() && quickfail.get() == prev) {
+                return ActionResult.PASS;
+            }
+
+            if (data.level >= PotionCauldronBlock.MAX_LEVEL) {
+                return ActionResult.success(world.isClient);
+            }
+
+            return ActionResult.PASS;
+        };
+    };
+
+    MetaEffectTemplate ITEM_HAS_EFFECTS = (quickfail, params) -> {
+        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+            if (quickfail.isPresent() && quickfail.get() == prev) {
+                return ActionResult.PASS;
+            }
+
+            if (PotionUtil.getPotionEffects(stack).isEmpty()) {
+                return ActionResult.PASS;
+            }
+
+            return ActionResult.success(world.isClient);
+        };
+    };
+
     // params: "id": Identifier - item to replace with
     // "applyPotion": Boolean - adds the potion effects to the replacement item
     MetaEffectTemplate USE_ITEM = (quickfail, params) -> {
@@ -172,7 +202,14 @@ public interface MetaEffectTemplate {
             replaceItem = Registries.ITEM.get(id);
         }
 
+        Identifier sid = getId(params.get("sound"));
+        SoundEvent sound = null;
+        if (id != null) {
+            sound = Registries.SOUND_EVENT.get(sid);
+        }
+
         final Item finalReplaceItem = replaceItem;
+        final SoundEvent finalSound = sound;
         final boolean finalApplyPotion = getBoolOr(params.get("applyPotion"), false);
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (quickfail.isPresent() && quickfail.get() == prev) {
@@ -183,27 +220,29 @@ public interface MetaEffectTemplate {
                 return ActionResult.PASS;
             }
 
-            if (!world.isClient) {
-                ItemStack out = ItemStack.EMPTY;
-                if (finalReplaceItem != null) {
-                    out = new ItemStack(finalReplaceItem);
 
-                    if (finalApplyPotion) {
-                        if (finalReplaceItem == Items.POTION) {
-                            if (!data.entity.hasEffects()) {
-                                PotionUtil.setPotion(out, Potions.WATER);
-                            }
-                            else {
-                                PotionUtil.setPotion(out, CRAFTED_POTION);
-                            }
+            ItemStack out = ItemStack.EMPTY;
+            if (finalReplaceItem != null) {
+                out = new ItemStack(finalReplaceItem);
+
+                if (finalApplyPotion) {
+                    if (finalReplaceItem == Items.POTION) {
+                        if (!data.entity.hasEffects()) {
+                            PotionUtil.setPotion(out, Potions.WATER);
                         }
                         else {
-                            data.entity.setEffects(out);
+                            PotionUtil.setPotion(out, CRAFTED_POTION);
                         }
                     }
-                }
 
-                OnUseData.itemUse(hand, stack, player, out);
+                    data.entity.setEffects(out);
+                }
+            }
+
+            OnUseData.itemUse(hand, stack, player, out);
+
+            if (finalSound != null && !world.isClient) {
+                world.playSound(null, pos, finalSound, SoundCategory.BLOCKS, 1.0F, 1.0F);
             }
 
             return ActionResult.success(world.isClient);
@@ -241,9 +280,20 @@ public interface MetaEffectTemplate {
                 return ActionResult.PASS;
             }
 
-            if (!world.isClient) {
-                data.entity.clearEffects();
+            data.entity.clearEffects();
+
+            return ActionResult.success(world.isClient);
+        };
+    };
+
+    // think spider eye
+    MetaEffectTemplate INVERT_EFFECTS = (quickfail, params) -> {
+        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+            if (quickfail.isPresent() && quickfail.get() == prev) {
+                return ActionResult.PASS;
             }
+
+            data.entity.invertEffects();
 
             return ActionResult.success(world.isClient);
         };
@@ -277,12 +327,11 @@ public interface MetaEffectTemplate {
                         return ActionResult.PASS;
                     }
 
-                    if (!world.isClient) {
-                        PotionEffectInstance effect = new PotionEffectInstance(type, duration, amplifier, false, showParticles, showIcon);
+                    PotionEffectInstance effect = new PotionEffectInstance(type, duration, amplifier, false, showParticles, showIcon);
 
-                        float dilution = 1.0f / data.level;
-                        data.entity.addEffect(dilution, effect);
-                    }
+                    float dilution = 1.0f / data.level;
+                    data.entity.addEffect(dilution, effect);
+
 
                     return ActionResult.success(world.isClient);
                 };
@@ -309,12 +358,10 @@ public interface MetaEffectTemplate {
                         return ActionResult.PASS;
                     }
 
-                    if (!world.isClient) {
-                        PotionEffectInstance effect = new PotionEffectInstance(potion);
+                    PotionEffectInstance effect = new PotionEffectInstance(potion);
 
-                        float dilution = 1.0f / data.level;
-                        data.entity.addEffect(dilution, effect);
-                    }
+                    float dilution = 1.0f / data.level;
+                    data.entity.addEffect(dilution, effect);
 
                     return ActionResult.success(world.isClient);
                 };
@@ -323,6 +370,26 @@ public interface MetaEffectTemplate {
 
         Main.log("ADD_POTION_EFFECT effect has invalid id field!");
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+    };
+
+    // takes the potion effects from item and applies to the cauldron
+    MetaEffectTemplate APPLY_ITEM_EFFECTS = (quickfail, params) -> {
+        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+            if (quickfail.isPresent() && quickfail.get() == prev) {
+                return ActionResult.PASS;
+            }
+
+            if (data.level == 0) {
+                return ActionResult.PASS;
+            }
+
+            List<StatusEffectInstance> effects = PotionUtil.getPotionEffects(stack);
+            if (!effects.isEmpty()) {
+                data.entity.addEffects(effects);
+            }
+
+            return ActionResult.success(world.isClient);
+        };
     };
 
     // params: "dilute": boolean - should dilution occur
@@ -337,10 +404,8 @@ public interface MetaEffectTemplate {
                 return ActionResult.PASS;
             }
 
-            if (!world.isClient) {
-                data.entity.addLevel(dilute);
-                data.level += 1;
-            }
+            data.entity.addLevel(dilute);
+            data.level += 1;
 
             return ActionResult.success(world.isClient);
         };
@@ -358,10 +423,8 @@ public interface MetaEffectTemplate {
                 return ActionResult.PASS;
             }
 
-            if (!world.isClient) {
-                data.entity.removeLevel();
-                data.level -= 1;
-            }
+            data.entity.removeLevel();
+            data.level -= 1;
 
             return ActionResult.success(world.isClient);
         };
@@ -378,9 +441,7 @@ public interface MetaEffectTemplate {
                 return ActionResult.PASS;
             }
 
-            if (!world.isClient) {
-                data.entity.amplify(amplifier);
-            }
+            data.entity.amplify(amplifier);
 
             return ActionResult.success(world.isClient);
         };
@@ -397,9 +458,7 @@ public interface MetaEffectTemplate {
                 return ActionResult.PASS;
             }
 
-            if (!world.isClient) {
-                data.entity.extendDuration(duration);
-            }
+            data.entity.extendDuration(duration);
 
             return ActionResult.success(world.isClient);
         };
@@ -411,13 +470,17 @@ public interface MetaEffectTemplate {
 
         MetaMixing.templates.put("IS_FROM_VANILLA", IS_FROM_VANILLA);
         MetaMixing.templates.put("HAS_LEVEL", HAS_LEVEL);
+        MetaMixing.templates.put("IS_FULL", IS_FULL);
+        MetaMixing.templates.put("ITEM_HAS_EFFECTS", ITEM_HAS_EFFECTS);
 
         MetaMixing.templates.put("USE_ITEM", USE_ITEM);
         MetaMixing.templates.put("PLAY_SOUND", PLAY_SOUND);
 
         MetaMixing.templates.put("CLEAR_EFFECTS", CLEAR_EFFECTS);
+        MetaMixing.templates.put("INVERT_EFFECTS", INVERT_EFFECTS);
         MetaMixing.templates.put("ADD_STATUS_EFFECT", ADD_STATUS_EFFECT);
         MetaMixing.templates.put("ADD_POTION_EFFECT", ADD_POTION_EFFECT);
+        MetaMixing.templates.put("APPLY_ITEM_EFFECTS", APPLY_ITEM_EFFECTS);
 
         MetaMixing.templates.put("ADD_LEVEL", ADD_LEVEL);
         MetaMixing.templates.put("REMOVE_LEVEL", REMOVE_LEVEL);

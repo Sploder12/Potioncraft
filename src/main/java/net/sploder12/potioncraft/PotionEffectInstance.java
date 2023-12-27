@@ -19,17 +19,6 @@ public class PotionEffectInstance {
 
     public static final float epsilon = 0.001f;
 
-    public static final HashMap<StatusEffect, StatusEffect> inversions = new HashMap<>();
-
-    public static void addMutualInversion(StatusEffect first, StatusEffect second) {
-        inversions.put(first, second);
-        inversions.put(second, first);
-    }
-
-    public static void addInversion(StatusEffect from, StatusEffect to) {
-        inversions.put(from, to);
-    }
-
     PotionEffectInstance(StatusEffect type) {
         this(type, 0.0f, 1.0f);
     }

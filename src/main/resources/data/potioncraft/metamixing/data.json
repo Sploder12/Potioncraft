@@ -1,30 +1,154 @@
 {
+  "inversions" : [
+    {
+      "from": "speed",
+      "to": "slowness",
+      "mutual": true
+    },
+    {
+      "from": "jump_boost",
+      "to": "slow_falling",
+      "mutual": true
+    },
+    {
+      "from": "instant_health",
+      "to": "instant_damage",
+      "mutual": true
+    },
+    {
+      "from": "poison",
+      "to": "regeneration",
+      "mutual": true
+    },
+    {
+      "from": "night_vision",
+      "to": "blindness",
+      "mutual": true
+    },
+    {
+      "from": "strength",
+      "to": "weakness",
+      "mutual": true
+    }
+  ],
+
   "recipes": {
     "potioncraft:potion_cauldron_block": {
-      "minecraft:glass_bottle": {
-
+      "minecraft:potion": {
         "effects": [
           {
-            "id": "HAS_LEVEL"
+            "id": "ADD_LEVEL"
+          },
+          {
+            "id": "APPLY_ITEM_EFFECTS",
+            "quickfail": "PASS"
           },
           {
             "id": "USE_ITEM",
             "quickfail": "PASS",
             "params": {
+              "id": "glass_bottle",
+              "sound": "item.bottle.empty"
+            }
+          }
+        ]
+      },
+
+      "minecraft:glass_bottle": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
               "id": "potion",
+              "sound": "item.bottle.fill",
               "applyPotion": true
             }
           },
           {
-            "id": "PLAY_SOUND",
-            "quickfail": "PASS",
+            "id": "REMOVE_LEVEL"
+          }
+        ]
+      },
+
+      "milk_bucket": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
             "params": {
-              "id": "item.bottle.fill"
+              "id": "bucket",
+              "sound": "item.bucket.empty"
             }
           },
           {
-            "id": "REMOVE_LEVEL",
+            "id": "CLEAR_EFFECTS"
+          }
+        ]
+      },
+
+      "fermented_spider_eye": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "INVERT_EFFECTS"
+          }
+        ]
+      }
+    },
+
+    "minecraft:water_cauldron": {
+      "minecraft:potion": {
+        "keepOld": true,
+        "effects": [
+          {
+            "id": "ITEM_HAS_EFFECTS"
+          },
+          {
+            "id": "ADD_LEVEL",
             "quickfail": "PASS"
+          },
+          {
+            "id": "APPLY_ITEM_EFFECTS",
+            "quickfail": "PASS"
+          },
+          {
+            "id": "USE_ITEM",
+            "quickfail": "PASS",
+            "params": {
+              "id": "glass_bottle",
+              "sound": "item.bottle.empty"
+            }
+          }
+        ]
+      }
+    },
+
+    "minecraft:cauldron": {
+      "minecraft:potion": {
+        "keepOld": true,
+        "effects": [
+          {
+            "id": "ITEM_HAS_EFFECTS"
+          },
+          {
+            "id": "ADD_LEVEL",
+            "quickfail": "PASS"
+          },
+          {
+            "id": "APPLY_ITEM_EFFECTS",
+            "quickfail": "PASS"
+          },
+          {
+            "id": "USE_ITEM",
+            "quickfail": "PASS",
+            "params": {
+              "id": "glass_bottle",
+              "sound": "item.bottle.empty"
+            }
           }
         ]
       }

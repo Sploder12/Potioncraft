@@ -8,7 +8,9 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.LeveledCauldronBlock;
 import net.minecraft.block.cauldron.CauldronBehavior;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.ai.brain.MemoryQuery;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -22,11 +24,8 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.sploder12.potioncraft.Config;
-import net.sploder12.potioncraft.Main;
-import net.sploder12.potioncraft.OnUseData;
+import net.sploder12.potioncraft.*;
 import net.sploder12.potioncraft.OnUseData.BlockData;
-import net.sploder12.potioncraft.PotionCauldronBlock;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -37,9 +36,21 @@ public class MetaMixing {
     // The logic and parsing for meta mixing files.
 
     // all the possible effects a meta file is capable of
-    public static HashMap<String, MetaEffectTemplate> templates = new HashMap<>();
+    public static final HashMap<String, MetaEffectTemplate> templates = new HashMap<>();
 
-    public static Map<Item, CauldronBehavior> interactions = CauldronBehavior.createMap();
+    public static final Map<Item, CauldronBehavior> interactions = CauldronBehavior.createMap();
+
+    public static final HashMap<StatusEffect, StatusEffect> inversions = new HashMap<>();
+
+    public static void addMutualInversion(StatusEffect first, StatusEffect second) {
+        inversions.put(first, second);
+        inversions.put(second, first);
+    }
+
+    public static void addInversion(StatusEffect from, StatusEffect to) {
+        inversions.put(from, to);
+    }
+
 
     public static HashMap<Identifier, Map<Item, CauldronBehavior>> customBehaviors = new HashMap<>();
     public static Map<Item, CauldronBehavior> getBehavior(Identifier id) {
@@ -74,11 +85,20 @@ public class MetaMixing {
         return null;
     }
 
-    public static CauldronBehavior addInteraction(Item item, Map<Item, CauldronBehavior> behaviorMap, Collection<MetaEffect> effects) {
+    public static CauldronBehavior addInteraction(Item item, Map<Item, CauldronBehavior> behaviorMap, Collection<MetaEffect> effects, boolean keepOld) {
+        CauldronBehavior prevBehavior = behaviorMap.get(item);
+        if (prevBehavior == null) {
+            keepOld = false;
+        }
+
+        final boolean keepOldFinal = keepOld;
         CauldronBehavior behavior = (BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack itemStack) -> {
 
             BlockData data = OnUseData.getBlockData(state, world, pos);
             if (!data.valid) {
+                if (keepOldFinal) {
+                    return prevBehavior.interact(state, world, pos, player, hand, itemStack);
+                }
                 return ActionResult.PASS;
             }
 
@@ -87,84 +107,36 @@ public class MetaMixing {
                 prev = effect.interact(prev, data, world, pos, player, hand, itemStack);
             }
 
-            if (!world.isClient && !data.vanilla) {
+
+            if (!data.vanilla) {
+                // turn potion cauldrons into vanilla cauldrons
                 if (data.entity.getLevel() < PotionCauldronBlock.MIN_LEVEL) {
                     BlockState cauldron = Blocks.CAULDRON.getDefaultState();
                     world.setBlockState(pos, cauldron);
-                }
-                else if (!data.entity.hasEffects()) {
+                } else if (!data.entity.hasEffects()) {
                     BlockState cauldron = Blocks.WATER_CAULDRON.getDefaultState();
                     world.setBlockState(pos, cauldron.with(LeveledCauldronBlock.LEVEL, data.entity.getLevel()));
                 }
             }
+            else if (data.entity.hasEffects() && data.entity.getLevel() >= PotionCauldronBlock.MIN_LEVEL) {
+                // turn vanilla cauldrons into potion cauldrons
+                world.setBlockState(pos, data.state);
+                BlockEntity dest = world.getBlockEntity(pos);
+
+                assert dest != null;
+
+                dest.readNbt(data.entity.createNbt());
+            }
+
+
+            if (keepOldFinal && prev == ActionResult.PASS) {
+                return prevBehavior.interact(state, world, pos, player, hand, itemStack);
+            }
 
             return prev;
         };
 
         return behaviorMap.put(item, behavior);
-    }
-
-    public static CauldronBehavior addInteraction(Item item, Map<Item, CauldronBehavior> behaviorMap, Collection<MetaEffect> effects, CauldronBehavior other) {
-        CauldronBehavior behavior = (BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack itemStack) -> {
-
-            BlockData data = OnUseData.getBlockData(state, world, pos);
-            if (!data.valid) {
-                return ActionResult.PASS;
-            }
-
-            ActionResult prev = ActionResult.success(world.isClient);
-            for (MetaEffect effect : effects) {
-                prev = effect.interact(prev, data, world, pos, player, hand, itemStack);
-            }
-
-            if (prev == ActionResult.PASS) {
-                return other.interact(state, world, pos, player, hand, itemStack);
-            }
-            return prev;
-        };
-
-        return behaviorMap.put(item, behavior);
-    }
-
-    public static CauldronBehavior addInteraction(Item item, Collection<MetaEffect> effects) {
-        CauldronBehavior behavior = (BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack itemStack) -> {
-
-            BlockData data = OnUseData.getBlockData(state, world, pos);
-            if (!data.valid) {
-                return ActionResult.PASS;
-            }
-
-            ActionResult prev = ActionResult.success(world.isClient);
-            for (MetaEffect effect : effects) {
-                prev = effect.interact(prev, data, world, pos, player, hand, itemStack);
-            }
-
-            return prev;
-        };
-
-        return interactions.put(item, behavior);
-    }
-
-    public static CauldronBehavior addInteraction(Item item, Collection<MetaEffect> effects, CauldronBehavior other) {
-        CauldronBehavior behavior = (BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack itemStack) -> {
-
-            BlockData data = OnUseData.getBlockData(state, world, pos);
-            if (!data.valid) {
-                return ActionResult.PASS;
-            }
-
-            ActionResult prev = ActionResult.success(world.isClient);
-            for (MetaEffect effect : effects) {
-                prev = effect.interact(prev, data, world, pos, player, hand, itemStack);
-            }
-
-            if (prev == ActionResult.PASS) {
-                return other.interact(state, world, pos, player, hand, itemStack);
-            }
-            return prev;
-        };
-
-        return interactions.put(item, behavior);
     }
 
     private static Collection<MetaEffect> parseEffects(JsonArray effects, String id) {
@@ -249,7 +221,9 @@ public class MetaMixing {
             return;
         }
 
-        CauldronBehavior old = addInteraction(item, behaviorMap, vals);
+        boolean keepOld = MetaEffectTemplate.getBoolOr(recipe.get("keepOld"), false);
+
+        CauldronBehavior old = addInteraction(item, behaviorMap, vals, keepOld);
     }
 
     private static void parseRecipes (Map<Item, CauldronBehavior> behaviorMap, JsonObject recipes, String id) {
@@ -275,6 +249,39 @@ public class MetaMixing {
         });
     }
 
+
+    private static void parseInversions(JsonArray inversions, String id) {
+        for (JsonElement inversionE : inversions) {
+            if (inversionE.isJsonObject()) {
+                JsonObject inversion = inversionE.getAsJsonObject();
+
+                Identifier from = MetaEffectTemplate.getId(inversion.get("from"));
+
+                Identifier to = MetaEffectTemplate.getId(inversion.get("to"));
+
+                if (from == null || to == null || from.equals(to)) {
+                    Main.log("WARNING: invalid inversion in " + id);
+                    continue;
+                }
+
+                boolean mutual = MetaEffectTemplate.getBoolOr(inversion.get("mutual"), false);
+
+                StatusEffect fromE = Registries.STATUS_EFFECT.get(from);
+                StatusEffect toE = Registries.STATUS_EFFECT.get(to);
+
+                // note: the default effect returned is luck.
+                // therefore there is no way to determine if it is valid or not.
+
+                if (mutual) {
+                    addMutualInversion(fromE, toE);
+                }
+                else {
+                    addInversion(fromE, toE);
+                }
+            }
+        }
+    }
+
     public static void register() {
         MetaEffectTemplate.register();
 
@@ -288,7 +295,16 @@ public class MetaMixing {
             public void reload(ResourceManager manager) {
                 // Clear Caches Here
 
+                CauldronBehavior.EMPTY_CAULDRON_BEHAVIOR.clear();
+                CauldronBehavior.WATER_CAULDRON_BEHAVIOR.clear();
+                CauldronBehavior.LAVA_CAULDRON_BEHAVIOR.clear();
+                CauldronBehavior.POWDER_SNOW_CAULDRON_BEHAVIOR.clear();
+                CauldronBehavior.registerBehavior();
+
                 interactions.clear();
+                inversions.clear();
+
+                // @TODO clear custom behaviors
 
                 //Config.loadConfig(); // test this
 
@@ -326,13 +342,19 @@ public class MetaMixing {
 
                                 JsonObject obj = elem.getAsJsonObject();
                                 parseRecipes(behaviorMap, obj, id.toString());
-
                             });
                         }
                         else {
                             Main.log("WARNING: recipes resource malformed " + id.toString());
                         }
 
+                        JsonElement inversionsE = root.get("inversions");
+                        if (inversionsE != null && inversionsE.isJsonArray()) {
+                            parseInversions(inversionsE.getAsJsonArray(), id.toString());
+                        }
+                        else {
+                            Main.log("WARNING: inversions resource malformed " + id.toString());
+                        }
                     }
                     catch (Exception e) {
                         Main.log("Error occurred while loading resource " + id.toString() + ' ' + e.toString());

@@ -21,6 +21,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.sploder12.potioncraft.meta.MetaMixing;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -146,9 +147,9 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         boolean changed = false;
 
         for (PotionEffectInstance effect : this.effects.values()) {
-            if (PotionEffectInstance.inversions.containsKey(effect.type)) {
+            if (MetaMixing.inversions.containsKey(effect.type)) {
                 changed = true;
-                effect.type = PotionEffectInstance.inversions.get(effect.type);
+                effect.type = MetaMixing.inversions.get(effect.type);
             }
 
             if (newEffects.containsKey(effect.type)) {
@@ -196,15 +197,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
 
 
-    public boolean addLevel(Collection<StatusEffectInstance> effects) {
-        if (level >= PotionCauldronBlock.MAX_LEVEL) return false;
-
-        level += 1;
-
-        float oldDilution = (float)(level - 1) / (float)(level);
-        for (PotionEffectInstance effect : this.effects.values()) {
-            effect.dilute(oldDilution);
-        }
+    public boolean addEffects(Collection<StatusEffectInstance> effects) {
 
         float newDilution = 1.0f / (float)(level);
         for (StatusEffectInstance effect : effects) {
