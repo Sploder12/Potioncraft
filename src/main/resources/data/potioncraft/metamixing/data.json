@@ -97,6 +97,231 @@
             "id": "INVERT_EFFECTS"
           }
         ]
+      },
+
+      "glowstone_dust": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "AMPLIFY"
+          }
+        ]
+      },
+
+      "redstone": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "EXTEND"
+          }
+        ]
+      },
+
+      "sugar": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "swiftness"
+            }
+          }
+        ]
+      },
+
+      "rabbit_foot": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "leaping"
+            }
+          }
+        ]
+      },
+
+      "glistering_melon_slice": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "healing"
+            }
+          }
+        ]
+      },
+
+      "spider_eye": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "poison"
+            }
+          }
+        ]
+      },
+
+      "pufferfish": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "water_breathing"
+            }
+          }
+        ]
+      },
+
+      "magma_cream": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "fire_resistance"
+            }
+          }
+        ]
+      },
+
+      "golden_carrot": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "night_vision"
+            }
+          }
+        ]
+      },
+
+      "blaze_powder": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "strength"
+            }
+          }
+        ]
+      },
+
+      "ghast_tear": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "regeneration"
+            }
+          }
+        ]
+      },
+
+      "turtle_helmet": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_STATUS_EFFECT",
+            "params": {
+              "id": "slowness",
+              "duration": 400.0,
+              "amplifier": 4.0
+            }
+          },
+          {
+            "id": "ADD_STATUS_EFFECT",
+            "params": {
+              "id": "resistance",
+              "duration": 400.0,
+              "amplifier": 3.0
+            }
+          }
+        ]
+      },
+
+      "phantom_membrane": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "slow_falling"
+            }
+          }
+        ]
       }
     },
 
@@ -124,8 +349,206 @@
             }
           }
         ]
+      },
+
+      "sugar": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "swiftness"
+            }
+          }
+        ]
+      },
+
+      "rabbit_foot": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "leaping"
+            }
+          }
+        ]
+      },
+
+      "glistering_melon_slice": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "healing"
+            }
+          }
+        ]
+      },
+
+      "spider_eye": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "poison"
+            }
+          }
+        ]
+      },
+
+      "pufferfish": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "water_breathing"
+            }
+          }
+        ]
+      },
+
+      "magma_cream": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "fire_resistance"
+            }
+          }
+        ]
+      },
+
+      "golden_carrot": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "night_vision"
+            }
+          }
+        ]
+      },
+
+      "blaze_powder": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "strength"
+            }
+          }
+        ]
+      },
+
+      "ghast_tear": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "regeneration"
+            }
+          }
+        ]
+      },
+
+      "turtle_helmet": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_STATUS_EFFECT",
+            "params": {
+              "id": "slowness",
+              "duration": 400.0,
+              "amplifier": 4.0
+            }
+          },
+          {
+            "id": "ADD_STATUS_EFFECT",
+            "params": {
+              "id": "resistance",
+              "duration": 400.0,
+              "amplifier": 3.0
+            }
+          }
+        ]
+      },
+
+      "phantom_membrane": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "sound": "item.bottle.empty"
+            }
+          },
+          {
+            "id": "ADD_POTION_EFFECT",
+            "params": {
+              "id": "slow_falling"
+            }
+          }
+        ]
       }
-    },
+    }
+  },
 
     "minecraft:cauldron": {
       "minecraft:potion": {
