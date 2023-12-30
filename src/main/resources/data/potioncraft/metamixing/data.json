@@ -547,8 +547,7 @@
           }
         ]
       }
-    }
-  },
+    },
 
     "minecraft:cauldron": {
       "minecraft:potion": {
@@ -571,6 +570,38 @@
             "params": {
               "id": "glass_bottle",
               "sound": "item.bottle.empty"
+            }
+          }
+        ]
+      }
+    },
+
+    "minecraft:powder_snow_cauldron": {
+      "magma_cream": {
+        "effects": [
+          {
+            "id": "REMOVE_LEVEL"
+          },
+          {
+            "id": "USE_ITEM",
+            "quickfail": "PASS",
+            "params": {
+              "id": "slime_ball",
+              "sound": "entity.generic.burn"
+            }
+          }
+        ]
+      }
+    },
+
+    "minecraft:lava_cauldron": {
+      "slime_ball": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "id": "magma_cream",
+              "sound": "entity.generic.burn"
             }
           }
         ]

@@ -9,7 +9,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.LeveledCauldronBlock;
 import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.ai.brain.MemoryQuery;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -25,7 +24,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.sploder12.potioncraft.*;
-import net.sploder12.potioncraft.OnUseData.BlockData;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -94,7 +92,7 @@ public class MetaMixing {
         final boolean keepOldFinal = keepOld;
         CauldronBehavior behavior = (BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack itemStack) -> {
 
-            BlockData data = OnUseData.getBlockData(state, world, pos);
+            BlockData data = BlockData.getBlockData(state, world, pos);
             if (!data.valid) {
                 if (keepOldFinal) {
                     return prevBehavior.interact(state, world, pos, player, hand, itemStack);
@@ -102,13 +100,15 @@ public class MetaMixing {
                 return ActionResult.PASS;
             }
 
+            int initLevel = data.level;
+
             ActionResult prev = ActionResult.success(world.isClient);
             for (MetaEffect effect : effects) {
                 prev = effect.interact(prev, data, world, pos, player, hand, itemStack);
             }
 
 
-            if (!data.vanilla) {
+            if (!Registries.BLOCK.getId(data.source).getNamespace().equalsIgnoreCase("minecraft")) {
                 // turn potion cauldrons into vanilla cauldrons
                 if (data.entity.getLevel() < PotionCauldronBlock.MIN_LEVEL) {
                     BlockState cauldron = Blocks.CAULDRON.getDefaultState();
@@ -127,7 +127,14 @@ public class MetaMixing {
 
                 dest.readNbt(data.entity.createNbt());
             }
-
+            else if (data.level != initLevel) {
+                if (data.level == 0) {
+                    BlockState cauldron = Blocks.CAULDRON.getDefaultState();
+                    world.setBlockState(pos, cauldron);
+                } else {
+                    world.setBlockState(pos, state.with(LeveledCauldronBlock.LEVEL, data.level));
+                }
+            }
 
             if (keepOldFinal && prev == ActionResult.PASS) {
                 return prevBehavior.interact(state, world, pos, player, hand, itemStack);

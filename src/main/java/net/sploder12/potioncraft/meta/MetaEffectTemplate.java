@@ -3,9 +3,6 @@ package net.sploder12.potioncraft.meta;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.LeveledCauldronBlock;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
@@ -18,15 +15,12 @@ import net.minecraft.potion.Potions;
 import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.sploder12.potioncraft.Main;
-import net.sploder12.potioncraft.OnUseData;
-import net.sploder12.potioncraft.OnUseData.BlockData;
 import net.sploder12.potioncraft.PotionCauldronBlock;
 import net.sploder12.potioncraft.PotionEffectInstance;
 
@@ -129,7 +123,7 @@ public interface MetaEffectTemplate {
                 return ActionResult.PASS;
             }
 
-            if (data.vanilla) {
+            if (Registries.BLOCK.getId(data.source).getNamespace().equalsIgnoreCase("minecraft")) {
                 return ActionResult.success(world.isClient);
             }
             else {
@@ -239,7 +233,7 @@ public interface MetaEffectTemplate {
                 }
             }
 
-            OnUseData.itemUse(hand, stack, player, out);
+            BlockData.itemUse(hand, stack, player, out);
 
             if (finalSound != null && !world.isClient) {
                 world.playSound(null, pos, finalSound, SoundCategory.BLOCKS, 1.0F, 1.0F);
