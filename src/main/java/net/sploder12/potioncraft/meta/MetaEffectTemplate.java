@@ -228,6 +228,8 @@ public interface MetaEffectTemplate {
 
     // params: "id": Identifier - item to replace with
     // "applyPotion": Boolean - adds the potion effects to the replacement item
+    // "sound": Identifier - sound to play
+    // "count": attempt to use and give that many items
     MetaEffectTemplate USE_ITEM = (quickfail, params) -> {
         Identifier id = getId(params.get("id"));
         Item replaceItem = null;
@@ -241,9 +243,13 @@ public interface MetaEffectTemplate {
             sound = Registries.SOUND_EVENT.get(sid);
         }
 
+        Number count = getNumber(params.get("count"));
+
         final Item finalReplaceItem = replaceItem;
         final SoundEvent finalSound = sound;
         final boolean finalApplyPotion = getBoolOr(params.get("applyPotion"), false);
+        final int finalCount = count == null ? 1 : count.intValue();
+
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (quickfail.isPresent() && quickfail.get() == prev) {
                 return ActionResult.PASS;
@@ -253,26 +259,27 @@ public interface MetaEffectTemplate {
                 return ActionResult.PASS;
             }
 
+            int trueCount = Math.min(finalCount, stack.getCount());
 
             ItemStack out = ItemStack.EMPTY;
             if (finalReplaceItem != null) {
                 out = new ItemStack(finalReplaceItem);
 
+                out.setCount(trueCount);
+
                 if (finalApplyPotion) {
-                    if (finalReplaceItem == Items.POTION) {
-                        if (!data.entity.hasEffects()) {
-                            PotionUtil.setPotion(out, Potions.WATER);
-                        }
-                        else {
-                            PotionUtil.setPotion(out, CRAFTED_POTION);
-                        }
+                    if (!data.entity.hasEffects()) {
+                        PotionUtil.setPotion(out, Potions.WATER);
+                    }
+                    else {
+                        PotionUtil.setPotion(out, CRAFTED_POTION);
                     }
 
                     data.entity.setEffects(out);
                 }
             }
 
-            BlockData.itemUse(hand, stack, player, out);
+            BlockData.itemUse(hand, stack, player, out, trueCount);
 
             if (finalSound != null && !world.isClient) {
                 world.playSound(null, pos, finalSound, SoundCategory.BLOCKS, 1.0F, 1.0F);

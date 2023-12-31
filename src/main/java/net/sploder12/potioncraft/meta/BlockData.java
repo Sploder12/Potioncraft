@@ -6,7 +6,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsage;
-import net.minecraft.registry.Registries;
 import net.minecraft.stat.Stats;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -105,10 +104,18 @@ public class BlockData {
         return new BlockData();
     }
 
-    public static void itemUse(Hand hand, ItemStack in, PlayerEntity player, ItemStack out) {
+    public static void itemUse(Hand hand, ItemStack in, PlayerEntity player, ItemStack out, int count) {
+        if (count == 0) return;
+
         Item item = in.getItem();
+
+        if (count > 1) {
+            in.decrement(count - 1);
+        }
+
         player.setStackInHand(hand, ItemUsage.exchangeStack(in, player, out));
+
         player.incrementStat(Stats.USE_CAULDRON);
-        player.incrementStat(Stats.USED.getOrCreateStat(item));
+        player.increaseStat(Stats.USED.getOrCreateStat(item), count);
     }
 }

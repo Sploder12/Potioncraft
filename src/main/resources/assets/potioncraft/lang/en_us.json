@@ -1,6 +1,8 @@
 {
   "block.potioncraft.potion_cauldron_block": "Crafting Cauldron",
 
+  "item.minecraft.tipped_arrow.effect.crafted_potion": "Crafted Arrow",
+
   "item.minecraft.potion.effect.crafted_potion": "Crafted Potion",
   "item.minecraft.splash_potion.effect.crafted_potion": "Crafted Splash Potion",
   "item.minecraft.lingering_potion.effect.crafted_potion": "Crafted Lingering Potion"

@@ -90,6 +90,23 @@
         ]
       },
 
+      "arrow": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "id": "tipped_arrow",
+              "count": 8,
+              "sound": "item.bottle.fill",
+              "applyPotion": true
+            }
+          },
+          {
+            "id": "REMOVE_LEVEL"
+          }
+        ]
+      },
+
       "milk_bucket": {
         "effects": [
           {
