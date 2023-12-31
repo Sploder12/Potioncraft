@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.LeveledCauldronBlock;
@@ -289,6 +290,35 @@ public class MetaMixing {
         }
     }
 
+    private static void parseHeats(JsonObject heats, String id) {
+        heats.asMap().forEach((String blockStr, JsonElement obj) -> {
+            if (!obj.isJsonPrimitive()) {
+                return;
+            }
+
+            JsonPrimitive prim = obj.getAsJsonPrimitive();
+            if (!prim.isNumber()) {
+                return;
+            }
+
+            int heat = prim.getAsInt();
+
+            Identifier blockId = Identifier.tryParse(blockStr);
+            if (blockId == null) {
+                Main.log("WARNING: block " + blockStr + " is not an identifier " + id);
+                return;
+            }
+
+            Block block = Registries.BLOCK.get(blockId);
+            if (block == Blocks.AIR && !blockId.getPath().equalsIgnoreCase("air")) {
+                Main.log("WARNING: block " + blockStr + " is not a valid identifier " + id);
+                return;
+            }
+
+            BlockData.blockHeats.put(block, heat);
+        });
+    }
+
     public static void register() {
         MetaEffectTemplate.register();
 
@@ -310,6 +340,8 @@ public class MetaMixing {
 
                 interactions.clear();
                 inversions.clear();
+
+                BlockData.blockHeats.clear();
 
                 // @TODO clear custom behaviors
 
@@ -361,6 +393,14 @@ public class MetaMixing {
                         }
                         else {
                             Main.log("WARNING: inversions resource malformed " + id.toString());
+                        }
+
+                        JsonElement heatsE = root.get("heats");
+                        if (heatsE != null && heatsE.isJsonObject()) {
+                            parseHeats(heatsE.getAsJsonObject(), id.toString());
+                        }
+                        else {
+                            Main.log("WARNING: heats resource malformed " + id.toString());
                         }
                     }
                     catch (Exception e) {

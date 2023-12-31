@@ -32,6 +32,26 @@
     }
   ],
 
+  "heats": {
+    "torch": 1,
+    "torchflower": 1,
+    "wall_torch": 1,
+    "campfire": 2,
+    "fire": 2,
+    "magma_block": 2,
+    "lava": 3,
+    "lava_cauldron": 3,
+
+    "snow": -1,
+    "snow_block": -1,
+    "powder_snow": -1,
+    "powder_snow_cauldron": -1,
+    "ice": -2,
+    "frosted_ice": -2,
+    "packed_ice": -3,
+    "blue_ice": -4
+  },
+
   "recipes": {
     "potioncraft:potion_cauldron_block": {
       "minecraft:potion": {
@@ -326,6 +346,37 @@
     },
 
     "minecraft:water_cauldron": {
+      "glow_ink_sac": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "id": "ink_sac",
+              "sound": "item.bottle.empty"
+            }
+          }
+        ]
+      },
+
+      "brick": {
+        "effects": [
+          {
+            "id": "HAS_HEAT",
+            "params": {
+              "heat": 3
+            }
+          },
+          {
+            "id": "USE_ITEM",
+            "quickfail": "PASS",
+            "params": {
+              "id": "nether_brick",
+              "sound": "entity.generic.burn"
+            }
+          }
+        ]
+      },
+
       "minecraft:potion": {
         "keepOld": true,
         "effects": [
@@ -601,6 +652,18 @@
             "id": "USE_ITEM",
             "params": {
               "id": "magma_cream",
+              "sound": "entity.generic.burn"
+            }
+          }
+        ]
+      },
+
+      "brick": {
+        "effects": [
+          {
+            "id": "USE_ITEM",
+            "params": {
+              "id": "nether_brick",
               "sound": "entity.generic.burn"
             }
           }

@@ -159,6 +159,45 @@ public interface MetaEffectTemplate {
         };
     };
 
+    // params: "heat": int - if set will only succeed when data.heat >= int
+    // or == when int is 0, or <= when int is < 0
+    // default is as if the parameter was 1
+    MetaEffectTemplate HAS_HEAT = (quickfail, params) -> {
+        Number num = getNumber(params.get("heat"));
+        final int finalTarget = num == null ? 1 : num.intValue();
+
+        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+            if (quickfail.isPresent() && quickfail.get() == prev) {
+                return ActionResult.PASS;
+            }
+
+            // target heat is positive
+            if (finalTarget > 0) {
+                if (data.heat >= finalTarget) {
+                    return ActionResult.success(world.isClient);
+                }
+
+                return ActionResult.PASS;
+            }
+
+            // target heat is negative
+            if (finalTarget < 0) {
+                if (data.heat <= finalTarget) {
+                    return ActionResult.success(world.isClient);
+                }
+
+                return ActionResult.PASS;
+            }
+
+            // target heat is 0
+            if (finalTarget == data.heat) {
+                return ActionResult.success(world.isClient);
+            }
+
+            return ActionResult.PASS;
+        };
+    };
+
     MetaEffectTemplate IS_FULL = (quickfail, params) -> {
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (quickfail.isPresent() && quickfail.get() == prev) {
@@ -464,6 +503,7 @@ public interface MetaEffectTemplate {
 
         MetaMixing.templates.put("IS_FROM_VANILLA", IS_FROM_VANILLA);
         MetaMixing.templates.put("HAS_LEVEL", HAS_LEVEL);
+        MetaMixing.templates.put("HAS_HEAT", HAS_HEAT);
         MetaMixing.templates.put("IS_FULL", IS_FULL);
         MetaMixing.templates.put("ITEM_HAS_EFFECTS", ITEM_HAS_EFFECTS);
 

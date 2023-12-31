@@ -14,13 +14,19 @@ import net.minecraft.world.World;
 import net.sploder12.potioncraft.PotionCauldronBlock;
 import net.sploder12.potioncraft.PotionCauldronBlockEntity;
 
+import java.util.HashMap;
+
 // class for cauldron item interactions
 public class BlockData {
+
+    public static HashMap<Block, Integer> blockHeats = new HashMap<>();
+
     public Block source;
     public boolean valid; // in case of non-water leveled cauldron
     public PotionCauldronBlockEntity entity;
     public BlockState state;
     public int level;
+    public int heat;
 
     public BlockData() {
         source = Blocks.AIR;
@@ -28,10 +34,11 @@ public class BlockData {
         entity = null;
         state = null;
         level = 0;
+        heat = 0;
     }
 
     // from leveled cauldron
-    private BlockData(BlockState bstate, BlockPos pos, LeveledCauldronBlock leveledBlock) {
+    private BlockData(BlockState bstate, BlockPos pos, LeveledCauldronBlock leveledBlock, int bheat) {
         source = bstate.getBlock();
 
         valid = true;
@@ -42,10 +49,11 @@ public class BlockData {
         assert entity != null;
 
         entity.setLevel(level);
+        heat = bheat;
     }
 
     // from empty
-    private BlockData(Block block, BlockPos pos) {
+    private BlockData(Block block, BlockPos pos, int bheat) {
         source = block;
 
         valid = true;
@@ -56,33 +64,42 @@ public class BlockData {
         assert entity != null;
 
         entity.setLevel(level);
+        heat = bheat;
     }
 
     // potion block
-    private BlockData(BlockState bstate, PotionCauldronBlockEntity bentity) {
+    private BlockData(BlockState bstate, PotionCauldronBlockEntity bentity, int bheat) {
         source = bstate.getBlock();
         valid = true;
         entity = bentity;
         level = bentity.getLevel();
         state = bstate;
+        heat = bheat;
     }
 
     public static BlockData getBlockData(BlockState state, World world, BlockPos pos) {
         Block block = state.getBlock();
 
+        BlockState below = world.getBlockState(pos.add(0, -1, 0));
+        int heat = 0;
+
+        if (blockHeats.containsKey(below.getBlock())) {
+            heat = blockHeats.get(below.getBlock());
+        }
+
         if (block instanceof PotionCauldronBlock) {
             BlockEntity entity = world.getBlockEntity(pos);
             if (entity instanceof PotionCauldronBlockEntity pbentity) {
-                return new BlockData(state, pbentity);
+                return new BlockData(state, pbentity, heat);
             }
         }
 
         if (block instanceof LeveledCauldronBlock leveledBlock) {
-            return new BlockData(state, pos, leveledBlock);
+            return new BlockData(state, pos, leveledBlock, heat);
         }
 
         if (block instanceof AbstractCauldronBlock) {
-            return new BlockData(block, pos);
+            return new BlockData(block, pos, heat);
         }
 
         return new BlockData();
