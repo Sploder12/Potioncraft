@@ -453,7 +453,6 @@ public interface MetaEffectTemplate {
 
     // removes a water level from the cauldron
     MetaEffectTemplate REMOVE_LEVEL = (quickfail, params) -> {
-        final boolean dilute = getBoolOr(params.get("dilute"), true);
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (quickfail.isPresent() && quickfail.get() == prev) {
                 return ActionResult.PASS;
