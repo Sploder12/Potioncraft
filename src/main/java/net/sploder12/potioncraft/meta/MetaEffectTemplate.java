@@ -212,6 +212,90 @@ public interface MetaEffectTemplate {
         };
     };
 
+    // params: "level": int - if set will only succeed when data.level >= int
+    MetaEffectTemplate MIN_LEVEL = (quickfail, params) -> {
+        Number num = getNumber(params.get("level"));
+        if (num == null) {
+            return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+        }
+
+        final int finalTarget = num.intValue();
+        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+            if (quickfail.isPresent() && quickfail.get() == prev) {
+                return ActionResult.PASS;
+            }
+
+            if (data.level >= finalTarget) {
+                return ActionResult.success(world.isClient);
+            }
+
+            return ActionResult.PASS;
+        };
+    };
+
+    // params: "level": int - if set will only succeed when data.heat <= int
+    MetaEffectTemplate MAX_LEVEL = (quickfail, params) -> {
+        Number num = getNumber(params.get("level"));
+        if (num == null) {
+            return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+        }
+
+        final int finalTarget = num.intValue();
+        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+            if (quickfail.isPresent() && quickfail.get() == prev) {
+                return ActionResult.PASS;
+            }
+
+            if (data.level <= finalTarget) {
+                return ActionResult.success(world.isClient);
+            }
+
+            return ActionResult.PASS;
+        };
+    };
+
+    // params: "heat": int - if set will only succeed when data.heat >= int
+    MetaEffectTemplate MIN_HEAT = (quickfail, params) -> {
+        Number num = getNumber(params.get("heat"));
+        if (num == null) {
+            return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+        }
+
+        final int finalTarget = num.intValue();
+        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+            if (quickfail.isPresent() && quickfail.get() == prev) {
+                return ActionResult.PASS;
+            }
+
+            if (data.heat >= finalTarget) {
+                return ActionResult.success(world.isClient);
+            }
+
+            return ActionResult.PASS;
+        };
+    };
+
+    // params: "heat": int - if set will only succeed when data.heat <= int
+    MetaEffectTemplate MAX_HEAT = (quickfail, params) -> {
+        Number num = getNumber(params.get("heat"));
+        if (num == null) {
+            return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+        }
+
+        final int finalTarget = num.intValue();
+        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+            if (quickfail.isPresent() && quickfail.get() == prev) {
+                return ActionResult.PASS;
+            }
+
+            if (data.heat <= finalTarget) {
+                return ActionResult.success(world.isClient);
+            }
+
+            return ActionResult.PASS;
+        };
+    };
+
     MetaEffectTemplate ITEM_HAS_EFFECTS = (quickfail, params) -> {
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (quickfail.isPresent() && quickfail.get() == prev) {
@@ -511,6 +595,12 @@ public interface MetaEffectTemplate {
         MetaMixing.templates.put("HAS_LEVEL", HAS_LEVEL);
         MetaMixing.templates.put("HAS_HEAT", HAS_HEAT);
         MetaMixing.templates.put("IS_FULL", IS_FULL);
+
+        MetaMixing.templates.put("MIN_LEVEL", MIN_LEVEL);
+        MetaMixing.templates.put("MAX_LEVEL", MAX_LEVEL);
+        MetaMixing.templates.put("MIN_HEAT", MIN_HEAT);
+        MetaMixing.templates.put("MAX_HEAT", MAX_HEAT);
+
         MetaMixing.templates.put("ITEM_HAS_EFFECTS", ITEM_HAS_EFFECTS);
 
         MetaMixing.templates.put("USE_ITEM", USE_ITEM);
