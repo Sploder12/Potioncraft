@@ -37,7 +37,7 @@ public class MetaMixing {
     // all the possible effects a meta file is capable of
     public static final HashMap<String, MetaEffectTemplate> templates = new HashMap<>();
 
-    public static final Map<Item, CauldronBehavior> interactions = CauldronBehavior.createMap();
+    public static final CauldronBehavior.CauldronBehaviorMap interactions = CauldronBehavior.createMap("potion");
 
     public static final HashMap<StatusEffect, StatusEffect> inversions = new HashMap<>();
 
@@ -58,23 +58,23 @@ public class MetaMixing {
         }
 
         if (id.equals(PotionCauldronBlock.POTION_CAULDRON_ID)) {
-            return interactions;
+            return interactions.map();
         }
 
         if (id.equals(Registries.BLOCK.getId(Blocks.CAULDRON))) {
-            return CauldronBehavior.EMPTY_CAULDRON_BEHAVIOR;
+            return CauldronBehavior.EMPTY_CAULDRON_BEHAVIOR.map();
         }
 
         if (id.equals(Registries.BLOCK.getId(Blocks.WATER_CAULDRON))) {
-            return CauldronBehavior.WATER_CAULDRON_BEHAVIOR;
+            return CauldronBehavior.WATER_CAULDRON_BEHAVIOR.map();
         }
 
         if (id.equals(Registries.BLOCK.getId(Blocks.LAVA_CAULDRON))) {
-            return CauldronBehavior.LAVA_CAULDRON_BEHAVIOR;
+            return CauldronBehavior.LAVA_CAULDRON_BEHAVIOR.map();
         }
 
         if (id.equals(Registries.BLOCK.getId(Blocks.POWDER_SNOW_CAULDRON))) {
-            return CauldronBehavior.POWDER_SNOW_CAULDRON_BEHAVIOR;
+            return CauldronBehavior.POWDER_SNOW_CAULDRON_BEHAVIOR.map();
         }
 
         if (customBehaviors.containsKey(id)) {
@@ -332,13 +332,13 @@ public class MetaMixing {
             public void reload(ResourceManager manager) {
                 // Clear Caches Here
 
-                CauldronBehavior.EMPTY_CAULDRON_BEHAVIOR.clear();
-                CauldronBehavior.WATER_CAULDRON_BEHAVIOR.clear();
-                CauldronBehavior.LAVA_CAULDRON_BEHAVIOR.clear();
-                CauldronBehavior.POWDER_SNOW_CAULDRON_BEHAVIOR.clear();
+                CauldronBehavior.BEHAVIOR_MAPS.get("empty").map().clear();
+                CauldronBehavior.BEHAVIOR_MAPS.get("water").map().clear();
+                CauldronBehavior.BEHAVIOR_MAPS.get("lava").map().clear();
+                CauldronBehavior.BEHAVIOR_MAPS.get("powder_snow").map().clear();
                 CauldronBehavior.registerBehavior();
 
-                interactions.clear();
+                interactions.map().clear();
                 inversions.clear();
 
                 BlockData.blockHeats.clear();

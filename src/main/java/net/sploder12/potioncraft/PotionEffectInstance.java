@@ -4,6 +4,8 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.potion.Potion;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -126,7 +128,7 @@ public class PotionEffectInstance {
     }
 
     public NbtCompound writeNbt(NbtCompound nbt) {
-        nbt.putInt("Id", StatusEffect.getRawId(this.type));
+        nbt.putString("Id", Registries.STATUS_EFFECT.getId(this.type).toString());
         this.writeTypelessNbt(nbt);
         return nbt;
     }
@@ -141,8 +143,8 @@ public class PotionEffectInstance {
 
     @Nullable
     public static PotionEffectInstance fromNbt(NbtCompound nbt) {
-        int id = nbt.getInt("Id");
-        StatusEffect type = StatusEffect.byRawId(id);
+        String id = nbt.getString("Id");
+        StatusEffect type = (StatusEffect) Registries.STATUS_EFFECT.get(Identifier.tryParse(id));
         return type == null ? null : fromNbt(type, nbt);
     }
 
