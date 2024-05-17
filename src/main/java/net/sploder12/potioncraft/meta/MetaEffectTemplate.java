@@ -8,7 +8,6 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
@@ -25,7 +24,6 @@ import net.sploder12.potioncraft.PotionCauldronBlock;
 import net.sploder12.potioncraft.PotionEffectInstance;
 
 import java.util.List;
-import java.util.Optional;
 
 import static net.sploder12.potioncraft.PotionCauldronBlockEntity.CRAFTED_POTION;
 
@@ -40,7 +38,7 @@ public interface MetaEffectTemplate {
         return elem.getAsJsonPrimitive();
     }
 
-    public static Identifier getId(JsonElement elem) {
+    static Identifier getId(JsonElement elem) {
         JsonPrimitive prim = getPrim(elem);
         if (prim == null || !prim.isString()) {
             return null;
@@ -49,7 +47,7 @@ public interface MetaEffectTemplate {
         return Identifier.tryParse(prim.getAsString());
     }
 
-    public static Number getNumber(JsonElement elem) {
+    static Number getNumber(JsonElement elem) {
         JsonPrimitive prim = getPrim(elem);
         if (prim == null || !prim.isNumber()) {
             return null;
@@ -58,7 +56,7 @@ public interface MetaEffectTemplate {
         return prim.getAsNumber();
     }
 
-    public static Boolean getBool(JsonElement elem) {
+    static Boolean getBool(JsonElement elem) {
         JsonPrimitive prim = getPrim(elem);
         if (prim == null || !prim.isBoolean()) {
             return null;
@@ -67,7 +65,7 @@ public interface MetaEffectTemplate {
         return prim.getAsBoolean();
     }
 
-    public static boolean getBoolOr(JsonElement elem, boolean def) {
+    static boolean getBoolOr(JsonElement elem, boolean def) {
         Boolean b = getBool(elem);
 
         if (b == null) {
@@ -84,65 +82,41 @@ public interface MetaEffectTemplate {
     // having no value means the effect will ALWAYS occur
     // *this holds for all templates provided by potioncraft, no guarantees otherwise.
 
-    MetaEffect apply(Optional<ActionResult> quickfail, JsonObject params);
+    MetaEffect apply(JsonObject params);
 
     // hand swinging is controlled by the LAST event, thus why FORCE_SWING_HAND exists.
     // FORCE_SWING_HAND can also be used to generate a guaranteed SUCCESS
     // (or PASS if you use two FORCE_SWING_HANDs with a quickfail == SUCCESS)
 
-    MetaEffectTemplate FORCE_SWING_HAND = (quickfail, params) -> {
-        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
-
-            return ActionResult.success(world.isClient);
-        };
-    };
+    MetaEffectTemplate FORCE_SWING_HAND = (params) -> (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.success(world.isClient);
 
     // Predicate templates are useful for checking conditions!
     // && is easy! || is harder but doable via De Morgan's law
 
-    MetaEffectTemplate INVERT_COND = (quickfail, params) -> {
-        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
+    MetaEffectTemplate INVERT_COND = (params) -> (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+        if (prev == ActionResult.PASS) {
+            return ActionResult.SUCCESS;
+        }
 
-            if (prev == ActionResult.PASS) {
-                return ActionResult.SUCCESS;
-            }
-
-            return ActionResult.PASS;
-        };
+        return ActionResult.PASS;
     };
 
-    MetaEffectTemplate IS_FROM_VANILLA = (quickfail, params) -> {
-        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
-
-            if (Registries.BLOCK.getId(data.source).getNamespace().equalsIgnoreCase("minecraft")) {
-                return ActionResult.success(world.isClient);
-            }
-            else {
-                return ActionResult.PASS;
-            }
-        };
+    MetaEffectTemplate IS_FROM_VANILLA = (params) -> (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+        if (Registries.BLOCK.getId(data.source).getNamespace().equalsIgnoreCase("minecraft")) {
+            return ActionResult.success(world.isClient);
+        }
+        else {
+            return ActionResult.PASS;
+        }
     };
 
     // params: "level": int - if set will only succeed when data.level == int
     // else will succeed when data.level > 0
-    MetaEffectTemplate HAS_LEVEL = (quickfail, params) -> {
+    MetaEffectTemplate HAS_LEVEL = (params) -> {
         Number num = getNumber(params.get("level"));
         final Integer finalTarget = num == null ? null : num.intValue();
 
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
-
             if (finalTarget == null) {
                 if (data.level > 0) {
                     return ActionResult.success(world.isClient);
@@ -162,15 +136,11 @@ public interface MetaEffectTemplate {
     // params: "heat": int - if set will only succeed when data.heat >= int
     // or == when int is 0, or <= when int is < 0
     // default is as if the parameter was 1
-    MetaEffectTemplate HAS_HEAT = (quickfail, params) -> {
+    MetaEffectTemplate HAS_HEAT = (params) -> {
         Number num = getNumber(params.get("heat"));
         final int finalTarget = num == null ? 1 : num.intValue();
 
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
-
             // target heat is positive
             if (finalTarget > 0) {
                 if (data.heat >= finalTarget) {
@@ -198,22 +168,16 @@ public interface MetaEffectTemplate {
         };
     };
 
-    MetaEffectTemplate IS_FULL = (quickfail, params) -> {
-        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
+    MetaEffectTemplate IS_FULL = (params) -> (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+        if (data.level >= PotionCauldronBlock.MAX_LEVEL) {
+            return ActionResult.success(world.isClient);
+        }
 
-            if (data.level >= PotionCauldronBlock.MAX_LEVEL) {
-                return ActionResult.success(world.isClient);
-            }
-
-            return ActionResult.PASS;
-        };
+        return ActionResult.PASS;
     };
 
     // params: "level": int - if set will only succeed when data.level >= int
-    MetaEffectTemplate MIN_LEVEL = (quickfail, params) -> {
+    MetaEffectTemplate MIN_LEVEL = (params) -> {
         Number num = getNumber(params.get("level"));
         if (num == null) {
             return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
@@ -221,10 +185,6 @@ public interface MetaEffectTemplate {
 
         final int finalTarget = num.intValue();
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
-
             if (data.level >= finalTarget) {
                 return ActionResult.success(world.isClient);
             }
@@ -234,7 +194,7 @@ public interface MetaEffectTemplate {
     };
 
     // params: "level": int - if set will only succeed when data.heat <= int
-    MetaEffectTemplate MAX_LEVEL = (quickfail, params) -> {
+    MetaEffectTemplate MAX_LEVEL = (params) -> {
         Number num = getNumber(params.get("level"));
         if (num == null) {
             return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
@@ -242,10 +202,6 @@ public interface MetaEffectTemplate {
 
         final int finalTarget = num.intValue();
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
-
             if (data.level <= finalTarget) {
                 return ActionResult.success(world.isClient);
             }
@@ -255,7 +211,7 @@ public interface MetaEffectTemplate {
     };
 
     // params: "heat": int - if set will only succeed when data.heat >= int
-    MetaEffectTemplate MIN_HEAT = (quickfail, params) -> {
+    MetaEffectTemplate MIN_HEAT = (params) -> {
         Number num = getNumber(params.get("heat"));
         if (num == null) {
             return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
@@ -263,10 +219,6 @@ public interface MetaEffectTemplate {
 
         final int finalTarget = num.intValue();
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
-
             if (data.heat >= finalTarget) {
                 return ActionResult.success(world.isClient);
             }
@@ -276,7 +228,7 @@ public interface MetaEffectTemplate {
     };
 
     // params: "heat": int - if set will only succeed when data.heat <= int
-    MetaEffectTemplate MAX_HEAT = (quickfail, params) -> {
+    MetaEffectTemplate MAX_HEAT = (params) -> {
         Number num = getNumber(params.get("heat"));
         if (num == null) {
             return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
@@ -284,10 +236,6 @@ public interface MetaEffectTemplate {
 
         final int finalTarget = num.intValue();
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
-
             if (data.heat <= finalTarget) {
                 return ActionResult.success(world.isClient);
             }
@@ -296,25 +244,19 @@ public interface MetaEffectTemplate {
         };
     };
 
-    MetaEffectTemplate ITEM_HAS_EFFECTS = (quickfail, params) -> {
-        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
+    MetaEffectTemplate ITEM_HAS_EFFECTS = (params) -> (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+        if (PotionUtil.getPotionEffects(stack).isEmpty()) {
+            return ActionResult.PASS;
+        }
 
-            if (PotionUtil.getPotionEffects(stack).isEmpty()) {
-                return ActionResult.PASS;
-            }
-
-            return ActionResult.success(world.isClient);
-        };
+        return ActionResult.success(world.isClient);
     };
 
     // params: "id": Identifier - item to replace with
     // "applyPotion": Boolean - adds the potion effects to the replacement item
     // "sound": Identifier - sound to play
     // "count": attempt to use and give that many items
-    MetaEffectTemplate USE_ITEM = (quickfail, params) -> {
+    MetaEffectTemplate USE_ITEM = (params) -> {
         Identifier id = getId(params.get("id"));
         Item replaceItem = null;
         if (id != null) {
@@ -335,10 +277,6 @@ public interface MetaEffectTemplate {
         final int finalCount = count == null ? 1 : count.intValue();
 
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
-
             if (stack.isEmpty()) {
                 return ActionResult.PASS;
             }
@@ -374,16 +312,12 @@ public interface MetaEffectTemplate {
     };
 
     // params: "id": Identifier - sound to play
-    MetaEffectTemplate PLAY_SOUND = (quickfail, params) -> {
+    MetaEffectTemplate PLAY_SOUND = (params) -> {
         Identifier id = getId(params.get("id"));
         if (id != null) {
             final SoundEvent sound = Registries.SOUND_EVENT.get(id);
             if (sound != null) {
                 return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-                    if (quickfail.isPresent() && quickfail.get() == prev) {
-                        return ActionResult.PASS;
-                    }
-
                     if (!world.isClient) {
                         world.playSound(null, pos, sound, SoundCategory.BLOCKS, 1.0F, 1.0F);
                     }
@@ -398,29 +332,17 @@ public interface MetaEffectTemplate {
     };
 
     // think milk bucket
-    MetaEffectTemplate CLEAR_EFFECTS = (quickfail, params) -> {
-        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
+    MetaEffectTemplate CLEAR_EFFECTS = (params) -> (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+        data.entity.clearEffects();
 
-            data.entity.clearEffects();
-
-            return ActionResult.success(world.isClient);
-        };
+        return ActionResult.success(world.isClient);
     };
 
     // think spider eye
-    MetaEffectTemplate INVERT_EFFECTS = (quickfail, params) -> {
-        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
+    MetaEffectTemplate INVERT_EFFECTS = (params) -> (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+        data.entity.invertEffects();
 
-            data.entity.invertEffects();
-
-            return ActionResult.success(world.isClient);
-        };
+        return ActionResult.success(world.isClient);
     };
 
     // params: "id": Identifier - status effect to add
@@ -428,7 +350,7 @@ public interface MetaEffectTemplate {
     // "amplifier": Decimal - effect level
     // "showParticles": Boolean - should show particles?
     // "showIcon": Boolean - should show icon?
-    MetaEffectTemplate ADD_STATUS_EFFECT = (quickfail, params) -> {
+    MetaEffectTemplate ADD_STATUS_EFFECT = (params) -> {
         Identifier id = getId(params.get("id"));
         if (id != null) {
             StatusEffect type = Registries.STATUS_EFFECT.get(id);
@@ -443,10 +365,6 @@ public interface MetaEffectTemplate {
                 final boolean showIcon = getBoolOr(params.get("showIcon"), true);
 
                 return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-                    if (quickfail.isPresent() && quickfail.get() == prev) {
-                        return ActionResult.PASS;
-                    }
-
                     if (data.level == 0) {
                         return ActionResult.PASS;
                     }
@@ -468,16 +386,12 @@ public interface MetaEffectTemplate {
 
     // params: "id": Identifier - potion effect to add
     // WARNING - ONLY works when the potion has a single effect.
-    MetaEffectTemplate ADD_POTION_EFFECT = (quickfail, params) -> {
+    MetaEffectTemplate ADD_POTION_EFFECT = (params) -> {
         Identifier id = getId(params.get("id"));
         if (id != null) {
             Potion potion = Registries.POTION.get(id);
             if (potion != Potions.EMPTY) {
                 return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-                    if (quickfail.isPresent() && quickfail.get() == prev) {
-                        return ActionResult.PASS;
-                    }
-
                     if (data.level == 0) {
                         return ActionResult.PASS;
                     }
@@ -497,33 +411,23 @@ public interface MetaEffectTemplate {
     };
 
     // takes the potion effects from item and applies to the cauldron
-    MetaEffectTemplate APPLY_ITEM_EFFECTS = (quickfail, params) -> {
-        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
+    MetaEffectTemplate APPLY_ITEM_EFFECTS = (params) -> (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+        if (data.level == 0) {
+            return ActionResult.PASS;
+        }
 
-            if (data.level == 0) {
-                return ActionResult.PASS;
-            }
+        List<StatusEffectInstance> effects = PotionUtil.getPotionEffects(stack);
+        if (!effects.isEmpty()) {
+            data.entity.addEffects(effects);
+        }
 
-            List<StatusEffectInstance> effects = PotionUtil.getPotionEffects(stack);
-            if (!effects.isEmpty()) {
-                data.entity.addEffects(effects);
-            }
-
-            return ActionResult.success(world.isClient);
-        };
+        return ActionResult.success(world.isClient);
     };
 
     // params: "dilute": boolean - should dilution occur
-    MetaEffectTemplate ADD_LEVEL = (quickfail, params) -> {
+    MetaEffectTemplate ADD_LEVEL = (params) -> {
         final boolean dilute = getBoolOr(params.get("dilute"), true);
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
-
             if (data.level >= PotionCauldronBlock.MAX_LEVEL) {
                 return ActionResult.PASS;
             }
@@ -536,34 +440,24 @@ public interface MetaEffectTemplate {
     };
 
     // removes a water level from the cauldron
-    MetaEffectTemplate REMOVE_LEVEL = (quickfail, params) -> {
-        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
+    MetaEffectTemplate REMOVE_LEVEL = (params) -> (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+        if (data.level < PotionCauldronBlock.MIN_LEVEL) {
+            return ActionResult.PASS;
+        }
 
-            if (data.level < PotionCauldronBlock.MIN_LEVEL) {
-                return ActionResult.PASS;
-            }
+        data.entity.removeLevel();
+        data.level -= 1;
 
-            data.entity.removeLevel();
-            data.level -= 1;
-
-            return ActionResult.success(world.isClient);
-        };
+        return ActionResult.success(world.isClient);
     };
 
     // amplifies the effect level (evenly adds "amplifier" to all effects)
     // params: "amplifier" - Decimal
-    MetaEffectTemplate AMPLIFY = (quickfail, params) -> {
+    MetaEffectTemplate AMPLIFY = (params) -> {
         Number amp = getNumber(params.get("amplifier"));
         final float amplifier = amp == null ? 3.0f : amp.floatValue();
 
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
-
             data.entity.amplify(amplifier);
 
             return ActionResult.success(world.isClient);
@@ -572,15 +466,11 @@ public interface MetaEffectTemplate {
 
     // extends the effect (evenly adds "duration" to all effects)
     // params: "duration" - Decimal
-    MetaEffectTemplate EXTEND = (quickfail, params) -> {
+    MetaEffectTemplate EXTEND = (params) -> {
         Number dur = getNumber(params.get("duration"));
         final float duration = dur == null ? 6000.0f : dur.floatValue();
 
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            if (quickfail.isPresent() && quickfail.get() == prev) {
-                return ActionResult.PASS;
-            }
-
             data.entity.extendDuration(duration);
 
             return ActionResult.success(world.isClient);

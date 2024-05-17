@@ -2,13 +2,12 @@ package net.sploder12.potioncraft;
 
 import net.fabricmc.loader.api.FabricLoader;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class Config {
@@ -16,21 +15,40 @@ public class Config {
 
     private static File configFile = null;
 
+    // Internal identifiers for the fields
+    enum FieldID {
+        DEBUG,
+        ALLOW_MIXING,
+        CAN_USE_REAGENTS
+    };
+
     // Config Fields
+    static HashMap<FieldID, Field> fields = new HashMap<>() {{
+        put(FieldID.DEBUG, new BooleanField(false, "debug", "Debug mode enabled?"));
+        put(FieldID.ALLOW_MIXING, new BooleanField(true, "allow_mixing", "Should Potion Mixing be Possible?"));
+        put(FieldID.CAN_USE_REAGENTS, new BooleanField(true, "can_use_reagents", "Should Adding Reagents to Mixtures be Possible?"));
+    }};
 
-    static boolean debug = false;
-    static final String debugStr = "debug";
+    static Field getField(FieldID id) {
+        return fields.get(id);
+    }
 
-    static boolean allowMixing = true;
-    static final String allowMixingStr = "allow_mixing";
+    static Boolean getBoolean(FieldID id) {
+        return Field.getBoolean(getField(id));
+    }
 
-    static boolean canUseReagents = true;
-    static final String canUseReagentsStr = "can_use_reagents";
+    static Integer getInteger(FieldID id) {
+        return Field.getInteger(getField(id));
+    }
+
+    static String getString(FieldID id) {
+        return Field.getString(getField(id));
+    }
 
     static void loadDefaults() {
-        debug = false;
-        allowMixing = true;
-        canUseReagents = true;
+        for (Field field : fields.values()) {
+            field.reset();
+        }
     }
 
     static void resetConfig() {
@@ -43,7 +61,6 @@ public class Config {
             Main.log("Config failed to save! " + e);
         }
     }
-
 
     static void loadConfig() {
         if (configFile == null) {
@@ -77,25 +94,10 @@ public class Config {
         boolean containsAll = true;
 
         // read and parse all data from config
-        if (config.containsKey(debugStr)) {
-           debug = Boolean.parseBoolean(config.get(debugStr));
-        }
-        else {
-            containsAll = false;
-        }
-
-        if (config.containsKey(allowMixingStr)) {
-            allowMixing = Boolean.parseBoolean(config.get(allowMixingStr));
-        }
-        else {
-            containsAll = false;
-        }
-
-        if (config.containsKey(canUseReagentsStr)) {
-            canUseReagents = Boolean.parseBoolean(config.get(canUseReagentsStr));
-        }
-        else {
-            containsAll = false;
+        for (Field field : fields.values()) {
+            if (!field.load(config)) {
+                containsAll = false;
+            }
         }
 
         // config is missing some properties, probably out of date
@@ -108,17 +110,6 @@ public class Config {
             }
         }
     }
-
-    private static FileWriter writeBool(FileWriter writer, boolean bool) throws IOException {
-        if (bool) {
-            writer.write("true\n\n");
-        }
-        else {
-            writer.write("false\n\n");
-        }
-        return writer;
-    }
-
 
     static void saveConfig() throws IOException {
         if (configFile == null) {
@@ -135,15 +126,9 @@ public class Config {
             ofstream.write("#Timestamp: ");
             ofstream.write(LocalDateTime.now() + "\n\n");
 
-            ofstream.write("#Should Potion Mixing be Possible?\n");
-            ofstream.write(allowMixingStr + '=');
-            writeBool(ofstream, allowMixing);
-
-            ofstream.write("#Should Adding Reagents to Mixtures be Possible?\n");
-            ofstream.write(canUseReagentsStr + '=');
-            writeBool(ofstream, canUseReagents);
+            for (Field field : fields.values()) {
+                field.write(ofstream);
+            }
         }
     }
-
-
 }

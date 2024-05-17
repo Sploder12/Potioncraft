@@ -13,7 +13,7 @@ public class Main implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("PotionCraft");
 
     public static void log(String str) {
-        if (Config.debug) {
+        if (Config.getBoolean(Config.FieldID.DEBUG)) {
             LOGGER.info(str);
         }
     }

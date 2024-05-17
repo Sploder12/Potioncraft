@@ -22,7 +22,7 @@ import static net.sploder12.potioncraft.meta.MetaMixing.interactions;
 
 public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockEntityProvider {
 
-    public static final MapCodec<PotionCauldronBlock> CODEC = createCodec(PotionCauldronBlock::new);
+    //public static final MapCodec<PotionCauldronBlock> CODEC = createCodec(PotionCauldronBlock::new);
 
     public static final PotionCauldronBlock POTION_CAULDRON_BLOCK = new PotionCauldronBlock(
             FabricBlockSettings.copyOf(Blocks.CAULDRON)
@@ -38,9 +38,11 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
     private static final int BASE_FLUID_HEIGHT = 6;
     private static final double FLUID_HEIGHT_PER_LEVEL = (15.0 - BASE_FLUID_HEIGHT) / (MAX_LEVEL - MIN_LEVEL + 1.0);
 
+    /*
     public MapCodec<PotionCauldronBlock> getCodec() {
         return CODEC;
     }
+     */
 
     public static void register() {
         Main.log("Registering Potion Cauldron...");
