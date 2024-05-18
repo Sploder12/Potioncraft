@@ -25,8 +25,6 @@ public class Config {
     // Config Fields
     static HashMap<FieldID, Field> fields = new HashMap<>() {{
         put(FieldID.DEBUG, new BooleanField(false, "debug", "Debug mode enabled?"));
-        put(FieldID.ALLOW_MIXING, new BooleanField(true, "allow_mixing", "Should Potion Mixing be Possible?"));
-        put(FieldID.CAN_USE_REAGENTS, new BooleanField(true, "can_use_reagents", "Should Adding Reagents to Mixtures be Possible?"));
         put(FieldID.MAX_POTENCY, new IntField(5, "max_potency", "Maximum potency for crafted potions (negative for infinite)."));
         put(FieldID.DEFAULT_POTION_POTENCY, new IntField(1, "default_potion_potency", "Default potency for vanilla potions."));
     }};
