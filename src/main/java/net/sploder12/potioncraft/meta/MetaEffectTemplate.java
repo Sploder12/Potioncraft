@@ -22,6 +22,7 @@ import net.minecraft.world.World;
 import net.sploder12.potioncraft.Main;
 import net.sploder12.potioncraft.PotionCauldronBlock;
 import net.sploder12.potioncraft.PotionEffectInstance;
+import net.sploder12.potioncraft.Json;
 
 import java.util.List;
 
@@ -30,50 +31,7 @@ import static net.sploder12.potioncraft.PotionCauldronBlockEntity.CRAFTED_POTION
 public interface MetaEffectTemplate {
     // you may assume params is a JsonObject
 
-    private static JsonPrimitive getPrim(JsonElement elem) {
-        if (elem == null || !elem.isJsonPrimitive()) {
-            return null;
-        }
 
-        return elem.getAsJsonPrimitive();
-    }
-
-    static Identifier getId(JsonElement elem) {
-        JsonPrimitive prim = getPrim(elem);
-        if (prim == null || !prim.isString()) {
-            return null;
-        }
-
-        return Identifier.tryParse(prim.getAsString());
-    }
-
-    static Number getNumber(JsonElement elem) {
-        JsonPrimitive prim = getPrim(elem);
-        if (prim == null || !prim.isNumber()) {
-            return null;
-        }
-
-        return prim.getAsNumber();
-    }
-
-    static Boolean getBool(JsonElement elem) {
-        JsonPrimitive prim = getPrim(elem);
-        if (prim == null || !prim.isBoolean()) {
-            return null;
-        }
-
-        return prim.getAsBoolean();
-    }
-
-    static boolean getBoolOr(JsonElement elem, boolean def) {
-        Boolean b = getBool(elem);
-
-        if (b == null) {
-            return def;
-        }
-
-        return b;
-    }
 
 
     // quickfail is an optional parameter that can be used on any* template.
@@ -113,8 +71,7 @@ public interface MetaEffectTemplate {
     // params: "level": int - if set will only succeed when data.level == int
     // else will succeed when data.level > 0
     MetaEffectTemplate HAS_LEVEL = (params) -> {
-        Number num = getNumber(params.get("level"));
-        final Integer finalTarget = num == null ? null : num.intValue();
+        final Integer finalTarget = Json.getInt(params.get("level"));
 
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (finalTarget == null) {
@@ -137,8 +94,7 @@ public interface MetaEffectTemplate {
     // or == when int is 0, or <= when int is < 0
     // default is as if the parameter was 1
     MetaEffectTemplate HAS_HEAT = (params) -> {
-        Number num = getNumber(params.get("heat"));
-        final int finalTarget = num == null ? 1 : num.intValue();
+        final int finalTarget = Json.getIntOr(params.get("heat"), 1);
 
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             // target heat is positive
@@ -178,7 +134,7 @@ public interface MetaEffectTemplate {
 
     // params: "level": int - if set will only succeed when data.level >= int
     MetaEffectTemplate MIN_LEVEL = (params) -> {
-        Number num = getNumber(params.get("level"));
+        Number num = Json.getNumber(params.get("level"));
         if (num == null) {
             return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
         }
@@ -195,7 +151,7 @@ public interface MetaEffectTemplate {
 
     // params: "level": int - if set will only succeed when data.heat <= int
     MetaEffectTemplate MAX_LEVEL = (params) -> {
-        Number num = getNumber(params.get("level"));
+        Number num = Json.getNumber(params.get("level"));
         if (num == null) {
             return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
         }
@@ -212,7 +168,7 @@ public interface MetaEffectTemplate {
 
     // params: "heat": int - if set will only succeed when data.heat >= int
     MetaEffectTemplate MIN_HEAT = (params) -> {
-        Number num = getNumber(params.get("heat"));
+        Number num = Json.getNumber(params.get("heat"));
         if (num == null) {
             return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
         }
@@ -229,7 +185,7 @@ public interface MetaEffectTemplate {
 
     // params: "heat": int - if set will only succeed when data.heat <= int
     MetaEffectTemplate MAX_HEAT = (params) -> {
-        Number num = getNumber(params.get("heat"));
+        Number num = Json.getNumber(params.get("heat"));
         if (num == null) {
             return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
         }
@@ -257,24 +213,22 @@ public interface MetaEffectTemplate {
     // "sound": Identifier - sound to play
     // "count": attempt to use and give that many items
     MetaEffectTemplate USE_ITEM = (params) -> {
-        Identifier id = getId(params.get("id"));
+        Identifier id = Json.getId(params.get("id"));
         Item replaceItem = null;
         if (id != null) {
             replaceItem = Registries.ITEM.get(id);
         }
 
-        Identifier sid = getId(params.get("sound"));
+        Identifier sid = Json.getId(params.get("sound"));
         SoundEvent sound = null;
         if (id != null) {
             sound = Registries.SOUND_EVENT.get(sid);
         }
 
-        Number count = getNumber(params.get("count"));
-
         final Item finalReplaceItem = replaceItem;
         final SoundEvent finalSound = sound;
-        final boolean finalApplyPotion = getBoolOr(params.get("applyPotion"), false);
-        final int finalCount = count == null ? 1 : count.intValue();
+        final boolean finalApplyPotion = Json.getBoolOr(params.get("applyPotion"), false);
+        final int finalCount = Json.getIntOr(params.get("count"), 1);
 
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (stack.isEmpty()) {
@@ -301,7 +255,7 @@ public interface MetaEffectTemplate {
                 }
             }
 
-            BlockData.itemUse(hand, stack, player, out, trueCount);
+            BlockData.itemUse(world, pos, hand, stack, player, out, trueCount);
 
             if (finalSound != null && !world.isClient) {
                 world.playSound(null, pos, finalSound, SoundCategory.BLOCKS, 1.0F, 1.0F);
@@ -313,7 +267,7 @@ public interface MetaEffectTemplate {
 
     // params: "id": Identifier - sound to play
     MetaEffectTemplate PLAY_SOUND = (params) -> {
-        Identifier id = getId(params.get("id"));
+        Identifier id = Json.getId(params.get("id"));
         if (id != null) {
             final SoundEvent sound = Registries.SOUND_EVENT.get(id);
             if (sound != null) {
@@ -351,18 +305,15 @@ public interface MetaEffectTemplate {
     // "showParticles": Boolean - should show particles?
     // "showIcon": Boolean - should show icon?
     MetaEffectTemplate ADD_STATUS_EFFECT = (params) -> {
-        Identifier id = getId(params.get("id"));
+        Identifier id = Json.getId(params.get("id"));
         if (id != null) {
             StatusEffect type = Registries.STATUS_EFFECT.get(id);
             if (type != null) {
-                Number dur = getNumber(params.get("duration"));
-                final float duration = dur == null ? 1.0f : dur.floatValue();
+                final float duration = Json.getFloatOr(params.get("duration"), 1.0f);
+                final float amplifier = Json.getFloatOr(params.get("amplifier"), 0.0f);
 
-                Number amp = getNumber(params.get("amplifier"));
-                final float amplifier = amp == null ? 0.0f : amp.floatValue();
-
-                final boolean showParticles = getBoolOr(params.get("showParticles"), true);
-                final boolean showIcon = getBoolOr(params.get("showIcon"), true);
+                final boolean showParticles = Json.getBoolOr(params.get("showParticles"), true);
+                final boolean showIcon = Json.getBoolOr(params.get("showIcon"), true);
 
                 return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
                     if (data.level == 0) {
@@ -387,7 +338,7 @@ public interface MetaEffectTemplate {
     // params: "id": Identifier - potion effect to add
     // WARNING - ONLY works when the potion has a single effect.
     MetaEffectTemplate ADD_POTION_EFFECT = (params) -> {
-        Identifier id = getId(params.get("id"));
+        Identifier id = Json.getId(params.get("id"));
         if (id != null) {
             Potion potion = Registries.POTION.get(id);
             if (potion != Potions.EMPTY) {
@@ -426,7 +377,7 @@ public interface MetaEffectTemplate {
 
     // params: "dilute": boolean - should dilution occur
     MetaEffectTemplate ADD_LEVEL = (params) -> {
-        final boolean dilute = getBoolOr(params.get("dilute"), true);
+        final boolean dilute = Json.getBoolOr(params.get("dilute"), true);
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (data.level >= PotionCauldronBlock.MAX_LEVEL) {
                 return ActionResult.PASS;
@@ -454,8 +405,7 @@ public interface MetaEffectTemplate {
     // amplifies the effect level (evenly adds "amplifier" to all effects)
     // params: "amplifier" - Decimal
     MetaEffectTemplate AMPLIFY = (params) -> {
-        Number amp = getNumber(params.get("amplifier"));
-        final float amplifier = amp == null ? 3.0f : amp.floatValue();
+        final float amplifier = Json.getFloatOr(params.get("amplifier"), 3.0f);
 
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             data.entity.amplify(amplifier);
@@ -467,8 +417,7 @@ public interface MetaEffectTemplate {
     // extends the effect (evenly adds "duration" to all effects)
     // params: "duration" - Decimal
     MetaEffectTemplate EXTEND = (params) -> {
-        Number dur = getNumber(params.get("duration"));
-        final float duration = dur == null ? 6000.0f : dur.floatValue();
+        final float duration = Json.getFloatOr(params.get("duration"), 6000.0f);
 
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             data.entity.extendDuration(duration);

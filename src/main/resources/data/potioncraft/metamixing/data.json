@@ -55,6 +55,7 @@
   "recipes": {
     "potioncraft:potion_cauldron_block": {
       "minecraft:potion": {
+        "potency": -1337,
         "effects": [
           {
             "id": "ADD_LEVEL"
@@ -123,6 +124,7 @@
       },
 
       "fermented_spider_eye": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -137,6 +139,7 @@
       },
 
       "glowstone_dust": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -151,6 +154,7 @@
       },
 
       "redstone": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -165,6 +169,7 @@
       },
 
       "sugar": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -182,6 +187,7 @@
       },
 
       "rabbit_foot": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -199,6 +205,7 @@
       },
 
       "glistering_melon_slice": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -216,6 +223,7 @@
       },
 
       "spider_eye": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -233,6 +241,7 @@
       },
 
       "pufferfish": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -250,6 +259,7 @@
       },
 
       "magma_cream": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -267,6 +277,7 @@
       },
 
       "golden_carrot": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -284,6 +295,7 @@
       },
 
       "blaze_powder": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -301,6 +313,7 @@
       },
 
       "ghast_tear": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -318,6 +331,7 @@
       },
 
       "turtle_helmet": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -345,6 +359,7 @@
       },
 
       "phantom_membrane": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -395,6 +410,7 @@
       },
 
       "minecraft:potion": {
+        "potency": -1337,
         "keepOld": true,
         "effects": [
           {
@@ -420,6 +436,7 @@
       },
 
       "sugar": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -437,6 +454,7 @@
       },
 
       "rabbit_foot": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -454,6 +472,7 @@
       },
 
       "glistering_melon_slice": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -471,6 +490,7 @@
       },
 
       "spider_eye": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -488,6 +508,7 @@
       },
 
       "pufferfish": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -505,6 +526,7 @@
       },
 
       "magma_cream": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -522,6 +544,7 @@
       },
 
       "golden_carrot": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -539,6 +562,7 @@
       },
 
       "blaze_powder": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -556,6 +580,7 @@
       },
 
       "ghast_tear": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -573,6 +598,7 @@
       },
 
       "turtle_helmet": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -600,6 +626,7 @@
       },
 
       "phantom_membrane": {
+        "potency": 1,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -619,6 +646,7 @@
 
     "minecraft:cauldron": {
       "minecraft:potion": {
+        "potency": -1337,
         "keepOld": true,
         "effects": [
           {

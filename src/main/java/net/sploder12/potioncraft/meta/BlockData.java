@@ -2,6 +2,7 @@ package net.sploder12.potioncraft.meta;
 
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -104,7 +105,7 @@ public class BlockData {
         return new BlockData();
     }
 
-    public static void itemUse(Hand hand, ItemStack in, PlayerEntity player, ItemStack out, int count) {
+    public static void itemUse(World world, BlockPos pos, Hand hand, ItemStack in, PlayerEntity player, ItemStack out, int count) {
         if (count == 0) return;
 
         Item item = in.getItem();
@@ -113,9 +114,21 @@ public class BlockData {
             in.decrement(count - 1);
         }
 
-        player.setStackInHand(hand, ItemUsage.exchangeStack(in, player, out));
+        if (player != null) {
+            player.setStackInHand(hand, ItemUsage.exchangeStack(in, player, out));
 
-        player.incrementStat(Stats.USE_CAULDRON);
-        player.increaseStat(Stats.USED.getOrCreateStat(item), count);
+            player.incrementStat(Stats.USE_CAULDRON);
+            player.increaseStat(Stats.USED.getOrCreateStat(item), count);
+        }
+        else {
+            // ItemUsage.exchangeStack internally decrements by 1, but this doesn't have a player
+            in.decrement(1);
+
+            if (out != null && !out.isEmpty()) {
+                ItemEntity outEntity = new ItemEntity(world, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, out);
+                outEntity.addVelocity(0.0f, 0.2f, 0.0f);
+                world.spawnEntity(outEntity);
+            }
+        }
     }
 }

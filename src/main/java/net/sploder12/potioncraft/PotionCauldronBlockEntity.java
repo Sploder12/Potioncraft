@@ -30,6 +30,7 @@ import java.util.*;
 public class PotionCauldronBlockEntity extends BlockEntity {
 
     private int level = PotionCauldronBlock.MIN_LEVEL;
+    private int potency = 0;
     private int cachedColor = 0;
 
     private HashMap<StatusEffect, PotionEffectInstance> effects = new HashMap<>();
@@ -66,8 +67,31 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         return cachedColor;
     }
 
+    public int getPotency() {
+        return potency;
+    }
+
+    static public int getMaxPotency() {
+        return Config.getInteger(Config.FieldID.MAX_POTENCY);
+    }
+
+    public void setPotency(int amount) {
+        potency = amount;
+        this.markDirty();
+    }
+
     public ItemStack setEffects(ItemStack target) {
-        return PotionUtil.setCustomPotionEffects(target, getEffects());
+        ArrayList<StatusEffectInstance> effects = getEffects();
+        ItemStack effected = PotionUtil.setCustomPotionEffects(target, effects);
+
+        if (!effects.isEmpty()) {
+            NbtCompound nbt = effected.getNbt();
+            if (nbt == null) nbt = createNbt();
+            nbt.putInt("potency", getPotency());
+            effected.setNbt(nbt);
+        }
+
+        return effected;
     }
 
     public boolean hasEffects() {
@@ -270,6 +294,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
     @Override
     public void writeNbt(NbtCompound nbt) {
         nbt.putInt("level", level);
+        nbt.putInt("potency", potency);
 
         NbtList nbtList = new NbtList();
 
@@ -298,6 +323,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
             }
         }
 
+        potency = nbt.getInt("potency");
         level = nbt.getInt("level");
 
         cachedColor = PotionUtil.getColor(getEffects());

@@ -15,6 +15,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -85,7 +86,7 @@ public class MetaMixing {
         return null;
     }
 
-    public static CauldronBehavior addInteraction(Item item, Map<Item, CauldronBehavior> behaviorMap, Collection<MetaEffect> effects, boolean keepOld) {
+    public static CauldronBehavior addInteraction(Item item, Map<Item, CauldronBehavior> behaviorMap, Collection<MetaEffect> effects, boolean keepOld, int potency) {
         CauldronBehavior prevBehavior = behaviorMap.get(item);
         if (prevBehavior == null) {
             keepOld = false;
@@ -104,11 +105,22 @@ public class MetaMixing {
 
             int initLevel = data.level;
 
+            int tmpPotency = getTmpPotency(potency, itemStack, data);
+
+            final int maxPotency = PotionCauldronBlockEntity.getMaxPotency();
+            final int newPotency = data.entity.getPotency() + tmpPotency;
+            if (maxPotency >= 0 && newPotency > maxPotency) {
+                return ActionResult.PASS;
+            }
+
             ActionResult prev = ActionResult.success(world.isClient);
             for (MetaEffect effect : effects) {
                 prev = effect.interact(prev, data, world, pos, player, hand, itemStack);
             }
 
+            if (prev != ActionResult.PASS) {
+                data.entity.setPotency(newPotency);
+            }
 
             if (!Registries.BLOCK.getId(data.source).getNamespace().equalsIgnoreCase("minecraft")) {
                 // turn potion cauldrons into vanilla cauldrons
@@ -146,6 +158,25 @@ public class MetaMixing {
         };
 
         return behaviorMap.put(item, behavior);
+    }
+
+    private static int getTmpPotency(int potency, ItemStack itemStack, BlockData data) {
+        int tmpPotency = potency;
+
+        // if using the item's potency, it uses the max of current and held
+        if (tmpPotency == -1337) {
+            NbtCompound nbt = itemStack.getNbt();
+            if (nbt != null && nbt.contains("potency")) {
+                tmpPotency = nbt.getInt("potency");
+            }
+            else {
+                tmpPotency = Config.getInteger(Config.FieldID.DEFAULT_POTION_POTENCY);
+            }
+
+            int resultPotency = Math.max(tmpPotency, data.entity.getPotency());
+            tmpPotency = resultPotency - data.entity.getPotency();
+        }
+        return tmpPotency;
     }
 
     private static Collection<MetaEffect> parseEffects(JsonArray effects, String id) {
@@ -245,9 +276,11 @@ public class MetaMixing {
             return;
         }
 
-        boolean keepOld = MetaEffectTemplate.getBoolOr(recipe.get("keepOld"), false);
+        boolean keepOld = Json.getBoolOr(recipe.get("keepOld"), false);
 
-        CauldronBehavior old = addInteraction(item, behaviorMap, vals, keepOld);
+        int potency = Json.getIntOr(recipe.get("potency"), 0);
+
+        CauldronBehavior old = addInteraction(item, behaviorMap, vals, keepOld, potency);
     }
 
     private static void parseRecipes (Map<Item, CauldronBehavior> behaviorMap, JsonObject recipes, String id) {
@@ -279,16 +312,16 @@ public class MetaMixing {
             if (inversionE.isJsonObject()) {
                 JsonObject inversion = inversionE.getAsJsonObject();
 
-                Identifier from = MetaEffectTemplate.getId(inversion.get("from"));
+                Identifier from = Json.getId(inversion.get("from"));
 
-                Identifier to = MetaEffectTemplate.getId(inversion.get("to"));
+                Identifier to = Json.getId(inversion.get("to"));
 
                 if (from == null || to == null || from.equals(to)) {
                     Main.log("WARNING: invalid inversion in " + id);
                     continue;
                 }
 
-                boolean mutual = MetaEffectTemplate.getBoolOr(inversion.get("mutual"), false);
+                boolean mutual = Json.getBoolOr(inversion.get("mutual"), false);
 
                 StatusEffect fromE = Registries.STATUS_EFFECT.get(from);
                 StatusEffect toE = Registries.STATUS_EFFECT.get(to);
@@ -426,7 +459,4 @@ public class MetaMixing {
             }
         });
     }
-
-
-
 }

@@ -61,7 +61,12 @@ When placed atop lava, a cauldron will have a heat of `10000000`, `0` with stone
 Recipes are more complex, they have several components.
 The top-level field is named `"recipes"` which may contains several cauldron block identifiers.  
 It is very important that these blocks are considered cauldrons in some way.
-Then inside these are several item identifiers which then have an `"effects"` json array which contains the behavior.
+Then inside these are several item identifiers which then have an `"effects"` json array which contains the behavior.  
+  
+At the same level as `"effects"`, there can also be a `"potency"`. `"potency"` is Potioncraft's way of balancing recipes.
+If a mixture's potency exeeds the maximum potency (determined by the config), the interaction will not occur.
+If `"potency"` is not present, it defaults to 0. Setting `"max_potency"` in the config to a negative value will disable the mechanic.
+
 
 An effect contains json objects with the following layout:
 
@@ -79,6 +84,7 @@ As implied above, the last behavior gives it's result to minecraft to determine 
   "recipes": {
     "potioncraft:potion_cauldron_block": {
       "minecraft:glass_bottle": {
+        "potency": 0,
         "effects": [
           {
             "id": "USE_ITEM",
@@ -98,7 +104,7 @@ As implied above, the last behavior gives it's result to minecraft to determine 
 }
 ```
 
-When a glass bottle is used on a potion cauldron (so there is some liquid with potion effects), the bottle is consumed and a potion is given out with the effects. Also a sound plays and the cauldron decreases in fluid level.
+When a glass bottle is used on a potion cauldron (so there is some liquid with potion effects), the bottle is consumed and a potion is given out with the effects. Also a sound plays and the cauldron decreases in fluid level. There is no change in potency.
 
 #### Behaviors
 

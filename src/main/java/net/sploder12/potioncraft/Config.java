@@ -5,9 +5,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import java.io.*;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.Scanner;
 
 public class Config {
@@ -16,10 +14,12 @@ public class Config {
     private static File configFile = null;
 
     // Internal identifiers for the fields
-    enum FieldID {
+    public enum FieldID {
         DEBUG,
         ALLOW_MIXING,
-        CAN_USE_REAGENTS
+        CAN_USE_REAGENTS,
+        MAX_POTENCY,
+        DEFAULT_POTION_POTENCY,
     };
 
     // Config Fields
@@ -27,21 +27,23 @@ public class Config {
         put(FieldID.DEBUG, new BooleanField(false, "debug", "Debug mode enabled?"));
         put(FieldID.ALLOW_MIXING, new BooleanField(true, "allow_mixing", "Should Potion Mixing be Possible?"));
         put(FieldID.CAN_USE_REAGENTS, new BooleanField(true, "can_use_reagents", "Should Adding Reagents to Mixtures be Possible?"));
+        put(FieldID.MAX_POTENCY, new IntField(5, "max_potency", "Maximum potency for crafted potions (negative for infinite)."));
+        put(FieldID.DEFAULT_POTION_POTENCY, new IntField(1, "default_potion_potency", "Default potency for vanilla potions."));
     }};
 
-    static Field getField(FieldID id) {
+    private static Field getField(FieldID id) {
         return fields.get(id);
     }
 
-    static Boolean getBoolean(FieldID id) {
+    public static Boolean getBoolean(FieldID id) {
         return Field.getBoolean(getField(id));
     }
 
-    static Integer getInteger(FieldID id) {
+    public static Integer getInteger(FieldID id) {
         return Field.getInteger(getField(id));
     }
 
-    static String getString(FieldID id) {
+    public static String getString(FieldID id) {
         return Field.getString(getField(id));
     }
 
@@ -76,7 +78,7 @@ public class Config {
         try (Scanner ifstream = new Scanner(configFile)) {
             while(ifstream.hasNextLine()) {
                 String line = ifstream.nextLine();
-                if (line.startsWith("#") || line.isEmpty()) {
+                if (line.isEmpty() || line.startsWith("#")) {
                     continue;
                 }
 
