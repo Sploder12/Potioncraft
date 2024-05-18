@@ -6,6 +6,7 @@ import java.io.*;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Scanner;
 
 public class Config {
@@ -23,7 +24,7 @@ public class Config {
     };
 
     // Config Fields
-    static HashMap<FieldID, Field> fields = new HashMap<>() {{
+    static LinkedHashMap<FieldID, Field> fields = new LinkedHashMap<>() {{
         put(FieldID.DEBUG, new BooleanField(false, "debug", "Debug mode enabled?"));
         put(FieldID.MAX_POTENCY, new IntField(5, "max_potency", "Maximum potency for crafted potions (negative for infinite)."));
         put(FieldID.DEFAULT_POTION_POTENCY, new IntField(1, "default_potion_potency", "Default potency for vanilla potions."));

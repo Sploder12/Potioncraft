@@ -78,10 +78,10 @@ class BooleanField extends Field {
     @Override
     protected void writeVal(FileWriter writer) throws IOException {
         if (val) {
-            writer.write("true\n\n");
+            writer.write("true");
         }
         else {
-            writer.write("false\n\n");
+            writer.write("false");
         }
     }
 
@@ -118,7 +118,7 @@ class IntField extends Field {
 
     @Override
     protected void writeVal(FileWriter writer) throws IOException {
-        writer.write(val);
+        writer.write(String.valueOf(val));
     }
 
     @Override
