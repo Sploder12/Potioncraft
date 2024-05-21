@@ -113,6 +113,9 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
 
     @Override
     public void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
+        if (!Config.getBoolean(Config.FieldID.ALLOW_DROP_MIXING)) {
+            return;
+        }
 
         if (!world.isClient()) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
@@ -139,17 +142,18 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
+        final int maxPotency = PotionCauldronBlockEntity.getMaxPotency();
         if (
                 blockEntity instanceof PotionCauldronBlockEntity cauldronEntity &&
-                cauldronEntity.getPotency() < PotionCauldronBlockEntity.getMaxPotency()) {
+                (cauldronEntity.getPotency() < maxPotency || maxPotency < 0)) {
 
             double d = pos.getX();
             double e = pos.getY() + getFluidHeight(cauldronEntity.getLevel());
             double f = pos.getZ();
 
-            world.addImportantParticle(ParticleTypes.SPLASH, d + 0.25 + world.random.nextDouble() * 0.5, e, f + 0.25 + world.random.nextDouble() * 0.5, world.random.nextDouble() * 0.02 - 0.01, 0.02, world.random.nextDouble() * 0.02 - 0.01);
-            world.addImportantParticle(ParticleTypes.SPLASH, d + 0.25 + world.random.nextDouble() * 0.5, e, f + 0.25 + world.random.nextDouble() * 0.5, world.random.nextDouble() * 0.02 - 0.01, 0.02, world.random.nextDouble() * 0.02 - 0.01);
-            world.addImportantParticle(ParticleTypes.SPLASH, d + 0.25 + world.random.nextDouble() * 0.5, e, f + 0.25 + world.random.nextDouble() * 0.5, world.random.nextDouble() * 0.02 - 0.01, 0.02, world.random.nextDouble() * 0.02 - 0.01);
+            world.addImportantParticle(ParticleTypes.SPLASH, d + 0.25 + random.nextDouble() * 0.5, e, f + 0.25 + random.nextDouble() * 0.5, random.nextDouble() * 0.02 - 0.01, 0.02, random.nextDouble() * 0.02 - 0.01);
+            world.addImportantParticle(ParticleTypes.SPLASH, d + 0.25 + random.nextDouble() * 0.5, e, f + 0.25 + random.nextDouble() * 0.5, random.nextDouble() * 0.02 - 0.01, 0.02, random.nextDouble() * 0.02 - 0.01);
+            world.addImportantParticle(ParticleTypes.SPLASH, d + 0.25 + random.nextDouble() * 0.5, e, f + 0.25 + random.nextDouble() * 0.5, random.nextDouble() * 0.02 - 0.01, 0.02, random.nextDouble() * 0.02 - 0.01);
 
             if (random.nextInt(2) == 0) {
                 world.playSound(d + 0.5, e, f + 0.5, SoundEvents.BLOCK_BUBBLE_COLUMN_UPWARDS_AMBIENT, SoundCategory.BLOCKS, 0.2F + random.nextFloat() * 0.2F, 0.9F + random.nextFloat() * 0.15F, false);

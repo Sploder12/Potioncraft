@@ -17,8 +17,7 @@ public class Config {
     // Internal identifiers for the fields
     public enum FieldID {
         DEBUG,
-        ALLOW_MIXING,
-        CAN_USE_REAGENTS,
+        ALLOW_DROP_MIXING,
         MAX_POTENCY,
         DEFAULT_POTION_POTENCY,
     };
@@ -26,6 +25,7 @@ public class Config {
     // Config Fields
     static LinkedHashMap<FieldID, Field> fields = new LinkedHashMap<>() {{
         put(FieldID.DEBUG, new BooleanField(false, "debug", "Debug mode enabled?"));
+        put(FieldID.ALLOW_DROP_MIXING, new BooleanField(true, "allow_drop_mixing", "Should dropped items be mixable?"));
         put(FieldID.MAX_POTENCY, new IntField(5, "max_potency", "Maximum potency for crafted potions (negative for infinite)."));
         put(FieldID.DEFAULT_POTION_POTENCY, new IntField(1, "default_potion_potency", "Default potency for vanilla potions."));
     }};
