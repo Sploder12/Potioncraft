@@ -20,6 +20,7 @@ public class Config {
         ALLOW_DROP_MIXING,
         MAX_POTENCY,
         DEFAULT_POTION_POTENCY,
+        DO_BUBBLE_EFFECTS,
     };
 
     // Config Fields
@@ -28,6 +29,7 @@ public class Config {
         put(FieldID.ALLOW_DROP_MIXING, new BooleanField(true, "allow_drop_mixing", "Should dropped items be mixable?"));
         put(FieldID.MAX_POTENCY, new IntField(5, "max_potency", "Maximum potency for crafted potions (negative for infinite)."));
         put(FieldID.DEFAULT_POTION_POTENCY, new IntField(1, "default_potion_potency", "Default potency for vanilla potions."));
+        put(FieldID.DO_BUBBLE_EFFECTS, new BooleanField(true, "do_buffle_effects", "Should the cauldron bubble when ready to craft?"));
     }};
 
     private static Field getField(FieldID id) {

@@ -1,6 +1,5 @@
 package net.sploder12.potioncraft;
 
-import com.mojang.serialization.MapCodec;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.*;
@@ -11,7 +10,6 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -141,22 +139,24 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
 
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        final int maxPotency = PotionCauldronBlockEntity.getMaxPotency();
-        if (
-                blockEntity instanceof PotionCauldronBlockEntity cauldronEntity &&
-                (cauldronEntity.getPotency() < maxPotency || maxPotency < 0)) {
+        if (Config.getBoolean(Config.FieldID.DO_BUBBLE_EFFECTS)) {
+            BlockEntity blockEntity = world.getBlockEntity(pos);
+            final int maxPotency = PotionCauldronBlockEntity.getMaxPotency();
+            if (
+                    blockEntity instanceof PotionCauldronBlockEntity cauldronEntity &&
+                            (cauldronEntity.getPotency() < maxPotency || maxPotency < 0)) {
 
-            double d = pos.getX();
-            double e = pos.getY() + getFluidHeight(cauldronEntity.getLevel());
-            double f = pos.getZ();
+                double d = pos.getX();
+                double e = pos.getY() + getFluidHeight(cauldronEntity.getLevel());
+                double f = pos.getZ();
 
-            world.addImportantParticle(ParticleTypes.SPLASH, d + 0.25 + random.nextDouble() * 0.5, e, f + 0.25 + random.nextDouble() * 0.5, random.nextDouble() * 0.02 - 0.01, 0.02, random.nextDouble() * 0.02 - 0.01);
-            world.addImportantParticle(ParticleTypes.SPLASH, d + 0.25 + random.nextDouble() * 0.5, e, f + 0.25 + random.nextDouble() * 0.5, random.nextDouble() * 0.02 - 0.01, 0.02, random.nextDouble() * 0.02 - 0.01);
-            world.addImportantParticle(ParticleTypes.SPLASH, d + 0.25 + random.nextDouble() * 0.5, e, f + 0.25 + random.nextDouble() * 0.5, random.nextDouble() * 0.02 - 0.01, 0.02, random.nextDouble() * 0.02 - 0.01);
+                world.addImportantParticle(ParticleTypes.SPLASH, d + 0.25 + random.nextDouble() * 0.5, e, f + 0.25 + random.nextDouble() * 0.5, random.nextDouble() * 0.02 - 0.01, 0.02, random.nextDouble() * 0.02 - 0.01);
+                world.addImportantParticle(ParticleTypes.SPLASH, d + 0.25 + random.nextDouble() * 0.5, e, f + 0.25 + random.nextDouble() * 0.5, random.nextDouble() * 0.02 - 0.01, 0.02, random.nextDouble() * 0.02 - 0.01);
+                world.addImportantParticle(ParticleTypes.SPLASH, d + 0.25 + random.nextDouble() * 0.5, e, f + 0.25 + random.nextDouble() * 0.5, random.nextDouble() * 0.02 - 0.01, 0.02, random.nextDouble() * 0.02 - 0.01);
 
-            if (random.nextInt(2) == 0) {
-                world.playSound(d + 0.5, e, f + 0.5, SoundEvents.BLOCK_BUBBLE_COLUMN_UPWARDS_AMBIENT, SoundCategory.BLOCKS, 0.2F + random.nextFloat() * 0.2F, 0.9F + random.nextFloat() * 0.15F, false);
+                if (random.nextInt(2) == 0) {
+                    world.playSound(d + 0.5, e, f + 0.5, SoundEvents.BLOCK_BUBBLE_COLUMN_UPWARDS_AMBIENT, SoundCategory.BLOCKS, 0.2F + random.nextFloat() * 0.2F, 0.9F + random.nextFloat() * 0.15F, false);
+                }
             }
         }
     }
