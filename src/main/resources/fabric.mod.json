@@ -22,6 +22,9 @@
 			"net.sploder12.potioncraft.MainClient"
 		]
 	},
+	"mixins": [
+		"potioncraft.mixins.json"
+	],
 	"depends": {
 		"fabricloader": ">=0.14.21",
 		"minecraft": "~1.20.1",
