@@ -2,6 +2,8 @@ package net.sploder12.potioncraft;
 
 import net.fabricmc.api.ModInitializer;
 
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.sploder12.potioncraft.meta.MetaMixing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +28,7 @@ public class Main implements ModInitializer {
 
         LOGGER.info("Welcome To PotionCraft!");
 
+        FluidHelper.register();
         Config.loadConfig();
 
         PotionCauldronBlock.register();

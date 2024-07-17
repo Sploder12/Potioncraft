@@ -1,11 +1,14 @@
 package net.sploder12.potioncraft.meta;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
@@ -24,6 +27,7 @@ import net.sploder12.potioncraft.PotionCauldronBlock;
 import net.sploder12.potioncraft.PotionEffectInstance;
 import net.sploder12.potioncraft.Json;
 
+import java.util.HashSet;
 import java.util.List;
 
 import static net.sploder12.potioncraft.PotionCauldronBlockEntity.CRAFTED_POTION;
@@ -117,6 +121,56 @@ public interface MetaEffectTemplate {
 
             // target heat is 0
             if (finalTarget == data.heat) {
+                return ActionResult.success(world.isClient);
+            }
+
+            return ActionResult.PASS;
+        };
+    };
+
+    // params: "fluids": array of identifiers to fluids
+    MetaEffectTemplate HAS_FLUID = (params) -> {
+        JsonElement fluidsElem = params.get("fluids");
+        HashSet<Fluid> fluids = null;
+
+        if (fluidsElem != null && fluidsElem.isJsonArray()) {
+            JsonArray fluidsArr = fluidsElem.getAsJsonArray();
+
+            for (JsonElement fluidId : fluidsArr) {
+                if (fluidId.isJsonPrimitive()) {
+                    JsonPrimitive fluidPrim = fluidId.getAsJsonPrimitive();
+                    if (fluidPrim.isString()) {
+                        Identifier fluidIdentifier = Identifier.tryParse(fluidPrim.getAsString());
+
+                        if (fluidIdentifier != null) {
+                            Fluid fluid = Registries.FLUID.get(fluidIdentifier);
+
+                            if (fluid != Fluids.EMPTY) {
+                                if (fluids == null) {
+                                    fluids = new HashSet<>();
+                                }
+
+                                fluids.add(fluid);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (fluids == null) {
+            return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+                if (data.fluid != Fluids.EMPTY) {
+                    return ActionResult.success(world.isClient);
+                }
+
+                return ActionResult.PASS;
+            };
+        }
+
+        HashSet<Fluid> finalFluids = fluids;
+        return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+            if (finalFluids.contains(data.fluid)) {
                 return ActionResult.success(world.isClient);
             }
 
@@ -376,8 +430,32 @@ public interface MetaEffectTemplate {
     };
 
     // params: "dilute": boolean - should dilution occur
+    // "fluid": Identifier - fluid to try to add
     MetaEffectTemplate ADD_LEVEL = (params) -> {
         final boolean dilute = Json.getBoolOr(params.get("dilute"), true);
+
+        Identifier id = Json.getId(params.get("fluid"));
+        if (id != null) {
+            Fluid fluid = Registries.FLUID.get(id);
+            if (fluid != Fluids.EMPTY) {
+                return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+                    if (data.level >= PotionCauldronBlock.MAX_LEVEL) {
+                        return ActionResult.PASS;
+                    }
+
+                    if (data.fluid != Fluids.EMPTY && data.fluid != fluid) {
+                        return ActionResult.PASS;
+                    }
+
+                    data.fluid = fluid;
+                    data.entity.addLevel(dilute);
+                    data.level += 1;
+
+                    return ActionResult.success(world.isClient);
+                };
+            }
+        }
+
         return (ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (data.level >= PotionCauldronBlock.MAX_LEVEL) {
                 return ActionResult.PASS;
@@ -439,6 +517,8 @@ public interface MetaEffectTemplate {
         MetaMixing.templates.put("MAX_LEVEL", MAX_LEVEL);
         MetaMixing.templates.put("MIN_HEAT", MIN_HEAT);
         MetaMixing.templates.put("MAX_HEAT", MAX_HEAT);
+
+        MetaMixing.templates.put("HAS_FLUID", HAS_FLUID);
 
         MetaMixing.templates.put("ITEM_HAS_EFFECTS", ITEM_HAS_EFFECTS);
 

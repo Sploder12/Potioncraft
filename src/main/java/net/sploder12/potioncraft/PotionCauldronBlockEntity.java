@@ -2,10 +2,14 @@ package net.sploder12.potioncraft;
 
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.LavaCauldronBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -21,6 +25,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.sploder12.potioncraft.meta.MetaMixing;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,9 +34,10 @@ import java.util.*;
 
 public class PotionCauldronBlockEntity extends BlockEntity {
 
+    private Fluid fluid = Fluids.WATER;
     private int level = PotionCauldronBlock.MIN_LEVEL;
     private int potency = 0;
-    private int cachedColor = 0;
+    private int cachedColor = -1;
 
     private HashMap<StatusEffect, PotionEffectInstance> effects = new HashMap<>();
 
@@ -56,15 +62,37 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         );
     }
 
+    public Fluid getFluid() { return fluid; }
+
+    // remember to update the luminance after you call this!
+    public void setFluid(Fluid fluid) {
+        fluid = FluidHelper.getStill(fluid);
+
+        if (this.fluid != fluid) {
+            this.fluid = fluid;
+            markDirty();
+        }
+    }
+
     public int getLevel() {
         return level;
     }
 
     public int getColor() {
-        if (cachedColor == 0) {
-            cachedColor = PotionUtil.getColor(getEffects());
+        if (cachedColor == -1) {
+            if (!hasEffects() && FluidHelper.getStill(fluid) != Fluids.WATER) {
+                cachedColor = 0xffffff;
+            }
+            else {
+                cachedColor = PotionUtil.getColor(getEffects());
+            }
         }
         return cachedColor;
+    }
+
+    // informs light level to the block and renderer
+    public int getLuminance() {
+        return FluidHelper.getStill(getFluid()).getDefaultState().getBlockState().getLuminance();
     }
 
     public int getPotency() {
@@ -117,29 +145,6 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         return effects.get(effect);
     }
 
-    public float getEffectNerf(StatusEffect effect) {
-        /*
-            scalar defined by the piecewise:
-
-            1.0 if amp <= 1.0,
-            1.0 / amp^3 otherwise
-        */
-
-        PotionEffectInstance cur = getEffect(effect);
-        if (cur == null) {
-            return 1.0f; // no nerf
-        }
-
-        if (cur.amplifier <= 1.0f) {
-            return 1.0f; // also no nerf
-        }
-
-        // nerf that scales heavily with amplifier,
-        // this doesn't take duration into account...
-        return 1.0f / (cur.amplifier * cur.amplifier * cur.amplifier);
-    }
-
-
     public void setLevel(int newLevel) {
         if (newLevel != level) {
             level = newLevel;
@@ -191,8 +196,6 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         return changed;
     }
 
-    private static final float falloff = 0.2f;
-
     public void extendDuration(float dur) {
         if (this.effects.isEmpty()) return;
 
@@ -218,8 +221,6 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
         markDirty();
     }
-
-
 
     public boolean addEffects(Collection<StatusEffectInstance> effects) {
 
@@ -273,6 +274,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         return true;
     }
 
+    @Deprecated
     public ItemStack pickupFluid() {
 
         ItemStack potion = new ItemStack(Items.POTION);
@@ -305,12 +307,23 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         }
         nbt.put("effects", nbtList);
 
+        nbt.putString("fluid", Registries.FLUID.getId(fluid).toString());
+
         super.writeNbt(nbt);
     }
 
     @Override
     public void readNbt(NbtCompound nbt) {
         super.readNbt(nbt);
+
+        Identifier fluidId = Identifier.tryParse(nbt.getString("fluid"));
+
+        if (fluidId != null) {
+            fluid = Registries.FLUID.get(fluidId);
+        }
+        else {
+            fluid = Fluids.EMPTY;
+        }
 
         effects.clear();
         NbtList nbtList = nbt.getList("effects", NbtElement.COMPOUND_TYPE);
@@ -325,8 +338,6 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
         potency = nbt.getInt("potency");
         level = nbt.getInt("level");
-
-        cachedColor = PotionUtil.getColor(getEffects());
     }
 
     @Nullable
@@ -342,7 +353,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
     @Override
     public void markDirty() {
-        cachedColor = PotionUtil.getColor(getEffects());
+        cachedColor = -1;
 
         super.markDirty();
         if (world != null && !world.isClient()) {

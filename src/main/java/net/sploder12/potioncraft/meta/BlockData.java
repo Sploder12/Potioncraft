@@ -4,13 +4,17 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsage;
+import net.minecraft.registry.Registries;
 import net.minecraft.stat.Stats;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.sploder12.potioncraft.FluidHelper;
 import net.sploder12.potioncraft.PotionCauldronBlock;
 import net.sploder12.potioncraft.PotionCauldronBlockEntity;
 
@@ -21,6 +25,7 @@ public class BlockData {
 
     public static HashMap<Block, Integer> blockHeats = new HashMap<>();
 
+    public Fluid fluid;
     public Block source;
     public boolean valid; // in case of non-water leveled cauldron
     public PotionCauldronBlockEntity entity;
@@ -29,6 +34,7 @@ public class BlockData {
     public int heat;
 
     public BlockData() {
+        fluid = Fluids.EMPTY;
         source = Blocks.AIR;
         valid = false;
         entity = null;
@@ -38,9 +44,10 @@ public class BlockData {
     }
 
     // from leveled cauldron
-    private BlockData(BlockState bstate, BlockPos pos, LeveledCauldronBlock leveledBlock, int bheat) {
+    private BlockData(BlockState bstate, World world, BlockPos pos, LeveledCauldronBlock leveledBlock, int bheat) {
         source = bstate.getBlock();
 
+        fluid = FluidHelper.getFluid(bstate, world, pos);
         valid = true;
         level = bstate.get(LeveledCauldronBlock.LEVEL);
         state = PotionCauldronBlock.POTION_CAULDRON_BLOCK.getDefaultState();
@@ -48,27 +55,31 @@ public class BlockData {
 
         assert entity != null;
 
+        entity.setFluid(fluid);
         entity.setLevel(level);
         heat = bheat;
     }
 
-    // from empty
-    private BlockData(Block block, BlockPos pos, int bheat) {
-        source = block;
+    // from other (non-leveled) cauldron
+    private BlockData(BlockState block, World world, BlockPos pos, int bheat) {
+        source = block.getBlock();
 
+        fluid = FluidHelper.getFluid(block, world, pos);
         valid = true;
-        level = Blocks.CAULDRON == block ? 0 : 1;
+        level = Blocks.CAULDRON == block.getBlock() ? 0 : PotionCauldronBlock.MAX_LEVEL;
         state = PotionCauldronBlock.POTION_CAULDRON_BLOCK.getDefaultState();
         entity = (PotionCauldronBlockEntity) PotionCauldronBlock.POTION_CAULDRON_BLOCK.createBlockEntity(pos, state);
 
         assert entity != null;
 
+        entity.setFluid(fluid);
         entity.setLevel(level);
         heat = bheat;
     }
 
     // potion block
     private BlockData(BlockState bstate, PotionCauldronBlockEntity bentity, int bheat) {
+        fluid = bentity.getFluid();
         source = bstate.getBlock();
         valid = true;
         entity = bentity;
@@ -95,11 +106,11 @@ public class BlockData {
         }
 
         if (block instanceof LeveledCauldronBlock leveledBlock) {
-            return new BlockData(state, pos, leveledBlock, heat);
+            return new BlockData(state, world, pos, leveledBlock, heat);
         }
 
         if (block instanceof AbstractCauldronBlock) {
-            return new BlockData(block, pos, heat);
+            return new BlockData(state, world, pos, heat);
         }
 
         return new BlockData();

@@ -12,6 +12,8 @@ import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -86,7 +88,8 @@ public class MetaMixing {
         return null;
     }
 
-    public static CauldronBehavior addInteraction(Item item, Map<Item, CauldronBehavior> behaviorMap, Collection<MetaEffect> effects, boolean keepOld, int potency) {
+
+    public static CauldronBehavior addInteraction(Item item, Map<Item, CauldronBehavior> behaviorMap, Collection<MetaEffect> effects, boolean keepOld, int potency, HashSet<Fluid> fluids) {
         CauldronBehavior prevBehavior = behaviorMap.get(item);
         if (prevBehavior == null) {
             keepOld = false;
@@ -96,7 +99,7 @@ public class MetaMixing {
         CauldronBehavior behavior = (BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack itemStack) -> {
 
             BlockData data = BlockData.getBlockData(state, world, pos);
-            if (!data.valid) {
+            if (!data.valid || (!fluids.isEmpty() && !fluids.contains(data.fluid))) {
                 if (keepOldFinal) {
                     return prevBehavior.interact(state, world, pos, player, hand, itemStack);
                 }
@@ -122,17 +125,29 @@ public class MetaMixing {
                 data.entity.setPotency(newPotency);
             }
 
-            if (!Registries.BLOCK.getId(data.source).getNamespace().equalsIgnoreCase("minecraft")) {
-                // turn potion cauldrons into vanilla cauldrons
+            if (data.fluid == Fluids.EMPTY || data.level == 0) {
+                if (data.source != Blocks.CAULDRON) {
+                    BlockState cauldron = Blocks.CAULDRON.getDefaultState();
+                    world.setBlockState(pos, cauldron);
+                }
+            }
+            else if (data.source == PotionCauldronBlock.POTION_CAULDRON_BLOCK) {
+                // turn potion cauldrons into normal cauldrons
                 if (data.entity.getLevel() < PotionCauldronBlock.MIN_LEVEL) {
                     BlockState cauldron = Blocks.CAULDRON.getDefaultState();
                     world.setBlockState(pos, cauldron);
                 } else if (!data.entity.hasEffects()) {
-                    BlockState cauldron = Blocks.WATER_CAULDRON.getDefaultState();
-                    world.setBlockState(pos, cauldron.with(LeveledCauldronBlock.LEVEL, data.entity.getLevel()));
+                    BlockState block = FluidHelper.getBlock(data.entity.getFluid()).getDefaultState();
+
+                    if (block.getBlock() instanceof LeveledCauldronBlock) {
+                        world.setBlockState(pos, block.with(LeveledCauldronBlock.LEVEL, data.entity.getLevel()));
+                    }
+                    else if (data.entity.getLevel() == PotionCauldronBlock.MAX_LEVEL) {
+                        world.setBlockState(pos, block);
+                    }
                 }
             }
-            else if (data.entity.hasEffects() && data.entity.getLevel() >= PotionCauldronBlock.MIN_LEVEL) {
+            else if (data.entity.hasEffects()) {
                 // turn vanilla cauldrons into potion cauldrons
                 world.setBlockState(pos, data.state);
                 BlockEntity dest = world.getBlockEntity(pos);
@@ -146,7 +161,22 @@ public class MetaMixing {
                     BlockState cauldron = Blocks.CAULDRON.getDefaultState();
                     world.setBlockState(pos, cauldron);
                 } else {
-                    world.setBlockState(pos, state.with(LeveledCauldronBlock.LEVEL, data.level));
+                    BlockState block = FluidHelper.getBlock(data.fluid).getDefaultState();
+
+                    if (block.getBlock() instanceof LeveledCauldronBlock) {
+                        world.setBlockState(pos, block.with(LeveledCauldronBlock.LEVEL, data.entity.getLevel()));
+                    }
+                    else if (data.entity.getLevel() == PotionCauldronBlock.MAX_LEVEL) {
+                        world.setBlockState(pos, block);
+                    }
+                    else {
+                        world.setBlockState(pos, data.state);
+                        BlockEntity dest = world.getBlockEntity(pos);
+
+                        assert dest != null;
+
+                        dest.readNbt(data.entity.createNbt());
+                    }
                 }
             }
 
@@ -280,7 +310,26 @@ public class MetaMixing {
 
         int potency = Json.getIntOr(recipe.get("potency"), 0);
 
-        CauldronBehavior old = addInteraction(item, behaviorMap, vals, keepOld, potency);
+        JsonElement fluidsElem = recipe.get("fluids");
+        HashSet<Fluid> fluids = new HashSet<>();
+
+        if (fluidsElem != null && fluidsElem.isJsonArray()) {
+            JsonArray fluidsArr = fluidsElem.getAsJsonArray();
+
+            for (JsonElement fluidId : fluidsArr) {
+                Identifier fluidIdentifier = Json.getId(fluidId);
+
+                if (fluidIdentifier != null) {
+                    Fluid fluid = Registries.FLUID.get(fluidIdentifier);
+
+                    if (fluid != Fluids.EMPTY) {
+                        fluids.add(fluid);
+                    }
+                }
+            }
+        }
+
+        CauldronBehavior old = addInteraction(item, behaviorMap, vals, keepOld, potency, fluids);
     }
 
     private static void parseRecipes (Map<Item, CauldronBehavior> behaviorMap, JsonObject recipes, String id) {

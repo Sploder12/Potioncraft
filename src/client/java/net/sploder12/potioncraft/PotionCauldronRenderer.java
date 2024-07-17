@@ -1,39 +1,43 @@
 package net.sploder12.potioncraft;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
-import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
-import net.minecraft.client.MinecraftClient;
+import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
+import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.fluid.FlowableFluid;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
+import net.minecraft.registry.Registries;
 import net.minecraft.screen.PlayerScreenHandler;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import org.joml.Matrix4f;
+
+import java.util.Objects;
 
 @Environment(EnvType.CLIENT)
 public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldronBlockEntity> {
-
-    private static final Sprite water = new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, SimpleFluidRenderHandler.WATER_STILL).getSprite();
-    private static final int AtlasId = MinecraftClient.getInstance().getBakedModelManager().getAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).getGlId();
-
-    private static final LightmapTextureManager lightmapManager = MinecraftClient.getInstance().gameRenderer.getLightmapTextureManager();
-
-    private static final float waterPixWidth = 12.0f;
+    
+    // fluid is 12 pixels of the texture out o 16
+    private static final float fluidPixWidth = 12.0f;
     private static final float texPixWidth = 16.0f;
 
-    private static final float waterWidth = (waterPixWidth / texPixWidth) / 2.0f;
+    // width of the fluid as a floating point value
+    private static final float fluidWidth = (fluidPixWidth / texPixWidth) / 2.0f;
 
-    private static final float uvCorrection = ((texPixWidth - waterPixWidth) / texPixWidth) / 2.0f;
-
+    // correction so the fluid texture isn't squished
+    private static final float uvCorrection = ((texPixWidth - fluidPixWidth) / texPixWidth) / 2.0f;
 
     public PotionCauldronRenderer(BlockEntityRendererFactory.Context ctx) {
-        //water = MinecraftClient.getInstance().getBakedModelManager().getAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).getSprite(SimpleFluidRenderHandler.WATER_STILL);
+
+        //fluid = MinecraftClient.getInstance().getBakedModelManager().getAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).getSprite(SimpleFluidRenderHandler.fluid_STILL);
     }
 
     @Override
@@ -43,41 +47,46 @@ public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldro
 
         int lightAbove = light;
         if (world != null) {
+            // fluid gets illuminated from the top, not the sides or bottom!
             lightAbove = WorldRenderer.getLightmapCoordinates(world, entity.getPos().up());
         }
 
-        final int alpha = (int)(255.0 * 0.8);
+        int luminance = entity.getLuminance();
+        if (luminance > 0) {
+            // see WorldRenderer.getLightmapCoordinates to see why this works
+            int blockLuminance = (lightAbove >> 4) & 0xf;
+            lightAbove &= 0xffffff00;
+            lightAbove |= Math.max(blockLuminance, entity.getLuminance()) << 4;
+        }
 
-        int color = entity.getColor() + (alpha << 24);
+        // alpha is set to opaque since the texture handles transluscency
+        int color = entity.getColor() | (0xff << 24);
+
+        // get the still texture of our fluid
+        Fluid still = FluidHelper.getStill(entity.getFluid());
+        FluidRenderHandler fluidRenderHandler = FluidRenderHandlerRegistry.INSTANCE.get(still);
+
+        if (fluidRenderHandler == null) return;
+
+        Sprite fluid = fluidRenderHandler.getFluidSprites(world, entity.getPos(), still.getDefaultState())[0];
 
         double yOffset = PotionCauldronBlock.getFluidHeight(entity.getLevel());
 
+        // note: Drawing from the center of the block instead of corner
         matrices.push();
         matrices.translate(0.5, yOffset, 0.5);
 
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
+        VertexConsumer buffer = vertexConsumers.getBuffer(RenderLayer.getTranslucentMovingBlock());
 
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
-        RenderSystem.enableDepthTest();
-        RenderSystem.setShader(GameRenderer::getRenderTypeTranslucentProgram);
-        RenderSystem.setShaderTexture(0, AtlasId);
-        lightmapManager.enable();
-        buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
+        float uOffset = (fluid.getMaxU() - fluid.getMinU()) * uvCorrection;
+        float vOffset = (fluid.getMaxV() - fluid.getMinV()) * uvCorrection;
 
-        float uOffset = (water.getMaxU() - water.getMinU()) * uvCorrection;
-        float vOffset = (water.getMaxV() - water.getMinV()) * uvCorrection;
+        Matrix4f matrix = matrices.peek().getPositionMatrix();
 
-        buffer.vertex(matrices.peek().getPositionMatrix(), -waterWidth, 0.0f, waterWidth).color(color).texture(water.getMinU() + uOffset, water.getMaxV() - vOffset).light(lightAbove).normal(0.0f, 1.0f, 0.0f).next();
-        buffer.vertex(matrices.peek().getPositionMatrix(), waterWidth, 0.0f, waterWidth).color(color).texture(water.getMaxU() - uOffset, water.getMaxV() - vOffset).light(lightAbove).normal(0.0f, 1.0f, 0.0f).next();
-        buffer.vertex(matrices.peek().getPositionMatrix(), waterWidth, 0.0f, -waterWidth).color(color).texture(water.getMaxU() - uOffset, water.getMinV() + vOffset).light(lightAbove).normal(0.0f, 1.0f, 0.0f).next();
-        buffer.vertex(matrices.peek().getPositionMatrix(), -waterWidth, 0.0f, -waterWidth).color(color).texture(water.getMinU() + uOffset, water.getMinV() + vOffset).light(lightAbove).normal(0.0f, 1.0f, 0.0f).next();
-
-        tessellator.draw();
-
-        RenderSystem.disableDepthTest();
-        RenderSystem.enableBlend();
+        buffer.vertex(matrix, -fluidWidth, 0.0f, fluidWidth).color(color).texture(fluid.getMinU() + uOffset, fluid.getMaxV() - vOffset).light(lightAbove).overlay(overlay).normal(0.0f, 1.0f, 0.0f).next();
+        buffer.vertex(matrix, fluidWidth, 0.0f, fluidWidth).color(color).texture(fluid.getMaxU() - uOffset, fluid.getMaxV() - vOffset).light(lightAbove).overlay(overlay).normal(0.0f, 1.0f, 0.0f).next();
+        buffer.vertex(matrix, fluidWidth, 0.0f, -fluidWidth).color(color).texture(fluid.getMaxU() - uOffset, fluid.getMinV() + vOffset).light(lightAbove).overlay(overlay).normal(0.0f, 1.0f, 0.0f).next();
+        buffer.vertex(matrix, -fluidWidth, 0.0f, -fluidWidth).color(color).texture(fluid.getMinU() + uOffset, fluid.getMinV() + vOffset).light(lightAbove).overlay(overlay).normal(0.0f, 1.0f, 0.0f).next();
 
         matrices.pop();
     }

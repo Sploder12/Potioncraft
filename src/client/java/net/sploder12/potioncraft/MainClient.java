@@ -13,6 +13,5 @@ public class MainClient implements ClientModInitializer {
         Main.log("Registering Client...");
 
         BlockEntityRendererFactories.register(PotionCauldronBlockEntity.POTION_CAULDRON_BLOCK_ENTITY, PotionCauldronRenderer::new);
-
     }
 }
