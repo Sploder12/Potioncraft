@@ -2,8 +2,6 @@ package net.sploder12.potioncraft;
 
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.LavaCauldronBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.effect.StatusEffect;
@@ -25,7 +23,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.sploder12.potioncraft.util.FluidHelper;
 import net.sploder12.potioncraft.meta.MetaMixing;
 import org.jetbrains.annotations.Nullable;
 

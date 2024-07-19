@@ -9,18 +9,11 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.registry.Registries;
-import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import net.sploder12.potioncraft.util.FluidHelper;
 import org.joml.Matrix4f;
-
-import java.util.Objects;
 
 @Environment(EnvType.CLIENT)
 public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldronBlockEntity> {

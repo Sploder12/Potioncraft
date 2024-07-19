@@ -16,7 +16,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
@@ -28,6 +27,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
+import net.sploder12.potioncraft.util.FluidHelper;
 import net.sploder12.potioncraft.meta.MetaMixing;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,8 +51,8 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
 
 
     /** Behavior of Potion Cauldron */
-    public static final int MIN_LEVEL = 1;
-    public static final int MAX_LEVEL = 3;
+    public static final int MIN_LEVEL = LeveledCauldronBlock.MIN_LEVEL;
+    public static final int MAX_LEVEL = LeveledCauldronBlock.MAX_LEVEL;
 
     private static final int BASE_FLUID_HEIGHT = 6;
     private static final double FLUID_HEIGHT_PER_LEVEL = (15.0 - BASE_FLUID_HEIGHT) / (MAX_LEVEL - MIN_LEVEL + 1.0);

@@ -50,13 +50,13 @@ public class Config {
         return Field.getString(getField(id));
     }
 
-    static void loadDefaults() {
+    public static void loadDefaults() {
         for (Field field : fields.values()) {
             field.reset();
         }
     }
 
-    static void resetConfig() {
+    public static void resetConfig() {
         loadDefaults();
 
         try {
@@ -67,7 +67,7 @@ public class Config {
         }
     }
 
-    static void loadConfig() {
+    public static void loadConfig() {
         if (configFile == null) {
             Path path = FabricLoader.getInstance().getConfigDir();
             configFile = path.resolve(filename + ".properties").toFile();
@@ -116,7 +116,7 @@ public class Config {
         }
     }
 
-    static void saveConfig() throws IOException {
+    public static void saveConfig() throws IOException {
         if (configFile == null) {
             Path path = FabricLoader.getInstance().getConfigDir();
             configFile = path.resolve(filename + ".properties").toFile();

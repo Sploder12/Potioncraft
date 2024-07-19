@@ -28,6 +28,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.sploder12.potioncraft.*;
+import net.sploder12.potioncraft.util.FluidHelper;
+import net.sploder12.potioncraft.util.HeatHelper;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -89,7 +91,7 @@ public class MetaMixing {
     }
 
 
-    public static CauldronBehavior addInteraction(Item item, Map<Item, CauldronBehavior> behaviorMap, Collection<MetaEffect> effects, boolean keepOld, int potency, HashSet<Fluid> fluids) {
+    public static CauldronBehavior addInteraction(Item item, Map<Item, CauldronBehavior> behaviorMap, Collection<MetaEffect> effects, boolean keepOld, int potency) {
         CauldronBehavior prevBehavior = behaviorMap.get(item);
         if (prevBehavior == null) {
             keepOld = false;
@@ -98,15 +100,15 @@ public class MetaMixing {
         final boolean keepOldFinal = keepOld;
         CauldronBehavior behavior = (BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack itemStack) -> {
 
-            BlockData data = BlockData.getBlockData(state, world, pos);
-            if (!data.valid || (!fluids.isEmpty() && !fluids.contains(data.fluid))) {
+            CauldronData data = CauldronData.from(state, world, pos);
+            if (data == null) {
                 if (keepOldFinal) {
                     return prevBehavior.interact(state, world, pos, player, hand, itemStack);
                 }
                 return ActionResult.PASS;
             }
 
-            int initLevel = data.level;
+            int initLevel = data.entity.getLevel();
 
             int tmpPotency = getTmpPotency(potency, itemStack, data);
 
@@ -125,60 +127,7 @@ public class MetaMixing {
                 data.entity.setPotency(newPotency);
             }
 
-            if (data.fluid == Fluids.EMPTY || data.level == 0) {
-                if (data.source != Blocks.CAULDRON) {
-                    BlockState cauldron = Blocks.CAULDRON.getDefaultState();
-                    world.setBlockState(pos, cauldron);
-                }
-            }
-            else if (data.source == PotionCauldronBlock.POTION_CAULDRON_BLOCK) {
-                // turn potion cauldrons into normal cauldrons
-                if (data.entity.getLevel() < PotionCauldronBlock.MIN_LEVEL) {
-                    BlockState cauldron = Blocks.CAULDRON.getDefaultState();
-                    world.setBlockState(pos, cauldron);
-                } else if (!data.entity.hasEffects()) {
-                    BlockState block = FluidHelper.getBlock(data.entity.getFluid()).getDefaultState();
-
-                    if (block.getBlock() instanceof LeveledCauldronBlock) {
-                        world.setBlockState(pos, block.with(LeveledCauldronBlock.LEVEL, data.entity.getLevel()));
-                    }
-                    else if (data.entity.getLevel() == PotionCauldronBlock.MAX_LEVEL) {
-                        world.setBlockState(pos, block);
-                    }
-                }
-            }
-            else if (data.entity.hasEffects()) {
-                // turn vanilla cauldrons into potion cauldrons
-                world.setBlockState(pos, data.state);
-                BlockEntity dest = world.getBlockEntity(pos);
-
-                assert dest != null;
-
-                dest.readNbt(data.entity.createNbt());
-            }
-            else if (data.level != initLevel) {
-                if (data.level == 0) {
-                    BlockState cauldron = Blocks.CAULDRON.getDefaultState();
-                    world.setBlockState(pos, cauldron);
-                } else {
-                    BlockState block = FluidHelper.getBlock(data.fluid).getDefaultState();
-
-                    if (block.getBlock() instanceof LeveledCauldronBlock) {
-                        world.setBlockState(pos, block.with(LeveledCauldronBlock.LEVEL, data.entity.getLevel()));
-                    }
-                    else if (data.entity.getLevel() == PotionCauldronBlock.MAX_LEVEL) {
-                        world.setBlockState(pos, block);
-                    }
-                    else {
-                        world.setBlockState(pos, data.state);
-                        BlockEntity dest = world.getBlockEntity(pos);
-
-                        assert dest != null;
-
-                        dest.readNbt(data.entity.createNbt());
-                    }
-                }
-            }
+            data.transformBlock(world, initLevel);
 
             if (keepOldFinal && prev == ActionResult.PASS) {
                 return prevBehavior.interact(state, world, pos, player, hand, itemStack);
@@ -190,7 +139,7 @@ public class MetaMixing {
         return behaviorMap.put(item, behavior);
     }
 
-    private static int getTmpPotency(int potency, ItemStack itemStack, BlockData data) {
+    private static int getTmpPotency(int potency, ItemStack itemStack, CauldronData data) {
         int tmpPotency = potency;
 
         // if using the item's potency, it uses the max of current and held
@@ -276,7 +225,7 @@ public class MetaMixing {
                 if (quickfail.isPresent()) {
 
                     ActionResult finalQuickfail = quickfail.get();
-                    out.add((ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+                    out.add((ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
                         if (finalQuickfail == prev) {
                             return ActionResult.PASS;
                         }
@@ -310,26 +259,7 @@ public class MetaMixing {
 
         int potency = Json.getIntOr(recipe.get("potency"), 0);
 
-        JsonElement fluidsElem = recipe.get("fluids");
-        HashSet<Fluid> fluids = new HashSet<>();
-
-        if (fluidsElem != null && fluidsElem.isJsonArray()) {
-            JsonArray fluidsArr = fluidsElem.getAsJsonArray();
-
-            for (JsonElement fluidId : fluidsArr) {
-                Identifier fluidIdentifier = Json.getId(fluidId);
-
-                if (fluidIdentifier != null) {
-                    Fluid fluid = Registries.FLUID.get(fluidIdentifier);
-
-                    if (fluid != Fluids.EMPTY) {
-                        fluids.add(fluid);
-                    }
-                }
-            }
-        }
-
-        CauldronBehavior old = addInteraction(item, behaviorMap, vals, keepOld, potency, fluids);
+        CauldronBehavior old = addInteraction(item, behaviorMap, vals, keepOld, potency);
     }
 
     private static void parseRecipes (Map<Item, CauldronBehavior> behaviorMap, JsonObject recipes, String id) {
@@ -413,7 +343,7 @@ public class MetaMixing {
                 return;
             }
 
-            BlockData.blockHeats.put(block, heat);
+            HeatHelper.addStaticMapping(block, heat);
         });
     }
 
@@ -430,6 +360,9 @@ public class MetaMixing {
             public void reload(ResourceManager manager) {
                 // Clear Caches Here
 
+                FluidHelper.reset();
+                HeatHelper.reset();
+
                 CauldronBehavior.EMPTY_CAULDRON_BEHAVIOR.clear();
                 CauldronBehavior.WATER_CAULDRON_BEHAVIOR.clear();
                 CauldronBehavior.LAVA_CAULDRON_BEHAVIOR.clear();
@@ -439,11 +372,10 @@ public class MetaMixing {
                 interactions.clear();
                 inversions.clear();
 
-                BlockData.blockHeats.clear();
 
                 // @TODO clear custom behaviors
 
-                //Config.loadConfig(); // test this
+                Config.loadConfig(); // test this
 
                 Map<Identifier, Resource> resources = manager.findResources("metamixing", id -> id.toString().endsWith(".json"));
                 resources.forEach((id, resource) -> {
@@ -453,7 +385,7 @@ public class MetaMixing {
 
                         JsonElement rootE = parser.parse(reader);
                         if (rootE == null || !rootE.isJsonObject()) {
-                            Main.log("Encountered malformed resource " + id.toString());
+                            Main.log("Encountered malformed resource " + id);
                             return;
                         }
 
@@ -465,7 +397,7 @@ public class MetaMixing {
                             JsonObject recipes = recipesE.getAsJsonObject();
                             recipes.asMap().forEach((String blockId, JsonElement elem) -> {
                                 if (!elem.isJsonObject()) {
-                                    Main.log("WARNING: recipes for " + blockId + " not JSON object " + id.toString());
+                                    Main.log("WARNING: recipes for " + blockId + " not JSON object " + id);
                                     return;
                                 }
 
@@ -473,7 +405,7 @@ public class MetaMixing {
                                 Map<Item, CauldronBehavior> behaviorMap = getBehavior(bid);
 
                                 if (behaviorMap == null) {
-                                    Main.log("WARNING: " + blockId + " does not have cauldron behavior " + id.toString());
+                                    Main.log("WARNING: " + blockId + " does not have cauldron behavior " + id);
                                     return;
                                 }
 
@@ -482,7 +414,7 @@ public class MetaMixing {
                             });
                         }
                         else {
-                            Main.log("WARNING: recipes resource malformed " + id.toString());
+                            Main.log("WARNING: recipes resource malformed " + id);
                         }
 
                         JsonElement inversionsE = root.get("inversions");
@@ -490,7 +422,7 @@ public class MetaMixing {
                             parseInversions(inversionsE.getAsJsonArray(), id.toString());
                         }
                         else {
-                            Main.log("WARNING: inversions resource malformed " + id.toString());
+                            Main.log("WARNING: inversions resource malformed " + id);
                         }
 
                         JsonElement heatsE = root.get("heats");
@@ -498,11 +430,11 @@ public class MetaMixing {
                             parseHeats(heatsE.getAsJsonObject(), id.toString());
                         }
                         else {
-                            Main.log("WARNING: heats resource malformed " + id.toString());
+                            Main.log("WARNING: heats resource malformed " + id);
                         }
                     }
                     catch (Exception e) {
-                        Main.log("Error occurred while loading resource " + id.toString() + ' ' + e.toString());
+                        Main.log("Error occurred while loading resource " + id + ' ' + e);
                     }
                 });
             }

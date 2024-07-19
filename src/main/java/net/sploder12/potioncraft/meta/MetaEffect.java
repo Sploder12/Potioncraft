@@ -11,5 +11,5 @@ public interface MetaEffect {
     // you may assume data.valid is always true
     // prev will always be ActionResult.SUCCESS on the first effect
 
-    ActionResult interact(ActionResult prev, BlockData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack);
+    ActionResult interact(ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack);
 }
