@@ -52,6 +52,38 @@
     "blue_ice": -4
   },
 
+  "templates" : {
+    "use_if_fluid": {
+      "effects": [
+        {
+          "id": "HAS_FLUID",
+          "quickfail": "PASS",
+          "params": {
+            "fluids": "@{fluids}"
+          }
+        },
+        {
+          "id": "USE_ITEM",
+          "quickfail": "PASS",
+          "params": {
+            "id": "@{returned_item}",
+            "count": "@{count}",
+            "applyPotion": "@{applyPotion}",
+            "sound": "@{sound}"
+          }
+        }
+      ],
+
+      "defaults": {
+        "fluids": "minecraft:water",
+        "sound": "item.bottle.empty",
+        "returned_item": 0,
+        "count": 1,
+        "applyPotion": false
+      }
+    }
+  },
+
   "recipes": {
     "potioncraft:potion_cauldron_block": {
       "minecraft:potion": {
@@ -59,9 +91,11 @@
         "effects": [
           {
             "id": "HAS_FLUID",
-            "params": {"fluids": [
-              "minecraft:water"
-            ]}
+            "params": {
+              "fluids": [
+                "minecraft:water"
+              ]
+            }
           },
           {
             "id": "ADD_LEVEL",
@@ -85,18 +119,9 @@
       "minecraft:glass_bottle": {
         "effects": [
           {
-            "id": "HAS_FLUID",
+            "id": "${use_if_fluid}",
             "params": {
-              "fluids": [
-                "minecraft:water"
-              ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "id": "potion",
+              "returned_item": "potion",
               "sound": "item.bottle.fill",
               "applyPotion": true
             }
@@ -111,18 +136,9 @@
       "arrow": {
         "effects": [
           {
-            "id": "HAS_FLUID",
+            "id": "${use_if_fluid}",
             "params": {
-              "fluids": [
-                "minecraft:water"
-              ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "id": "tipped_arrow",
+              "returned_item": "tipped_arrow",
               "count": 8,
               "sound": "item.bottle.fill",
               "applyPotion": true
@@ -138,18 +154,9 @@
       "milk_bucket": {
         "effects": [
           {
-            "id": "HAS_FLUID",
+            "id": "${use_if_fluid}",
             "params": {
-              "fluids": [
-                "minecraft:water"
-              ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "id": "bucket",
+              "returned_item": "bucket",
               "sound": "item.bucket.empty"
             }
           },
@@ -164,19 +171,7 @@
         "potency": 1,
         "effects": [
           {
-            "id": "HAS_FLUID",
-            "params": {
-              "fluids": [
-                "minecraft:water"
-              ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "sound": "item.bottle.empty"
-            }
+            "id": "${use_if_fluid}"
           },
           {
             "id": "INVERT_EFFECTS",
@@ -189,19 +184,7 @@
         "potency": 1,
         "effects": [
           {
-            "id": "HAS_FLUID",
-            "params": {
-              "fluids": [
-                "minecraft:water"
-              ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "sound": "item.bottle.empty"
-            }
+            "id": "${use_if_fluid}"
           },
           {
             "id": "AMPLIFY",
@@ -214,19 +197,7 @@
         "potency": 1,
         "effects": [
           {
-            "id": "HAS_FLUID",
-            "params": {
-              "fluids": [
-                "minecraft:water"
-              ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "sound": "item.bottle.empty"
-            }
+            "id": "${use_if_fluid}"
           },
           {
             "id": "EXTEND",
@@ -239,19 +210,7 @@
         "potency": 1,
         "effects": [
           {
-            "id": "HAS_FLUID",
-            "params": {
-              "fluids": [
-                "minecraft:water"
-              ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "sound": "item.bottle.empty"
-            }
+            "id": "${use_if_fluid}"
           },
           {
             "id": "ADD_POTION_EFFECT",
@@ -267,20 +226,7 @@
         "potency": 1,
         "effects": [
           {
-            "id": "HAS_FLUID",
-            "quickfail": "PASS",
-            "params": {
-              "fluids": [
-                "minecraft:water"
-              ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "sound": "item.bottle.empty"
-            }
+            "id": "${use_if_fluid}"
           },
           {
             "id": "ADD_POTION_EFFECT",
@@ -296,19 +242,7 @@
         "potency": 1,
         "effects": [
           {
-            "id": "HAS_FLUID",
-            "params": {
-              "fluids": [
-                "minecraft:water"
-              ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "sound": "item.bottle.empty"
-            }
+            "id": "${use_if_fluid}"
           },
           {
             "id": "ADD_POTION_EFFECT",
@@ -324,19 +258,7 @@
         "potency": 1,
         "effects": [
           {
-            "id": "HAS_FLUID",
-            "params": {
-              "fluids": [
-                "minecraft:water"
-              ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "sound": "item.bottle.empty"
-            }
+            "id": "${use_if_fluid}"
           },
           {
             "id": "ADD_POTION_EFFECT",
@@ -352,19 +274,7 @@
         "potency": 1,
         "effects": [
           {
-            "id": "HAS_FLUID",
-            "params": {
-              "fluids": [
-                "minecraft:water"
-              ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "sound": "item.bottle.empty"
-            }
+            "id": "${use_if_fluid}"
           },
           {
             "id": "ADD_POTION_EFFECT",
@@ -380,19 +290,7 @@
         "potency": 1,
         "effects": [
           {
-            "id": "HAS_FLUID",
-            "params": {
-              "fluids": [
-                "minecraft:water"
-              ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "sound": "item.bottle.empty"
-            }
+            "id": "${use_if_fluid}"
           },
           {
             "id": "ADD_POTION_EFFECT",
@@ -408,19 +306,7 @@
         "potency": 1,
         "effects": [
           {
-            "id": "HAS_FLUID",
-            "params": {
-              "fluids": [
-                "minecraft:water"
-              ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "sound": "item.bottle.empty"
-            }
+            "id": "${use_if_fluid}"
           },
           {
             "id": "ADD_POTION_EFFECT",
@@ -436,19 +322,7 @@
         "potency": 1,
         "effects": [
           {
-            "id": "HAS_FLUID",
-            "params": {
-              "fluids": [
-                "minecraft:water"
-              ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "sound": "item.bottle.empty"
-            }
+            "id": "${use_if_fluid}"
           },
           {
             "id": "ADD_POTION_EFFECT",
@@ -464,19 +338,7 @@
         "potency": 1,
         "effects": [
           {
-            "id": "HAS_FLUID",
-            "params": {
-              "fluids": [
-                "minecraft:water"
-              ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "sound": "item.bottle.empty"
-            }
+            "id": "${use_if_fluid}"
           },
           {
             "id": "ADD_POTION_EFFECT",
@@ -492,19 +354,7 @@
         "potency": 1,
         "effects": [
           {
-            "id": "HAS_FLUID",
-            "params": {
-              "fluids": [
-                "minecraft:water"
-             ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "sound": "item.bottle.empty"
-            }
+            "id": "${use_if_fluid}"
           },
           {
             "id": "ADD_STATUS_EFFECT",
@@ -531,19 +381,7 @@
         "potency": 1,
         "effects": [
           {
-            "id": "HAS_FLUID",
-            "params": {
-              "fluids": [
-                "minecraft:water"
-              ]
-            }
-          },
-          {
-            "id": "USE_ITEM",
-            "quickfail": "PASS",
-            "params": {
-              "sound": "item.bottle.empty"
-            }
+            "id": "${use_if_fluid}"
           },
           {
             "id": "ADD_POTION_EFFECT",

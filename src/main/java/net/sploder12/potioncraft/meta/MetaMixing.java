@@ -7,13 +7,9 @@ import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.LeveledCauldronBlock;
 import net.minecraft.block.cauldron.CauldronBehavior;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -28,8 +24,11 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.sploder12.potioncraft.*;
+import net.sploder12.potioncraft.meta.templates.CustomTemplate;
+import net.sploder12.potioncraft.meta.templates.MetaEffectTemplate;
 import net.sploder12.potioncraft.util.FluidHelper;
 import net.sploder12.potioncraft.util.HeatHelper;
+import net.sploder12.potioncraft.util.Json;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -139,6 +138,16 @@ public class MetaMixing {
         return behaviorMap.put(item, behavior);
     }
 
+    private static void parseTemplate(String name, JsonObject template) {
+        CustomTemplate out = CustomTemplate.parse(template, name);
+        if (out == null) {
+            Main.log("WARNING: could not parse template " + name + ", is it missing effects?");
+            return;
+        }
+
+        templates.put("${" + name + "}", out);
+    }
+
     private static int getTmpPotency(int potency, ItemStack itemStack, CauldronData data) {
         int tmpPotency = potency;
 
@@ -158,7 +167,7 @@ public class MetaMixing {
         return tmpPotency;
     }
 
-    private static Collection<MetaEffect> parseEffects(JsonArray effects, String id) {
+    public static Collection<MetaEffect> parseEffects(JsonArray effects, String id) {
         ArrayList<MetaEffect> out = new ArrayList<>();
 
         for (JsonElement elem : effects) {
@@ -173,49 +182,19 @@ public class MetaMixing {
 
                 JsonPrimitive eprim = eid.getAsJsonPrimitive();
                 if (!eprim.isString()) {
-                    Main.log("WARNING: id must be a string " + id);
+                    Main.log("WARNING: effect id must be a string " + id);
                     continue;
                 }
 
                 MetaEffectTemplate template = templates.get(eprim.getAsString());
                 if (template == null) {
-                    Main.log("WARNING: id does not name an effect template " + id);
+                    Main.log("WARNING: " + eprim.getAsString() + " does not name an effect template " + id);
                     continue;
                 }
 
-                Optional<ActionResult> quickfail = Optional.empty();
-                if (obj.has("quickfail")) {
-                    JsonElement quick = obj.get("quickfail");
-                    if (quick.isJsonPrimitive()) {
-                        JsonPrimitive qprim = quick.getAsJsonPrimitive();
-                        if (qprim.isString()) {
-                            String quickfailStr = qprim.getAsString();
-                            if (quickfailStr.equalsIgnoreCase("SUCCESS")) {
-                                quickfail = Optional.of(ActionResult.SUCCESS);
-                            }
-                            else if (quickfailStr.equalsIgnoreCase("PASS")) {
-                                quickfail = Optional.of(ActionResult.PASS);
-                            }
-                            else if (quickfailStr.equalsIgnoreCase("CONSUME")) {
-                                quickfail = Optional.of(ActionResult.CONSUME);
-                            }
-                            else if (quickfailStr.equalsIgnoreCase("FAIL")) {
-                                quickfail = Optional.of(ActionResult.FAIL);
-                            }
-                            else if (quickfailStr.equalsIgnoreCase("CONSUME_PARTIAL")) {
-                                quickfail = Optional.of(ActionResult.CONSUME_PARTIAL);
-                            }
-                        }
-                    }
-                }
+                Optional<ActionResult> quickfail = Json.getActionResult(obj.get("quickfail"));
 
-                JsonObject params = null;
-                if (obj.has("params")) {
-                    JsonElement pelem = obj.get("params");
-                    if (pelem.isJsonObject()) {
-                        params = pelem.getAsJsonObject();
-                    }
-                }
+                JsonObject params = Json.getObj(obj.get("params"));
 
                 if (params == null) {
                     params = new JsonObject();
@@ -348,8 +327,6 @@ public class MetaMixing {
     }
 
     public static void register() {
-        MetaEffectTemplate.register();
-
         ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
             public Identifier getFabricId() {
@@ -371,6 +348,9 @@ public class MetaMixing {
 
                 interactions.clear();
                 inversions.clear();
+                templates.clear();
+
+                MetaEffectTemplate.register();
 
 
                 // @TODO clear custom behaviors
@@ -390,6 +370,19 @@ public class MetaMixing {
                         }
 
                         JsonObject root = rootE.getAsJsonObject();
+
+                        JsonElement templatesE = root.get("templates");
+                        if (templatesE != null && templatesE.isJsonObject()) {
+                            JsonObject templates = templatesE.getAsJsonObject();
+                            templates.asMap().forEach((String templateId, JsonElement elem) -> {
+                                if (!elem.isJsonObject()) {
+                                    Main.log("WARNING: templates must be an object " + templateId);
+                                    return;
+                                }
+
+                                parseTemplate(templateId, elem.getAsJsonObject());
+                            });
+                        }
 
                         JsonElement recipesE = root.get("recipes");
                         if (recipesE != null && recipesE.isJsonObject()) {
