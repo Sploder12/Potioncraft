@@ -1,7 +1,7 @@
 package net.sploder12.potioncraft.util;
 
+import net.minecraft.block.AbstractCauldronBlock;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
@@ -12,20 +12,23 @@ import net.minecraft.world.World;
 import net.sploder12.potioncraft.Main;
 import net.sploder12.potioncraft.PotionCauldronBlock;
 import net.sploder12.potioncraft.PotionCauldronBlockEntity;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
 
 public class FluidHelper {
 
-    private static final HashMap<Block, Function<WorldBlock, Fluid>> blockMappings = new HashMap<>();
-    private static final HashMap<Fluid, DefaultedHashSet<Block>> fluidMappings = new HashMap<>();
+    private static final HashMap<AbstractCauldronBlock, Function<WorldBlock, Fluid>> blockMappings = new HashMap<>();
+    private static final HashMap<Fluid, DefaultedHashSet<AbstractCauldronBlock>> fluidMappings = new HashMap<>();
 
     public static Fluid getFluid(WorldBlock block) {
-        Function<WorldBlock, Fluid> mapping = blockMappings.get(block.getBlock());
+        if (block.getBlock() instanceof AbstractCauldronBlock cauldronBlock) {
+            Function<WorldBlock, Fluid> mapping = blockMappings.get(cauldronBlock);
 
-        if (mapping != null) {
-            return mapping.apply(block);
+            if (mapping != null) {
+                return mapping.apply(block);
+            }
         }
 
         return Fluids.EMPTY;
@@ -35,26 +38,31 @@ public class FluidHelper {
         return getFluid(new WorldBlock(state, world, pos));
     }
 
-    public static void setBlockMapping(Block id, Function<WorldBlock, Fluid> association) {
+    public static void setBlockMapping(AbstractCauldronBlock id, Function<WorldBlock, Fluid> association) {
         blockMappings.put(id, association);
     }
 
-    public static void setStaticBlockMapping(Block id, Fluid fluid) {
+    public static void setStaticBlockMapping(AbstractCauldronBlock id, Fluid fluid) {
         setBlockMapping(id, (WorldBlock info) -> fluid);
     }
 
-    public static Block getBlock(Fluid fluid) {
-        DefaultedHashSet<Block> cauldrons = fluidMappings.get(fluid);
+    public static AbstractCauldronBlock getBlock(Fluid fluid) {
+        DefaultedHashSet<AbstractCauldronBlock> cauldrons = fluidMappings.get(fluid);
 
         if (cauldrons != null) {
             return cauldrons.getDefaultElement();
         }
 
-        return Blocks.CAULDRON;
+        return (AbstractCauldronBlock) Blocks.CAULDRON;
     }
 
-    public static void setDefaultFluidMapping(Fluid fluid, Block cauldron) {
-        DefaultedHashSet<Block> cauldrons = fluidMappings.get(fluid);
+    @Nullable
+    public static DefaultedHashSet<AbstractCauldronBlock> getBlocks(Fluid fluid) {
+        return fluidMappings.get(fluid);
+    }
+
+    public static void setDefaultFluidMapping(Fluid fluid, AbstractCauldronBlock cauldron) {
+        DefaultedHashSet<AbstractCauldronBlock> cauldrons = fluidMappings.get(fluid);
 
         if (cauldrons == null) {
             fluidMappings.put(fluid, new DefaultedHashSet<>(cauldron));
@@ -64,8 +72,8 @@ public class FluidHelper {
         }
     }
 
-    public static void addFluidMapping(Fluid fluid, Block cauldron) {
-        DefaultedHashSet<Block> cauldrons = fluidMappings.get(fluid);
+    public static void addFluidMapping(Fluid fluid, AbstractCauldronBlock cauldron) {
+        DefaultedHashSet<AbstractCauldronBlock> cauldrons = fluidMappings.get(fluid);
 
         if (cauldrons == null) {
             fluidMappings.put(fluid, new DefaultedHashSet<>(cauldron));
@@ -96,8 +104,8 @@ public class FluidHelper {
     }
 
     public static void register() {
-        setStaticBlockMapping(Blocks.WATER_CAULDRON, Fluids.WATER);
-        setStaticBlockMapping(Blocks.LAVA_CAULDRON, Fluids.LAVA);
+        setStaticBlockMapping((AbstractCauldronBlock) Blocks.WATER_CAULDRON, Fluids.WATER);
+        setStaticBlockMapping((AbstractCauldronBlock) Blocks.LAVA_CAULDRON, Fluids.LAVA);
         setBlockMapping(PotionCauldronBlock.POTION_CAULDRON_BLOCK, (WorldBlock info) -> {
             if (info.getBlockEntity() instanceof PotionCauldronBlockEntity entity) {
                 return entity.getFluid();
@@ -105,17 +113,17 @@ public class FluidHelper {
             return Fluids.EMPTY;
         });
 
-        setDefaultFluidMapping(Fluids.EMPTY, Blocks.CAULDRON);
-        setDefaultFluidMapping(Fluids.WATER, Blocks.WATER_CAULDRON);
-        setDefaultFluidMapping(Fluids.LAVA, Blocks.LAVA_CAULDRON);
+        setDefaultFluidMapping(Fluids.EMPTY, (AbstractCauldronBlock) Blocks.CAULDRON);
+        setDefaultFluidMapping(Fluids.WATER, (AbstractCauldronBlock) Blocks.WATER_CAULDRON);
+        setDefaultFluidMapping(Fluids.LAVA, (AbstractCauldronBlock) Blocks.LAVA_CAULDRON);
 
         // these are very important for generating interactions!
         addFluidMapping(Fluids.WATER, PotionCauldronBlock.POTION_CAULDRON_BLOCK);
         addFluidMapping(Fluids.LAVA, PotionCauldronBlock.POTION_CAULDRON_BLOCK);
 
         // these shouldn't really exist, but they exist just in case
-        setDefaultFluidMapping(Fluids.FLOWING_WATER, Blocks.WATER_CAULDRON);
-        setDefaultFluidMapping(Fluids.FLOWING_LAVA, Blocks.LAVA_CAULDRON);
+        setDefaultFluidMapping(Fluids.FLOWING_WATER, (AbstractCauldronBlock) Blocks.WATER_CAULDRON);
+        setDefaultFluidMapping(Fluids.FLOWING_LAVA, (AbstractCauldronBlock) Blocks.LAVA_CAULDRON);
 
         // powdered snow is not a fluid...
     }

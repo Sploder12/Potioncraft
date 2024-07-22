@@ -189,7 +189,7 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
 
                 ItemStack items = itemEntity.getStack();
 
-                Map<Item, CauldronBehavior> behaviorMap = MetaMixing.getBehavior(PotionCauldronBlock.POTION_CAULDRON_ID);
+                Map<Item, CauldronBehavior> behaviorMap = MetaMixing.getBehavior(PotionCauldronBlock.POTION_CAULDRON_BLOCK);
 
                 if (behaviorMap.containsKey(items.getItem())) {
                     CauldronBehavior behavior = behaviorMap.get(items.getItem());
@@ -223,6 +223,8 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
                 double r = (double)(color >> 16 & 0xFF) / 255.0;
                 double g = (double)(color >> 8 & 0xFF) / 255.0;
                 double b = (double)(color & 0xFF) / 255.0;
+
+
 
                 for (int i = 0; i < 3; ++i) {
                     world.addParticle(ParticleTypes.SPLASH, d + 0.25 + random.nextDouble() * 0.5, e, f + 0.25 + random.nextDouble() * 0.5, r, g, b);

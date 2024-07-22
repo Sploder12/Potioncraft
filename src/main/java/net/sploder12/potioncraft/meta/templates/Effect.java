@@ -32,7 +32,7 @@ public interface Effect {
     // "applyPotion": Boolean - adds the potion effects to the replacement item
     // "sound": Identifier - sound to play
     // "count": attempt to use and give that many items
-    MetaEffectTemplate USE_ITEM = (params) -> {
+    MetaEffectTemplate USE_ITEM = (params, file) -> {
 
         final Item replaceItem = Json.getRegistryEntry(params.get("id"), Registries.ITEM);
         final SoundEvent sound = Json.getRegistryEntry(params.get("sound"), Registries.SOUND_EVENT);
@@ -76,7 +76,7 @@ public interface Effect {
     };
 
     // params: "id": Identifier - sound to play
-    MetaEffectTemplate PLAY_SOUND = (params) -> {
+    MetaEffectTemplate PLAY_SOUND = (params, file) -> {
 
         final SoundEvent sound = Json.getRegistryEntry(params.get("id"), Registries.SOUND_EVENT);
         if (sound != null) {
@@ -89,19 +89,19 @@ public interface Effect {
             };
         }
 
-        Main.log("PLAY_SOUND effect has invalid id field!");
+        Main.log("WARNING: PLAY_SOUND effect has invalid id field! " + file);
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
     };
 
     // think milk bucket
-    MetaEffectTemplate CLEAR_EFFECTS = (params) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+    MetaEffectTemplate CLEAR_EFFECTS = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
         data.entity.clearEffects();
 
         return ActionResult.success(world.isClient);
     };
 
     // think spider eye
-    MetaEffectTemplate INVERT_EFFECTS = (params) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+    MetaEffectTemplate INVERT_EFFECTS = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
         data.entity.invertEffects();
 
         return ActionResult.success(world.isClient);
@@ -112,7 +112,7 @@ public interface Effect {
     // "amplifier": Decimal - effect level
     // "showParticles": Boolean - should show particles?
     // "showIcon": Boolean - should show icon?
-    MetaEffectTemplate ADD_STATUS_EFFECT = (params) -> {
+    MetaEffectTemplate ADD_STATUS_EFFECT = (params, file) -> {
         final StatusEffect type = Json.getRegistryEntry(params.get("id"), Registries.STATUS_EFFECT);
 
         if (type != null) {
@@ -137,13 +137,13 @@ public interface Effect {
             };
         }
 
-        Main.log("ADD_POTION_EFFECT effect has invalid id field!");
+        Main.log("WARNING: ADD_POTION_EFFECT effect has invalid id field! " + file);
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
     };
 
     // params: "id": Identifier - potion effect to add
     // WARNING - ONLY works when the potion has a single effect.
-    MetaEffectTemplate ADD_POTION_EFFECT = (params) -> {
+    MetaEffectTemplate ADD_POTION_EFFECT = (params, file) -> {
         final Potion potion = Json.getRegistryEntry(params.get("id"), Registries.POTION);
 
         if (potion != null && potion != Potions.EMPTY) {
@@ -161,12 +161,12 @@ public interface Effect {
             };
         }
 
-        Main.log("ADD_POTION_EFFECT effect has invalid id field!");
+        Main.log("WARNING: ADD_POTION_EFFECT effect has invalid id field! " + file);
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
     };
 
     // takes the potion effects from item and applies to the cauldron
-    MetaEffectTemplate APPLY_ITEM_EFFECTS = (params) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+    MetaEffectTemplate APPLY_ITEM_EFFECTS = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
         if (data.getLevel() == 0) {
             return ActionResult.PASS;
         }
@@ -181,7 +181,7 @@ public interface Effect {
 
     // params: "dilute": boolean - should dilution occur
     // "fluid": Identifier - fluid to try to add
-    MetaEffectTemplate ADD_LEVEL = (params) -> {
+    MetaEffectTemplate ADD_LEVEL = (params, file) -> {
         final boolean dilute = Json.getBoolOr(params.get("dilute"), true);
 
         final Fluid fluid = Json.getRegistryEntry(params.get("fluid"), Registries.FLUID);
@@ -213,7 +213,7 @@ public interface Effect {
     };
 
     // removes a water level from the cauldron
-    MetaEffectTemplate REMOVE_LEVEL = (params) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+    MetaEffectTemplate REMOVE_LEVEL = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
         if (!data.removeLevel()) {
             return ActionResult.PASS;
         }
@@ -223,7 +223,7 @@ public interface Effect {
 
     // amplifies the effect level (evenly adds "amplifier" to all effects)
     // params: "amplifier" - Decimal
-    MetaEffectTemplate AMPLIFY = (params) -> {
+    MetaEffectTemplate AMPLIFY = (params, file) -> {
         final float amplifier = Json.getFloatOr(params.get("amplifier"), 3.0f);
 
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
@@ -235,7 +235,7 @@ public interface Effect {
 
     // extends the effect (evenly adds "duration" to all effects)
     // params: "duration" - Decimal
-    MetaEffectTemplate EXTEND = (params) -> {
+    MetaEffectTemplate EXTEND = (params, file) -> {
         final float duration = Json.getFloatOr(params.get("duration"), 6000.0f);
 
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {

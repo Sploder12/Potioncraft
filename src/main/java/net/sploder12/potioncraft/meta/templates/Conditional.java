@@ -15,29 +15,106 @@ import net.minecraft.world.World;
 import net.sploder12.potioncraft.Main;
 import net.sploder12.potioncraft.PotionCauldronBlock;
 import net.sploder12.potioncraft.meta.CauldronData;
+import net.sploder12.potioncraft.meta.MetaEffect;
+import net.sploder12.potioncraft.meta.parsers.EffectParser;
 import net.sploder12.potioncraft.util.Json;
 
+import java.util.Collection;
 import java.util.HashSet;
 
 public interface Conditional {
     // hand swinging is controlled by the LAST event, thus why FORCE_SWING_HAND exists.
     // FORCE_SWING_HAND can also be used to generate a guaranteed SUCCESS
-    // (or PASS if you use two FORCE_SWING_HANDs with a quickfail == SUCCESS)
 
-    MetaEffectTemplate FORCE_SWING_HAND = (params) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.success(world.isClient);
+    MetaEffectTemplate FORCE_SWING_HAND = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.success(world.isClient);
 
     // Predicate templates are useful for checking conditions!
-    // && is easy! || is harder but doable via De Morgan's law
 
-    MetaEffectTemplate INVERT_COND = (params) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+    MetaEffectTemplate INVERT_COND = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
         if (prev == ActionResult.PASS) {
-            return ActionResult.SUCCESS;
+            return ActionResult.success(world.isClient);
         }
 
         return ActionResult.PASS;
     };
 
-    MetaEffectTemplate IS_FROM_VANILLA = (params) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+    // shortcircuit eval &&
+    MetaEffectTemplate AND = (params, file) -> {
+        JsonElement conditionsE = params.get("conditions");
+        if (conditionsE == null || !conditionsE.isJsonArray()) {
+            Main.log("WARNING: AND has no conditions! " + file);
+            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+        }
+
+        final boolean shortCircuit = Json.getBoolOr(params.get("short_circuit"), true);
+
+        final Collection<MetaEffect> effects = EffectParser.parseEffects(conditionsE.getAsJsonArray(), file);
+        if (effects.isEmpty()) {
+            Main.log("WARNING: AND has no conditions! " + file);
+            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+        }
+
+        return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+            boolean success = true;
+
+            for (MetaEffect effect : effects) {
+                ActionResult cond = effect.interact(ActionResult.success(world.isClient), data, world, pos, player, hand, stack);
+
+                if (cond == ActionResult.PASS) {
+                    success = false;
+                    if (shortCircuit) {
+                        break;
+                    }
+                }
+            }
+
+            if (success) {
+                return ActionResult.success(world.isClient);
+            }
+
+            return ActionResult.PASS;
+        };
+    };
+
+    // shortcircuit eval ||
+    MetaEffectTemplate OR = (params, file) -> {
+        JsonElement conditionsE = params.get("conditions");
+        if (conditionsE == null || !conditionsE.isJsonArray()) {
+            Main.log("WARNING: OR has no conditions! " + file);
+            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+        }
+
+        final boolean shortCircuit = Json.getBoolOr(params.get("short_circuit"), true);
+
+        final Collection<MetaEffect> effects = EffectParser.parseEffects(conditionsE.getAsJsonArray(), file);
+        if (effects.isEmpty()) {
+            Main.log("WARNING: OR has no conditions! " + file);
+            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+        }
+
+        return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+            boolean success = false;
+
+            for (MetaEffect effect : effects) {
+                ActionResult cond = effect.interact(ActionResult.success(world.isClient), data, world, pos, player, hand, stack);
+
+                if (cond == ActionResult.success(world.isClient)) {
+                    success = true;
+                    if (shortCircuit) {
+                        break;
+                    }
+                }
+            }
+
+            if (success) {
+                return ActionResult.success(world.isClient);
+            }
+
+            return ActionResult.PASS;
+        };
+    };
+
+    MetaEffectTemplate IS_FROM_VANILLA = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
         if (Registries.BLOCK.getId(data.source).getNamespace().equalsIgnoreCase("minecraft")) {
             return ActionResult.success(world.isClient);
         }
@@ -48,7 +125,7 @@ public interface Conditional {
 
     // params: "level": int - if set will only succeed when data.getLevel() == int
     // else will succeed when data.getLevel() > 0
-    MetaEffectTemplate HAS_LEVEL = (params) -> {
+    MetaEffectTemplate HAS_LEVEL = (params, file) -> {
         final Integer finalTarget = Json.getInt(params.get("level"));
 
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
@@ -71,7 +148,7 @@ public interface Conditional {
     // params: "heat": int - if set will only succeed when data.heat >= int
     // or == when int is 0, or <= when int is < 0
     // default is as if the parameter was 1
-    MetaEffectTemplate HAS_HEAT = (params) -> {
+    MetaEffectTemplate HAS_HEAT = (params, file) -> {
         final int finalTarget = Json.getIntOr(params.get("heat"), 1);
 
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
@@ -103,7 +180,7 @@ public interface Conditional {
     };
 
     // params: "fluids": array of identifiers to fluids
-    MetaEffectTemplate HAS_FLUID = (params) -> {
+    MetaEffectTemplate HAS_FLUID = (params, file) -> {
         JsonElement fluidsElem = params.get("fluids");
         HashSet<Fluid> fluids = null;
 
@@ -131,7 +208,7 @@ public interface Conditional {
                     fluids.add(fluid);
                 }
                 else {
-                    Main.log("WARNING: " + fluidsElem.getAsString() + " does not name a fluid");
+                    Main.log("WARNING: " + fluidsElem.getAsString() + " does not name a fluid " + file);
                 }
             }
         }
@@ -156,7 +233,7 @@ public interface Conditional {
         };
     };
 
-    MetaEffectTemplate IS_FULL = (params) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+    MetaEffectTemplate IS_FULL = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
         if (data.getLevel() >= PotionCauldronBlock.MAX_LEVEL) {
             return ActionResult.success(world.isClient);
         }
@@ -165,7 +242,7 @@ public interface Conditional {
     };
 
     // params: "level": int - if set will only succeed when data.getLevel() >= int
-    MetaEffectTemplate MIN_LEVEL = (params) -> {
+    MetaEffectTemplate MIN_LEVEL = (params, file) -> {
         Number num = Json.getNumber(params.get("level"));
         if (num == null) {
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
@@ -182,7 +259,7 @@ public interface Conditional {
     };
 
     // params: "level": int - if set will only succeed when data.heat <= int
-    MetaEffectTemplate MAX_LEVEL = (params) -> {
+    MetaEffectTemplate MAX_LEVEL = (params, file) -> {
         Number num = Json.getNumber(params.get("level"));
         if (num == null) {
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
@@ -199,7 +276,7 @@ public interface Conditional {
     };
 
     // params: "heat": int - if set will only succeed when data.heat >= int
-    MetaEffectTemplate MIN_HEAT = (params) -> {
+    MetaEffectTemplate MIN_HEAT = (params, file) -> {
         Number num = Json.getNumber(params.get("heat"));
         if (num == null) {
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
@@ -216,7 +293,7 @@ public interface Conditional {
     };
 
     // params: "heat": int - if set will only succeed when data.heat <= int
-    MetaEffectTemplate MAX_HEAT = (params) -> {
+    MetaEffectTemplate MAX_HEAT = (params, file) -> {
         Number num = Json.getNumber(params.get("heat"));
         if (num == null) {
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
@@ -232,7 +309,7 @@ public interface Conditional {
         };
     };
 
-    MetaEffectTemplate ITEM_HAS_EFFECTS = (params) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+    MetaEffectTemplate ITEM_HAS_EFFECTS = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
         if (PotionUtil.getPotionEffects(stack).isEmpty()) {
             return ActionResult.PASS;
         }

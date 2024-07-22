@@ -13,7 +13,7 @@ import net.minecraft.world.World;
 import net.sploder12.potioncraft.Main;
 import net.sploder12.potioncraft.meta.CauldronData;
 import net.sploder12.potioncraft.meta.MetaEffect;
-import net.sploder12.potioncraft.meta.MetaMixing;
+import net.sploder12.potioncraft.meta.parsers.EffectParser;
 import net.sploder12.potioncraft.util.Json;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,13 +33,13 @@ public class CustomTemplate implements MetaEffectTemplate {
             locations.add(new Pair<>(parent, idx));
         }
 
-        public void apply(JsonElement value) {
+        public void apply(JsonElement value, String file) {
             if (value == null && defaultValue != null) {
                 value = defaultValue;
             }
 
             if (value == null) {
-                Main.log("WARNING: a templated recipe failed to give a value to an argument!");
+                Main.log("WARNING: a templated recipe failed to give a value to an argument! " + file);
                 return;
             }
 
@@ -72,14 +72,14 @@ public class CustomTemplate implements MetaEffectTemplate {
         this.parameters = new HashMap<>();
     }
 
-    public MetaEffect apply(JsonObject params) {
+    public MetaEffect apply(JsonObject params, String file) {
         parameters.forEach((String id, ParameterEntry entry) -> {
             JsonElement elem = params.get(id);
 
-            entry.apply(elem);
+            entry.apply(elem, file);
         });
 
-        final Collection<MetaEffect> effects = MetaMixing.parseEffects(this.effects, name);
+        final Collection<MetaEffect> effects = EffectParser.parseEffects(this.effects, name);
 
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             for (MetaEffect effect : effects) {
@@ -134,7 +134,7 @@ public class CustomTemplate implements MetaEffectTemplate {
     }
 
     @Nullable
-    public static CustomTemplate parse(JsonObject template, String name) {
+    public static CustomTemplate parse(JsonObject template, String name, String file) {
         JsonElement effectsE = template.get("effects");
 
         if (effectsE.isJsonArray()) {
@@ -156,7 +156,7 @@ public class CustomTemplate implements MetaEffectTemplate {
 
                     // indicates that the argument is never referenced!
                     if (entry == null) {
-                        Main.log("WARNING: template " + name + " tries to default unused argument " + arg);
+                        Main.log("WARNING: template " + name + " tries to default unused argument " + arg + " " + file);
                         return;
                     };
 
