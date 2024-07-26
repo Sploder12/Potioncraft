@@ -11,7 +11,7 @@ import net.sploder12.potioncraft.util.Json;
 
 import java.util.HashMap;
 
-public interface Inversions {
+public interface InversionsParser {
     HashMap<StatusEffect, StatusEffect> inversions = new HashMap<>();
 
     static void addMutualInversion(StatusEffect first, StatusEffect second) {
@@ -37,7 +37,7 @@ public interface Inversions {
                 Identifier to = Json.getId(inversion.get("to"));
 
                 if (from == null || to == null || from.equals(to)) {
-                    Main.log("WARNING: invalid inversion in " + id);
+                    Main.warn("invalid inversion between " + from + " and " + to + " " + id);
                     continue;
                 }
 
@@ -61,11 +61,12 @@ public interface Inversions {
 
     static void parse(JsonElement elem, String file) {
         if (elem == null) {
+            Main.debug("inversions not present " + file);
             return;
         }
 
         if (!elem.isJsonArray()) {
-            Main.log("WARNING: inversions is not an array " + file);
+            Main.warn("inversions is not an array " + file);
             return;
         }
 

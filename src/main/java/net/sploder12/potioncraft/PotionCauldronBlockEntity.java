@@ -23,7 +23,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.sploder12.potioncraft.meta.parsers.Inversions;
+import net.sploder12.potioncraft.meta.parsers.InversionsParser;
 import net.sploder12.potioncraft.util.FluidHelper;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,7 +51,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
     }
 
     public static void register() {
-        Main.log("Registering Potion Cauldron Block Entity...");
+        Main.debug("Registering Potion Cauldron Block Entity...");
 
         Registry.register(
                 Registries.BLOCK_ENTITY_TYPE,
@@ -174,9 +174,9 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         boolean changed = false;
 
         for (PotionEffectInstance effect : this.effects.values()) {
-            if (Inversions.inversions.containsKey(effect.type)) {
+            if (InversionsParser.inversions.containsKey(effect.type)) {
                 changed = true;
-                effect.type = Inversions.inversions.get(effect.type);
+                effect.type = InversionsParser.inversions.get(effect.type);
             }
 
             if (newEffects.containsKey(effect.type)) {

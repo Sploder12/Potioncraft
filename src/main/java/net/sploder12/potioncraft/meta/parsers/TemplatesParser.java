@@ -6,11 +6,11 @@ import net.sploder12.potioncraft.Main;
 import net.sploder12.potioncraft.meta.templates.CustomTemplate;
 import net.sploder12.potioncraft.meta.templates.MetaEffectTemplate;
 
-public interface Templates {
+public interface TemplatesParser {
     private static void parseTemplates(JsonObject templates, String file) {
         templates.asMap().forEach((String templateId, JsonElement elem) -> {
             if (!elem.isJsonObject()) {
-                Main.log("WARNING: " + templateId + " must be an object " + file);
+                Main.warn(templateId + " must be an object " + file);
                 return;
             }
 
@@ -21,7 +21,7 @@ public interface Templates {
     private static boolean parseTemplate(String name, JsonObject template, String file) {
         CustomTemplate out = CustomTemplate.parse(template, name, file);
         if (out == null) {
-            Main.log("WARNING: could not parse template " + name + ", is it missing effects? " + file);
+            Main.warn("could not parse template " + name + ", is it missing effects? " + file);
             return false;
         }
 
@@ -31,11 +31,12 @@ public interface Templates {
 
     static void parse(JsonElement elem, String file) {
         if (elem == null) {
+            Main.debug("templates not present " + file);
             return;
         }
 
         if (!elem.isJsonObject()) {
-            Main.log("WARNING: templates is not json object " + file);
+            Main.warn("templates is not json object " + file);
             return;
         }
 

@@ -34,8 +34,8 @@ public interface Effect {
     // "count": attempt to use and give that many items
     MetaEffectTemplate USE_ITEM = (params, file) -> {
 
-        final Item replaceItem = Json.getRegistryEntry(params.get("id"), Registries.ITEM);
-        final SoundEvent sound = Json.getRegistryEntry(params.get("sound"), Registries.SOUND_EVENT);
+        final Item replaceItem = Json.getRegistryEntry(params.get("id"), Registries.ITEM, file);
+        final SoundEvent sound = Json.getRegistryEntry(params.get("sound"), Registries.SOUND_EVENT, file);
 
         final boolean finalApplyPotion = Json.getBoolOr(params.get("applyPotion"), false);
         final int finalCount = Json.getIntOr(params.get("count"), 1);
@@ -78,7 +78,7 @@ public interface Effect {
     // params: "id": Identifier - sound to play
     MetaEffectTemplate PLAY_SOUND = (params, file) -> {
 
-        final SoundEvent sound = Json.getRegistryEntry(params.get("id"), Registries.SOUND_EVENT);
+        final SoundEvent sound = Json.getRegistryEntry(params.get("id"), Registries.SOUND_EVENT, file);
         if (sound != null) {
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
                 if (!world.isClient) {
@@ -89,7 +89,7 @@ public interface Effect {
             };
         }
 
-        Main.log("WARNING: PLAY_SOUND effect has invalid id field! " + file);
+        Main.warn("PLAY_SOUND effect has invalid id field! " + file);
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
     };
 
@@ -113,7 +113,7 @@ public interface Effect {
     // "showParticles": Boolean - should show particles?
     // "showIcon": Boolean - should show icon?
     MetaEffectTemplate ADD_STATUS_EFFECT = (params, file) -> {
-        final StatusEffect type = Json.getRegistryEntry(params.get("id"), Registries.STATUS_EFFECT);
+        final StatusEffect type = Json.getRegistryEntry(params.get("id"), Registries.STATUS_EFFECT, file);
 
         if (type != null) {
             final float duration = Json.getFloatOr(params.get("duration"), 1.0f);
@@ -137,14 +137,14 @@ public interface Effect {
             };
         }
 
-        Main.log("WARNING: ADD_POTION_EFFECT effect has invalid id field! " + file);
+        Main.warn("ADD_POTION_EFFECT effect has invalid id field! " + file);
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
     };
 
     // params: "id": Identifier - potion effect to add
     // WARNING - ONLY works when the potion has a single effect.
     MetaEffectTemplate ADD_POTION_EFFECT = (params, file) -> {
-        final Potion potion = Json.getRegistryEntry(params.get("id"), Registries.POTION);
+        final Potion potion = Json.getRegistryEntry(params.get("id"), Registries.POTION, file);
 
         if (potion != null && potion != Potions.EMPTY) {
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
@@ -161,7 +161,7 @@ public interface Effect {
             };
         }
 
-        Main.log("WARNING: ADD_POTION_EFFECT effect has invalid id field! " + file);
+        Main.warn("ADD_POTION_EFFECT effect has invalid id field! " + file);
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
     };
 
@@ -184,7 +184,7 @@ public interface Effect {
     MetaEffectTemplate ADD_LEVEL = (params, file) -> {
         final boolean dilute = Json.getBoolOr(params.get("dilute"), true);
 
-        final Fluid fluid = Json.getRegistryEntry(params.get("fluid"), Registries.FLUID);
+        final Fluid fluid = Json.getRegistryEntry(params.get("fluid"), Registries.FLUID, file);
 
         if (fluid != null && fluid != Fluids.EMPTY) {
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {

@@ -3,9 +3,11 @@ package net.sploder12.potioncraft.util;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import net.minecraft.registry.DefaultedRegistry;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
+import net.sploder12.potioncraft.Main;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -41,14 +43,30 @@ public class Json {
     }
 
     @Nullable
-    public static <T> T getRegistryEntry(JsonElement elem, Registry<T> registry) {
-        Identifier id = getId(elem);
-
+    public static <T> T getRegistryEntry(Identifier id, Registry<T> registry, String file) {
         if (id == null) {
             return null;
         }
 
-        return registry.get(id);
+        T out = registry.get(id);
+        if (out == null) {
+            Main.warn(id + " is not registered to " + registry + " " + file);
+        }
+        else if (registry instanceof DefaultedRegistry<T> defRegistry) {
+            if (defRegistry.get(defRegistry.getDefaultId()) == out &&
+                    defRegistry.getDefaultId() != id) {
+
+                Main.warn(id + " is not registered to " + registry + " " + file);
+                return null;
+            }
+        }
+
+        return out;
+    }
+
+    @Nullable
+    public static <T> T getRegistryEntry(JsonElement elem, Registry<T> registry, String file) {
+        return getRegistryEntry(getId(elem), registry, file);
     }
 
     @Nullable

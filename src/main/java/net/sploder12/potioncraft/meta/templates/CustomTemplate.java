@@ -39,7 +39,7 @@ public class CustomTemplate implements MetaEffectTemplate {
             }
 
             if (value == null) {
-                Main.log("WARNING: a templated recipe failed to give a value to an argument! " + file);
+                Main.warn("templated recipe failed to give a value to an argument! " + file);
                 return;
             }
 
@@ -73,21 +73,31 @@ public class CustomTemplate implements MetaEffectTemplate {
     }
 
     public MetaEffect apply(JsonObject params, String file) {
-        parameters.forEach((String id, ParameterEntry entry) -> {
-            JsonElement elem = params.get(id);
+        final String fileLocation = file + "-" + name;
 
-            entry.apply(elem, file);
-        });
+        try {
+            parameters.forEach((String id, ParameterEntry entry) -> {
+                JsonElement elem = params.get(id);
 
-        final Collection<MetaEffect> effects = EffectParser.parseEffects(this.effects, name);
+                entry.apply(elem, fileLocation);
+            });
 
-        return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-            for (MetaEffect effect : effects) {
-                prev = effect.interact(prev, data, world, pos, player, hand, stack);
-            }
+            final Collection<MetaEffect> effects = EffectParser.parseEffects(this.effects, fileLocation);
 
-            return prev;
-        };
+            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+                for (MetaEffect effect : effects) {
+                    prev = effect.interact(prev, data, world, pos, player, hand, stack);
+                }
+
+                return prev;
+            };
+        }
+        catch (StackOverflowError err) {
+            Main.error("Infinite template detected! Check for recursion! " + fileLocation);
+            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+                return ActionResult.success(world.isClient);
+            };
+        }
     }
 
     protected void add(String id, JsonElement parent, Object idx) {
@@ -156,7 +166,7 @@ public class CustomTemplate implements MetaEffectTemplate {
 
                     // indicates that the argument is never referenced!
                     if (entry == null) {
-                        Main.log("WARNING: template " + name + " tries to default unused argument " + arg + " " + file);
+                        Main.warn("template " + name + " tries to default unused argument " + arg + " " + file);
                         return;
                     };
 

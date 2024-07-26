@@ -10,7 +10,7 @@ public class MainClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        Main.log("Registering Client...");
+        Main.debug("Registering Client...");
 
         BlockEntityRendererFactories.register(PotionCauldronBlockEntity.POTION_CAULDRON_BLOCK_ENTITY, PotionCauldronRenderer::new);
     }

@@ -63,7 +63,7 @@ public class Config {
             saveConfig();
         }
         catch (IOException e) {
-            Main.log("Config failed to save! " + e);
+            Main.error("Config failed to save! ", e);
         }
     }
 
@@ -111,7 +111,7 @@ public class Config {
                 saveConfig();
             }
             catch (IOException e) {
-                Main.log("Config failed to save! " + e);
+                Main.error("Config failed to save! ", e);
             }
         }
     }

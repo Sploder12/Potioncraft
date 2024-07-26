@@ -42,7 +42,7 @@ public interface Conditional {
     MetaEffectTemplate AND = (params, file) -> {
         JsonElement conditionsE = params.get("conditions");
         if (conditionsE == null || !conditionsE.isJsonArray()) {
-            Main.log("WARNING: AND has no conditions! " + file);
+            Main.warn("AND has no conditions! " + file);
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
         }
 
@@ -50,7 +50,7 @@ public interface Conditional {
 
         final Collection<MetaEffect> effects = EffectParser.parseEffects(conditionsE.getAsJsonArray(), file);
         if (effects.isEmpty()) {
-            Main.log("WARNING: AND has no conditions! " + file);
+            Main.warn("AND has no conditions! " + file);
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
         }
 
@@ -80,7 +80,7 @@ public interface Conditional {
     MetaEffectTemplate OR = (params, file) -> {
         JsonElement conditionsE = params.get("conditions");
         if (conditionsE == null || !conditionsE.isJsonArray()) {
-            Main.log("WARNING: OR has no conditions! " + file);
+            Main.warn("OR has no conditions! " + file);
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
         }
 
@@ -88,7 +88,7 @@ public interface Conditional {
 
         final Collection<MetaEffect> effects = EffectParser.parseEffects(conditionsE.getAsJsonArray(), file);
         if (effects.isEmpty()) {
-            Main.log("WARNING: OR has no conditions! " + file);
+            Main.warn("OR has no conditions! " + file);
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
         }
 
@@ -189,9 +189,9 @@ public interface Conditional {
                 JsonArray fluidsArr = fluidsElem.getAsJsonArray();
 
                 for (JsonElement fluidId : fluidsArr) {
-                    Fluid fluid = Json.getRegistryEntry(fluidId, Registries.FLUID);
+                    Fluid fluid = Json.getRegistryEntry(fluidId, Registries.FLUID, file);
 
-                    if (fluid != null && fluid != Fluids.EMPTY) {
+                    if (fluid != null) {
                         if (fluids == null) {
                             fluids = new HashSet<>();
                         }
@@ -201,14 +201,11 @@ public interface Conditional {
                 }
             }
             else if (fluidsElem.isJsonPrimitive()) {
-                Fluid fluid = Json.getRegistryEntry(fluidsElem, Registries.FLUID);
+                Fluid fluid = Json.getRegistryEntry(fluidsElem, Registries.FLUID, file);
 
-                if (fluid != null && fluid != Fluids.EMPTY) {
+                if (fluid != null) {
                     fluids = new HashSet<>();
                     fluids.add(fluid);
-                }
-                else {
-                    Main.log("WARNING: " + fluidsElem.getAsString() + " does not name a fluid " + file);
                 }
             }
         }

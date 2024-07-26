@@ -22,12 +22,12 @@ import net.sploder12.potioncraft.util.Json;
 import java.util.Collection;
 import java.util.Map;
 
-public interface Recipes {
+public interface RecipesParser {
     private static boolean parseBlockRecipes(JsonObject recipes, String blockId, String id) {
         Identifier bid = Identifier.tryParse(blockId);
 
         if (bid == null) {
-            Main.log("WARNING: " + blockId + " is not an identifier " + id);
+            Main.warn(blockId + " is not an identifier " + id);
             return false;
         }
 
@@ -45,13 +45,13 @@ public interface Recipes {
         // maybe the id names a fluid?
         Fluid fluid = Registries.FLUID.get(bid);
         if (fluid == Fluids.EMPTY) {
-            Main.log("WARNING: " + blockId + " does not have cauldron behavior " + id);
+            Main.warn(blockId + " does not have cauldron behavior " + id);
             return false;
         }
 
         DefaultedHashSet<AbstractCauldronBlock> blocks = FluidHelper.getBlocks(fluid);
         if (blocks == null) {
-            Main.log("WARNING: " + blockId + " fluid does not have any associated cauldrons " + id);
+            Main.warn(blockId + " fluid does not have any associated cauldrons " + id);
             return false;
         }
 
@@ -69,31 +69,32 @@ public interface Recipes {
 
     private static void parseBlockRecipes(Map<Item, CauldronBehavior> behaviorMap, JsonObject recipes, String id) {
         recipes.asMap().forEach((String item, JsonElement elem) -> {
+
             if (!elem.isJsonObject()) {
-                Main.log("WARNING: " + item + " does not have a JSON object " + id);
+                Main.warn(item + " does not have a JSON object " + id);
                 return;
             }
 
             Identifier idi = Identifier.tryParse(item);
             if (idi == null) {
-                Main.log("WARNING: " + item + " is not a valid identifier " + id);
+                Main.warn(item + " is not a valid identifier " + id);
                 return;
             }
 
             Item itemT = Registries.ITEM.get(idi);
             if (itemT == Items.AIR) {
-                Main.log("WARNING: " + item + " is not a valid item " + id);
+                Main.warn(item + " is not a valid item " + id);
                 return;
             }
 
-            parseRecipe(itemT, behaviorMap, elem.getAsJsonObject(), id);
+            parseRecipe(itemT, behaviorMap, elem.getAsJsonObject(), id + "-" + item);
         });
     }
 
     private static boolean parseRecipe(Item item, Map<Item, CauldronBehavior> behaviorMap, JsonObject recipe, String id) {
         JsonElement effectsObj = recipe.get("effects");
         if (effectsObj == null || !effectsObj.isJsonArray()) {
-            Main.log("WARNING: " + item.toString() + " does not have a effects array " + id);
+            Main.warn("effects array not present! " + id);
             return false;
         }
 
@@ -113,22 +114,23 @@ public interface Recipes {
 
     static void parse(JsonElement recipesE, String file) {
         if (recipesE == null) {
+            Main.debug("recipes resource not present " + file);
             return;
         }
 
         if (!recipesE.isJsonObject()) {
-            Main.log("WARNING: recipes resource is not an object " + file);
+            Main.warn("recipes resource is not an object " + file);
             return;
         }
 
         JsonObject recipes = recipesE.getAsJsonObject();
         recipes.asMap().forEach((String blockId, JsonElement elem) -> {
             if (!elem.isJsonObject()) {
-                Main.log("WARNING: recipes for " + blockId + " not JSON object " + file);
+                Main.warn("recipes for " + blockId + " not JSON object " + file);
                 return;
             }
 
-            parseBlockRecipes(elem.getAsJsonObject(), blockId, file);
+            parseBlockRecipes(elem.getAsJsonObject(), blockId, file + "-" + blockId);
         });
     }
 }

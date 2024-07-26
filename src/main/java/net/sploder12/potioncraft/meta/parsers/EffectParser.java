@@ -30,19 +30,19 @@ public interface EffectParser {
 
                 JsonElement eid = obj.get("id");
                 if (eid == null || !eid.isJsonPrimitive()) {
-                    Main.log("WARNING: id does not exist in effect " + id);
+                    Main.warn("id does not exist in effect " + id);
                     continue;
                 }
 
                 JsonPrimitive eprim = eid.getAsJsonPrimitive();
                 if (!eprim.isString()) {
-                    Main.log("WARNING: effect id must be a string " + id);
+                    Main.warn("effect id must be a string " + id);
                     continue;
                 }
 
                 MetaEffectTemplate template = MetaEffectTemplate.templates.get(eprim.getAsString());
                 if (template == null) {
-                    Main.log("WARNING: " + eprim.getAsString() + " does not name an effect template " + id);
+                    Main.warn(eprim.getAsString() + " does not name an effect template " + id);
                     continue;
                 }
 

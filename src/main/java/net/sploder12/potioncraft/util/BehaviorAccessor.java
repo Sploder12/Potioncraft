@@ -22,7 +22,7 @@ public class BehaviorAccessor {
             return behavior;
         }
         catch (Exception e) {
-            Main.log("ERROR!!! Cannot access behavior map of cauldrons!!!");
+            Main.error("Cannot access behavior map of cauldrons!!!", e);
         }
 
         return null;

@@ -13,10 +13,26 @@ public class Main implements ModInitializer {
     // That way, it's clear which mod wrote info, warnings, and errors.
     public static final Logger LOGGER = LoggerFactory.getLogger("PotionCraft");
 
-    public static void log(String str) {
+    public static void debug(String str) {
         if (Config.getBoolean(Config.FieldID.DEBUG)) {
-            LOGGER.info(str);
+            LOGGER.debug(str);
         }
+    }
+
+    public static void log(String str) {
+        LOGGER.info(str);
+    }
+
+    public static void warn(String str) {
+        LOGGER.warn("WARNING: " + str);
+    }
+
+    public static void error(String str) {
+        LOGGER.error("ERROR: " + str);
+    }
+
+    public static void error(String str, Throwable except) {
+        LOGGER.error("ERROR: " + str, except);
     }
 
     @Override
@@ -25,7 +41,7 @@ public class Main implements ModInitializer {
         // However, some things (like resources) may still be uninitialized.
         // Proceed with mild caution.
 
-        LOGGER.info("Welcome To PotionCraft!");
+        log("Welcome To PotionCraft!");
 
         FluidHelper.register();
         Config.loadConfig();

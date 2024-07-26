@@ -44,6 +44,10 @@ public class FluidHelper {
 
     public static void setStaticBlockMapping(AbstractCauldronBlock id, Fluid fluid) {
         setBlockMapping(id, (WorldBlock info) -> fluid);
+
+        if (!fluidMappings.containsKey(fluid)) {
+            setDefaultFluidMapping(fluid, id);
+        }
     }
 
     public static AbstractCauldronBlock getBlock(Fluid fluid) {
@@ -91,7 +95,7 @@ public class FluidHelper {
                 return flowable.getStill();
             }
 
-            Main.log("Fluid, " + Registries.FLUID.getId(fluid) + ", cannot be still!");
+            Main.warn("Fluid, " + Registries.FLUID.getId(fluid) + ", cannot be still!");
         }
 
         return fluid;

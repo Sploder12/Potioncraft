@@ -64,7 +64,7 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
      */
 
     public static void register() {
-        Main.log("Registering Potion Cauldron...");
+        Main.debug("Registering Potion Cauldron...");
 
         Registry.register(
                 Registries.BLOCK,

@@ -117,12 +117,12 @@ public class MetaMixing {
     public static void register() {
         parsers.clear();
 
-        parsers.put("templates", new Parser(Templates::parse));
+        parsers.put("templates", new Parser(TemplatesParser::parse));
         parsers.put("fluids", new Parser(FluidsParser::parse));
-        parsers.put("cauldrons", new Parser(Cauldrons::parse));
-        parsers.put("recipes", new Parser(Recipes::parse));
-        parsers.put("inversions", new Parser(Inversions::parse));
-        parsers.put("heats", new Parser(Heats::parse));
+        parsers.put("cauldrons", new Parser(CauldronsParser::parse));
+        parsers.put("inversions", new Parser(InversionsParser::parse));
+        parsers.put("heats", new Parser(HeatsParser::parse));
+        parsers.put("recipes", new Parser(RecipesParser::parse));
 
         ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
@@ -145,7 +145,7 @@ public class MetaMixing {
 
                 interactions.clear();
 
-                Inversions.clear();
+                InversionsParser.clear();
                 MetaEffectTemplate.register();
 
                 // @TODO clear custom behaviors
@@ -156,11 +156,12 @@ public class MetaMixing {
                 resources.forEach((id, resource) -> {
                     try (InputStream stream = resource.getInputStream(); JsonReader reader = new JsonReader(new InputStreamReader(stream))) {
                         // gson kinda blows ngl
+
                         JsonParser parser = new JsonParser();
 
                         JsonElement rootE = parser.parse(reader);
                         if (rootE == null || !rootE.isJsonObject()) {
-                            Main.log("Encountered malformed resource " + id);
+                            Main.warn("Encountered malformed resource " + id);
                             return;
                         }
 
@@ -172,7 +173,7 @@ public class MetaMixing {
                         });
                     }
                     catch (Exception e) {
-                        Main.log("Error occurred while loading resource " + id + ' ' + e);
+                        Main.error("Error occurred while loading resource " + id + "\n" + e.getMessage());
                     }
                 });
             }
