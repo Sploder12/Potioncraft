@@ -21,57 +21,57 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface EffectParser {
+    public static MetaEffect parseEffect(JsonObject effectObj, String location) {
+        String id = Json.getString(effectObj.get("id"));
+
+        if (id == null) {
+            Main.warn("id field missing or malformed! " + location);
+            return null;
+        }
+
+        MetaEffectTemplate template = MetaEffectTemplate.templates.get(id);
+        if (template == null) {
+            Main.warn(id + " does not name an effect template! " + location);
+            return null;
+        }
+
+        Optional<ActionResult> quickfail = Json.getActionResult(effectObj.get("quickfail"), location + "-" + id);
+
+        JsonObject params = Json.getObj(effectObj.get("params"));
+
+        if (params == null) {
+            params = new JsonObject();
+        }
+
+        MetaEffect effect = template.apply(params, location + "-" + id);
+        if (quickfail.isPresent()) {
+
+            ActionResult finalQuickfail = quickfail.get();
+            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+                if (finalQuickfail == prev) {
+                    return ActionResult.PASS;
+                }
+
+                return effect.interact(prev, data, world, pos, player, hand, stack);
+            };
+        }
+        else {
+            return effect;
+        }
+    }
+
     public static Collection<MetaEffect> parseEffects(JsonArray effects, String id) {
         ArrayList<MetaEffect> out = new ArrayList<>();
 
         for (JsonElement elem : effects) {
             if (elem.isJsonObject()) {
-                JsonObject obj = elem.getAsJsonObject();
-
-                JsonElement eid = obj.get("id");
-                if (eid == null || !eid.isJsonPrimitive()) {
-                    Main.warn("id does not exist in effect " + id);
-                    continue;
-                }
-
-                JsonPrimitive eprim = eid.getAsJsonPrimitive();
-                if (!eprim.isString()) {
-                    Main.warn("effect id must be a string " + id);
-                    continue;
-                }
-
-                MetaEffectTemplate template = MetaEffectTemplate.templates.get(eprim.getAsString());
-                if (template == null) {
-                    Main.warn(eprim.getAsString() + " does not name an effect template " + id);
-                    continue;
-                }
-
-                Optional<ActionResult> quickfail = Json.getActionResult(obj.get("quickfail"));
-
-                JsonObject params = Json.getObj(obj.get("params"));
-
-                if (params == null) {
-                    params = new JsonObject();
-                }
-
-                MetaEffect effect = template.apply(params, id);
-                if (quickfail.isPresent()) {
-
-                    ActionResult finalQuickfail = quickfail.get();
-                    out.add((ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-                        if (finalQuickfail == prev) {
-                            return ActionResult.PASS;
-                        }
-
-                        return effect.interact(prev, data, world, pos, player, hand, stack);
-                    });
-                }
-                else {
+                MetaEffect effect = parseEffect(elem.getAsJsonObject(), id);
+                if (effect != null) {
                     out.add(effect);
                 }
-
             }
         }
+
         return out;
     }
 }

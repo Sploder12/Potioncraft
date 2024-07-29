@@ -21,6 +21,7 @@ public interface MetaEffectTemplate {
         templates.clear();
 
         templates.put("FORCE_SWING_HAND", Conditional.FORCE_SWING_HAND);
+        templates.put("PASS", Conditional.PASS);
         templates.put("INVERT_COND", Conditional.INVERT_COND);
 
         templates.put("AND", Conditional.AND);
@@ -54,5 +55,7 @@ public interface MetaEffectTemplate {
 
         templates.put("AMPLIFY", Effect.AMPLIFY);
         templates.put("EXTEND", Effect.EXTEND);
+
+        templates.put("IF", ControlFlow.IF);
     }
 }

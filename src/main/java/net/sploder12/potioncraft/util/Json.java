@@ -146,7 +146,7 @@ public class Json {
         }
     }
 
-    public static Optional<ActionResult> getActionResult(JsonElement elem) {
+    public static Optional<ActionResult> getActionResult(JsonElement elem, String location) {
         String str = getString(elem);
 
         if (str == null) return Optional.empty();
@@ -167,11 +167,12 @@ public class Json {
             return Optional.of(ActionResult.CONSUME_PARTIAL);
         }
 
+        Main.warn(str + " is not an action result! " + location);
         return Optional.empty();
     }
 
-    public static ActionResult getActionResultOr(JsonElement elem, ActionResult or) {
-        Optional<ActionResult> ar = getActionResult(elem);
+    public static ActionResult getActionResultOr(JsonElement elem, ActionResult or, String location) {
+        Optional<ActionResult> ar = getActionResult(elem, location);
         return ar.orElse(or);
     }
 }

@@ -90,7 +90,7 @@ public interface Effect {
         }
 
         Main.warn("PLAY_SOUND effect has invalid id field! " + file);
-        return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+        return Conditional.PASS.apply(params, file);
     };
 
     // think milk bucket
@@ -138,7 +138,7 @@ public interface Effect {
         }
 
         Main.warn("ADD_POTION_EFFECT effect has invalid id field! " + file);
-        return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+        return Conditional.PASS.apply(params, file);
     };
 
     // params: "id": Identifier - potion effect to add
@@ -162,7 +162,7 @@ public interface Effect {
         }
 
         Main.warn("ADD_POTION_EFFECT effect has invalid id field! " + file);
-        return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+        return Conditional.PASS.apply(params, file);
     };
 
     // takes the potion effects from item and applies to the cauldron

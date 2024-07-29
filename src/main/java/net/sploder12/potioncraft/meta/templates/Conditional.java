@@ -28,6 +28,9 @@ public interface Conditional {
 
     MetaEffectTemplate FORCE_SWING_HAND = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.success(world.isClient);
 
+    // always returns "false"
+    MetaEffectTemplate PASS = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+
     // Predicate templates are useful for checking conditions!
 
     MetaEffectTemplate INVERT_COND = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
@@ -43,7 +46,7 @@ public interface Conditional {
         JsonElement conditionsE = params.get("conditions");
         if (conditionsE == null || !conditionsE.isJsonArray()) {
             Main.warn("AND has no conditions! " + file);
-            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+            return PASS.apply(params, file);
         }
 
         final boolean shortCircuit = Json.getBoolOr(params.get("short_circuit"), true);
@@ -51,7 +54,7 @@ public interface Conditional {
         final Collection<MetaEffect> effects = EffectParser.parseEffects(conditionsE.getAsJsonArray(), file);
         if (effects.isEmpty()) {
             Main.warn("AND has no conditions! " + file);
-            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+            return PASS.apply(params, file);
         }
 
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
@@ -81,7 +84,7 @@ public interface Conditional {
         JsonElement conditionsE = params.get("conditions");
         if (conditionsE == null || !conditionsE.isJsonArray()) {
             Main.warn("OR has no conditions! " + file);
-            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+            return PASS.apply(params, file);
         }
 
         final boolean shortCircuit = Json.getBoolOr(params.get("short_circuit"), true);
@@ -89,7 +92,7 @@ public interface Conditional {
         final Collection<MetaEffect> effects = EffectParser.parseEffects(conditionsE.getAsJsonArray(), file);
         if (effects.isEmpty()) {
             Main.warn("OR has no conditions! " + file);
-            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+            return PASS.apply(params, file);
         }
 
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
@@ -242,7 +245,7 @@ public interface Conditional {
     MetaEffectTemplate MIN_LEVEL = (params, file) -> {
         Number num = Json.getNumber(params.get("level"));
         if (num == null) {
-            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+            return PASS.apply(params, file);
         }
 
         final int finalTarget = num.intValue();
@@ -259,7 +262,7 @@ public interface Conditional {
     MetaEffectTemplate MAX_LEVEL = (params, file) -> {
         Number num = Json.getNumber(params.get("level"));
         if (num == null) {
-            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+            return PASS.apply(params, file);
         }
 
         final int finalTarget = num.intValue();
@@ -276,7 +279,7 @@ public interface Conditional {
     MetaEffectTemplate MIN_HEAT = (params, file) -> {
         Number num = Json.getNumber(params.get("heat"));
         if (num == null) {
-            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+            return PASS.apply(params, file);
         }
 
         final int finalTarget = num.intValue();
@@ -293,7 +296,7 @@ public interface Conditional {
     MetaEffectTemplate MAX_HEAT = (params, file) -> {
         Number num = Json.getNumber(params.get("heat"));
         if (num == null) {
-            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
+            return PASS.apply(params, file);
         }
 
         final int finalTarget = num.intValue();
