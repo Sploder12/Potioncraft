@@ -22,10 +22,12 @@ public interface MetaEffectTemplate {
 
         templates.put("FORCE_SWING_HAND", Conditional.FORCE_SWING_HAND);
         templates.put("PASS", Conditional.PASS);
+        templates.put("FORWARD", Conditional.FORWARD);
         templates.put("INVERT_COND", Conditional.INVERT_COND);
 
         templates.put("AND", Conditional.AND);
         templates.put("OR", Conditional.OR);
+        templates.put("NOT", Conditional.NOT);
 
         templates.put("IS_FROM_VANILLA", Conditional.IS_FROM_VANILLA);
         templates.put("HAS_LEVEL", Conditional.HAS_LEVEL);

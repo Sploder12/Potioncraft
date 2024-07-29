@@ -31,6 +31,9 @@ public interface Conditional {
     // always returns "false"
     MetaEffectTemplate PASS = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
 
+    // always returns prev
+    MetaEffectTemplate FORWARD = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> prev;
+
     // Predicate templates are useful for checking conditions!
 
     MetaEffectTemplate INVERT_COND = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
@@ -110,6 +113,28 @@ public interface Conditional {
             }
 
             if (success) {
+                return ActionResult.success(world.isClient);
+            }
+
+            return ActionResult.PASS;
+        };
+    };
+
+    MetaEffectTemplate NOT = (params, file) -> {
+        JsonElement conditionE = params.get("condition");
+        if (conditionE == null || !conditionE.isJsonObject()) {
+            Main.warn("NOT has no condition! " + file);
+            return PASS.apply(params, file);
+        }
+
+        MetaEffect effect = EffectParser.parseEffect(conditionE.getAsJsonObject(), file + "-condition");
+        if (effect == null) {
+            return PASS.apply(params, file);
+        }
+
+        return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+            ActionResult res = effect.interact(prev, data, world, pos, player, hand, stack);
+            if (res == ActionResult.PASS) {
                 return ActionResult.success(world.isClient);
             }
 

@@ -73,13 +73,13 @@ public class CustomTemplate implements MetaEffectTemplate {
     }
 
     public MetaEffect apply(JsonObject params, String file) {
-        final String fileLocation = file + "-" + name;
+        final String fileLocation = file;
 
         try {
             parameters.forEach((String id, ParameterEntry entry) -> {
                 JsonElement elem = params.get(id);
 
-                entry.apply(elem, fileLocation);
+                entry.apply(elem, fileLocation + "-" + id);
             });
 
             final Collection<MetaEffect> effects = EffectParser.parseEffects(this.effects, fileLocation);
@@ -147,7 +147,7 @@ public class CustomTemplate implements MetaEffectTemplate {
     public static CustomTemplate parse(JsonObject template, String name, String file) {
         JsonElement effectsE = template.get("effects");
 
-        if (effectsE.isJsonArray()) {
+        if (effectsE != null && effectsE.isJsonArray()) {
             JsonArray effects = effectsE.getAsJsonArray();
 
             CustomTemplate out = new CustomTemplate(effects, name);
@@ -158,7 +158,7 @@ public class CustomTemplate implements MetaEffectTemplate {
 
             JsonElement defaultsE = template.get("defaults");
 
-            if (defaultsE.isJsonObject()) {
+            if (defaultsE != null && defaultsE.isJsonObject()) {
                 JsonObject defaults = defaultsE.getAsJsonObject();
 
                 defaults.asMap().forEach((String arg, JsonElement defaultVal) -> {
@@ -177,6 +177,7 @@ public class CustomTemplate implements MetaEffectTemplate {
             return out;
         }
 
+        Main.warn("template " + name + " has no effects! " + file);
         return null;
     }
 }

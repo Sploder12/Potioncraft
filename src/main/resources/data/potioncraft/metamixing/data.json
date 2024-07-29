@@ -81,6 +81,21 @@
           }
         }
       ]
+    },
+
+    "add_potion_if_water": {
+      "effects": [
+        {
+          "id": "${use_if_fluid}"
+        },
+        {
+          "id": "ADD_POTION_EFFECT",
+          "quickfail": "PASS",
+          "params": {
+            "id": "@{potion}"
+          }
+        }
+      ]
     }
   },
 
@@ -90,13 +105,9 @@
         "potency": 1,
         "effects": [
           {
-            "id": "${use_if_fluid}"
-          },
-          {
-            "id": "ADD_POTION_EFFECT",
-            "quickfail": "PASS",
+            "id": "${add_potion_if_water}",
             "params": {
-              "id": "swiftness"
+              "potion": "swiftness"
             }
           }
         ]
@@ -106,13 +117,9 @@
         "potency": 1,
         "effects": [
           {
-            "id": "${use_if_fluid}"
-          },
-          {
-            "id": "ADD_POTION_EFFECT",
-            "quickfail": "PASS",
+            "id": "${add_potion_if_water}",
             "params": {
-              "id": "leaping"
+              "potion": "leaping"
             }
           }
         ]
@@ -122,13 +129,9 @@
         "potency": 1,
         "effects": [
           {
-            "id": "${use_if_fluid}"
-          },
-          {
-            "id": "ADD_POTION_EFFECT",
-            "quickfail": "PASS",
+            "id": "${add_potion_if_water}",
             "params": {
-              "id": "healing"
+              "potion": "healing"
             }
           }
         ]
@@ -138,13 +141,9 @@
         "potency": 1,
         "effects": [
           {
-            "id": "${use_if_fluid}"
-          },
-          {
-            "id": "ADD_POTION_EFFECT",
-            "quickfail": "PASS",
+            "id": "${add_potion_if_water}",
             "params": {
-              "id": "poison"
+              "potion": "poison"
             }
           }
         ]
@@ -154,13 +153,9 @@
         "potency": 1,
         "effects": [
           {
-            "id": "${use_if_fluid}"
-          },
-          {
-            "id": "ADD_POTION_EFFECT",
-            "quickfail": "PASS",
+            "id": "${add_potion_if_water}",
             "params": {
-              "id": "water_breathing"
+              "potion": "water_breathing"
             }
           }
         ]
@@ -170,13 +165,9 @@
         "potency": 1,
         "effects": [
           {
-            "id": "${use_if_fluid}"
-          },
-          {
-            "id": "ADD_POTION_EFFECT",
-            "quickfail": "PASS",
+            "id": "${add_potion_if_water}",
             "params": {
-              "id": "fire_resistance"
+              "potion": "fire_resistance"
             }
           }
         ]
@@ -186,13 +177,9 @@
         "potency": 1,
         "effects": [
           {
-            "id": "${use_if_fluid}"
-          },
-          {
-            "id": "ADD_POTION_EFFECT",
-            "quickfail": "PASS",
+            "id": "${add_potion_if_water}",
             "params": {
-              "id": "night_vision"
+              "potion": "night_vision"
             }
           }
         ]
@@ -202,13 +189,9 @@
         "potency": 1,
         "effects": [
           {
-            "id": "${use_if_fluid}"
-          },
-          {
-            "id": "ADD_POTION_EFFECT",
-            "quickfail": "PASS",
+            "id": "${add_potion_if_water}",
             "params": {
-              "id": "strength"
+              "potion": "strength"
             }
           }
         ]
@@ -218,13 +201,9 @@
         "potency": 1,
         "effects": [
           {
-            "id": "${use_if_fluid}"
-          },
-          {
-            "id": "ADD_POTION_EFFECT",
-            "quickfail": "PASS",
+            "id": "${add_potion_if_water}",
             "params": {
-              "id": "regeneration"
+              "potion": "regeneration"
             }
           }
         ]
@@ -261,13 +240,9 @@
         "potency": 1,
         "effects": [
           {
-            "id": "${use_if_fluid}"
-          },
-          {
-            "id": "ADD_POTION_EFFECT",
-            "quickfail": "PASS",
+            "id": "${add_potion_if_water}",
             "params": {
-              "id": "slow_falling"
+              "potion": "slow_falling"
             }
           }
         ]
@@ -515,7 +490,10 @@
           },
           {
             "id": "ADD_LEVEL",
-            "quickfail": "PASS"
+            "quickfail": "PASS",
+            "params": {
+              "fluid": "water"
+            }
           },
           {
             "id": "APPLY_ITEM_EFFECTS",

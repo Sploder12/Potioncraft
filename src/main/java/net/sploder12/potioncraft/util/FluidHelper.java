@@ -90,6 +90,8 @@ public class FluidHelper {
     public static Fluid getStill(Fluid fluid) {
         Objects.requireNonNull(fluid, "Fluid may not be null.");
 
+        if (fluid == Fluids.EMPTY) return Fluids.EMPTY;
+
         if (!fluid.isStill(fluid.getDefaultState())) {
             if (fluid instanceof FlowableFluid flowable) {
                 return flowable.getStill();

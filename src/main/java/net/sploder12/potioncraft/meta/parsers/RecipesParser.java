@@ -61,7 +61,7 @@ public interface RecipesParser {
                 return;
             }
 
-            parseBlockRecipes(behavior, recipes, id);
+            parseBlockRecipes(behavior, recipes, id + "[" + Registries.BLOCK.getId(cauldronBlock) + "]");
         });
 
         return true;
