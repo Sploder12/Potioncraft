@@ -168,9 +168,8 @@ public class MetaMixing {
                         JsonObject root = rootE.getAsJsonObject();
                         String file = id.toString();
 
-                        parsers.forEach((String elemId, Parser elemParser) -> {
-                            elemParser.parse(root.get(elemId), file);
-                        });
+                        parsers.forEach((String elemId, Parser elemParser) ->
+                            elemParser.parse(root.get(elemId), file));
                     }
                     catch (Exception e) {
                         Main.error("Error occurred while loading resource " + id + "\n" + e.getMessage());

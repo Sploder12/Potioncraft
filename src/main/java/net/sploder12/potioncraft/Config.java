@@ -25,7 +25,7 @@ public class Config {
     };
 
     // Config Fields
-    static LinkedHashMap<FieldID, Field> fields = new LinkedHashMap<>() {{
+    final static LinkedHashMap<FieldID, Field> fields = new LinkedHashMap<>() {{
         put(FieldID.DEBUG, new BooleanField(false, "debug", "Debug mode enabled?"));
         put(FieldID.ALLOW_DROP_MIXING, new BooleanField(true, "allow_drop_mixing", "Should dropped items be mixable?"));
         put(FieldID.MAX_POTENCY, new IntField(5, "max_potency", "Maximum potency for crafted potions (negative for infinite)."));

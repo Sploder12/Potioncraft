@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import java.util.function.BiConsumer;
 
 public class Parser {
-    BiConsumer<JsonElement, String> parseFunc;
+    final BiConsumer<JsonElement, String> parseFunc;
 
     public Parser(BiConsumer<JsonElement, String> parseFunc) {
         this.parseFunc = parseFunc;

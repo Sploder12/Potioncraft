@@ -39,10 +39,10 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
     private HashMap<StatusEffect, PotionEffectInstance> effects = new HashMap<>();
 
-    public static BlockEntityType<PotionCauldronBlockEntity> POTION_CAULDRON_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(PotionCauldronBlockEntity::new, PotionCauldronBlock.POTION_CAULDRON_BLOCK)
+    final public static BlockEntityType<PotionCauldronBlockEntity> POTION_CAULDRON_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(PotionCauldronBlockEntity::new, PotionCauldronBlock.POTION_CAULDRON_BLOCK)
             .build();
 
-    public static Potion CRAFTED_POTION = Registry.register(Registries.POTION,
+    final public static Potion CRAFTED_POTION = Registry.register(Registries.POTION,
             new Identifier("potioncraft", "crafted_potion"),
             new Potion());
 
@@ -220,7 +220,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         markDirty();
     }
 
-    public boolean addEffects(Collection<StatusEffectInstance> effects) {
+    public void addEffects(Collection<StatusEffectInstance> effects) {
 
         float newDilution = 1.0f / (float)(level);
         for (StatusEffectInstance effect : effects) {
@@ -235,7 +235,6 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         }
 
         markDirty();
-        return true;
     }
 
     public boolean addLevel(boolean dilute) {

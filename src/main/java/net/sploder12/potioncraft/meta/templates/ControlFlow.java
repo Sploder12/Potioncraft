@@ -7,7 +7,6 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.sploder12.potioncraft.Config;
 import net.sploder12.potioncraft.Main;
 import net.sploder12.potioncraft.meta.CauldronData;
 import net.sploder12.potioncraft.meta.MetaEffect;

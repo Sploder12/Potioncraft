@@ -85,9 +85,7 @@
 
     "add_potion_if_water": {
       "effects": [
-        {
-          "id": "${use_if_fluid}"
-        },
+        "${use_if_fluid}",
         {
           "id": "ADD_POTION_EFFECT",
           "quickfail": "PASS",
@@ -212,9 +210,7 @@
       "turtle_helmet": {
         "potency": 1,
         "effects": [
-          {
-            "id": "${use_if_fluid}"
-          },
+          "${use_if_fluid}",
           {
             "id": "ADD_STATUS_EFFECT",
             "quickfail": "PASS",
@@ -334,9 +330,7 @@
       "fermented_spider_eye": {
         "potency": 1,
         "effects": [
-          {
-            "id": "${use_if_fluid}"
-          },
+          "${use_if_fluid}",
           {
             "id": "INVERT_EFFECTS",
             "quickfail": "PASS"
@@ -347,9 +341,7 @@
       "glowstone_dust": {
         "potency": 1,
         "effects": [
-          {
-            "id": "${use_if_fluid}"
-          },
+          "${use_if_fluid}",
           {
             "id": "AMPLIFY",
             "quickfail": "PASS"
@@ -360,9 +352,7 @@
       "redstone": {
         "potency": 1,
         "effects": [
-          {
-            "id": "${use_if_fluid}"
-          },
+          "${use_if_fluid}",
           {
             "id": "EXTEND",
             "quickfail": "PASS"
@@ -457,9 +447,7 @@
         "potency": -1337,
         "keepOld": true,
         "effects": [
-          {
-            "id": "ITEM_HAS_EFFECTS"
-          },
+          "ITEM_HAS_EFFECTS",
           {
             "id": "ADD_LEVEL",
             "quickfail": "PASS"
@@ -485,9 +473,7 @@
         "potency": -1337,
         "keepOld": true,
         "effects": [
-          {
-            "id": "ITEM_HAS_EFFECTS"
-          },
+          "ITEM_HAS_EFFECTS",
           {
             "id": "ADD_LEVEL",
             "quickfail": "PASS",
@@ -514,9 +500,7 @@
     "minecraft:powder_snow_cauldron": {
       "magma_cream": {
         "effects": [
-          {
-            "id": "REMOVE_LEVEL"
-          },
+          "REMOVE_LEVEL",
           {
             "id": "USE_ITEM",
             "quickfail": "PASS",
@@ -532,9 +516,7 @@
     "minecraft:lava_cauldron": {
       "slime_ball": {
         "effects": [
-          {
-            "id": "REMOVE_LEVEL"
-          },
+          "REMOVE_LEVEL",
           {
             "id": "USE_ITEM",
             "params": {
@@ -547,9 +529,7 @@
 
       "brick": {
         "effects": [
-          {
-            "id": "REMOVE_LEVEL"
-          },
+          "REMOVE_LEVEL",
           {
             "id": "USE_ITEM",
             "params": {

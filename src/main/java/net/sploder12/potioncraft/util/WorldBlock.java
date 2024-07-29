@@ -7,9 +7,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class WorldBlock {
-    public BlockState state;
-    public World world;
-    public BlockPos pos;
+    final public BlockState state;
+    final public World world;
+    final public BlockPos pos;
 
     public WorldBlock(BlockState state, World world, BlockPos pos) {
         this.state = state;

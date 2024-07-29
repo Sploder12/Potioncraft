@@ -8,7 +8,6 @@ import net.minecraft.block.Block;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import net.minecraft.fluid.Fluids;
 import net.sploder12.potioncraft.Main;
 import net.sploder12.potioncraft.util.FluidHelper;
 import net.sploder12.potioncraft.util.Json;

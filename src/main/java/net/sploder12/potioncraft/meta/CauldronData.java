@@ -20,9 +20,9 @@ import net.sploder12.potioncraft.util.HeatHelper;
 
 // class for cauldron item interactions
 public class CauldronData {
-    public Block source;
-    public int heat;
-    public PotionCauldronBlockEntity entity;
+    final public Block source;
+    final public int heat;
+    final public PotionCauldronBlockEntity entity;
 
     public CauldronData(PotionCauldronBlockEntity entity, int heat) {
         this.source = PotionCauldronBlock.POTION_CAULDRON_BLOCK;
@@ -156,7 +156,7 @@ public class CauldronData {
             }
         }
 
-        if (block instanceof LeveledCauldronBlock leveledBlock) {
+        if (block instanceof LeveledCauldronBlock) {
             return fromLeveledCauldron(state, world, pos, heat);
         }
 

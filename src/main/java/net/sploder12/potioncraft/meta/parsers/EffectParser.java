@@ -3,7 +3,6 @@ package net.sploder12.potioncraft.meta.parsers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
@@ -60,17 +59,43 @@ public interface EffectParser {
         }
     }
 
-    public static Collection<MetaEffect> parseEffects(JsonArray effects, String id) {
-        ArrayList<MetaEffect> out = new ArrayList<>();
+    private static void parseEffects(JsonArray effects, String id, ArrayList<MetaEffect> out) {
+        for (int i = 0; i < effects.size(); ++i) {
+            JsonElement elem = effects.get(i);
+            String location = id + "-" + i;
 
-        for (JsonElement elem : effects) {
             if (elem.isJsonObject()) {
-                MetaEffect effect = parseEffect(elem.getAsJsonObject(), id);
+                MetaEffect effect = parseEffect(elem.getAsJsonObject(), location);
                 if (effect != null) {
                     out.add(effect);
                 }
             }
+            else if (elem.isJsonArray()) {
+                parseEffects(elem.getAsJsonArray(), location, out);
+            }
+            else if (elem.isJsonPrimitive()) {
+                try {
+                    String templateId = elem.getAsString();
+
+                    MetaEffectTemplate template = MetaEffectTemplate.templates.get(templateId);
+                    if (template == null) {
+                        Main.warn(templateId + " does not name an effect template! " + location);
+                        continue;
+                    }
+
+                    out.add(template.apply(new JsonObject(), location));
+                }
+                catch (AssertionError err) {
+                    Main.warn("template id malformed! " + location);
+                }
+            }
         }
+    }
+
+    public static Collection<MetaEffect> parseEffects(JsonArray effects, String id) {
+        ArrayList<MetaEffect> out = new ArrayList<>();
+
+        parseEffects(effects, id, out);
 
         return out;
     }

@@ -61,10 +61,10 @@ public class CustomTemplate implements MetaEffectTemplate {
         }
     }
 
-    protected String name;
-    protected JsonArray effects;
+    final protected String name;
+    final protected JsonArray effects;
 
-    protected HashMap<String, ParameterEntry> parameters;
+    final protected HashMap<String, ParameterEntry> parameters;
 
     protected CustomTemplate(JsonArray arr, String name) {
         this.name = name;
@@ -94,9 +94,7 @@ public class CustomTemplate implements MetaEffectTemplate {
         }
         catch (StackOverflowError err) {
             Main.error("Infinite template detected! Check for recursion! " + fileLocation);
-            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-                return ActionResult.success(world.isClient);
-            };
+            return Conditional.PASS.apply(params, file);
         }
     }
 
@@ -123,9 +121,8 @@ public class CustomTemplate implements MetaEffectTemplate {
 
     protected static void parseRecurse(JsonElement element, CustomTemplate out, JsonElement parent, Object idx) {
         if (element.isJsonObject()) {
-            element.getAsJsonObject().asMap().forEach((String id, JsonElement elem) -> {
-                parseRecurse(elem, out, element, id);
-            });
+            element.getAsJsonObject().asMap().forEach((String id, JsonElement elem) ->
+                parseRecurse(elem, out, element, id));
         }
         else if (element.isJsonArray()) {
             JsonArray arr = element.getAsJsonArray();
