@@ -11,5 +11,6 @@ import java.util.Map;
 @Mixin(AbstractCauldronBlock.class)
 public interface BehaviorAccessor {
     @Accessor(value = "behaviorMap")
-    Map<Item, CauldronBehavior> getBehaviorMap();
+    //Map<Item, CauldronBehavior> getBehaviorMap();
+    CauldronBehavior.CauldronBehaviorMap getBehaviorMap();
 }

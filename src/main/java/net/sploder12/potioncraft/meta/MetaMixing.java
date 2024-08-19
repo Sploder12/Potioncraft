@@ -35,8 +35,8 @@ public class MetaMixing {
 
     // The logic and parsing for meta mixing files.
 
-    //public static final CauldronBehavior.CauldronBehaviorMap interactions = CauldronBehavior.createMap("potion");
-    public static final Map<Item, CauldronBehavior> interactions = CauldronBehavior.createMap();
+    public static final CauldronBehavior.CauldronBehaviorMap interactions = CauldronBehavior.createMap("potion");
+    //public static final Map<Item, CauldronBehavior> interactions = CauldronBehavior.createMap();
 
     public static final LinkedHashMap<String, Parser> parsers = new LinkedHashMap<>();
 
@@ -45,7 +45,7 @@ public class MetaMixing {
             return null;
         }
 
-        return ((BehaviorAccessor) id).getBehaviorMap();
+        return ((BehaviorAccessor) id).getBehaviorMap().map();
     }
 
     public static CauldronBehavior addInteraction(Item item, Map<Item, CauldronBehavior> behaviorMap, Collection<MetaEffect> effects, boolean keepOld, int potency) {
@@ -139,13 +139,13 @@ public class MetaMixing {
                 FluidHelper.reset();
                 HeatHelper.reset();
 
-                CauldronBehavior.EMPTY_CAULDRON_BEHAVIOR.clear();
-                CauldronBehavior.WATER_CAULDRON_BEHAVIOR.clear();
-                CauldronBehavior.LAVA_CAULDRON_BEHAVIOR.clear();
-                CauldronBehavior.POWDER_SNOW_CAULDRON_BEHAVIOR.clear();
+                CauldronBehavior.EMPTY_CAULDRON_BEHAVIOR.map().clear();
+                CauldronBehavior.WATER_CAULDRON_BEHAVIOR.map().clear();
+                CauldronBehavior.LAVA_CAULDRON_BEHAVIOR.map().clear();
+                CauldronBehavior.POWDER_SNOW_CAULDRON_BEHAVIOR.map().clear();
                 CauldronBehavior.registerBehavior();
 
-                interactions.clear();
+                interactions.map().clear();
 
                 InversionsParser.clear();
                 MetaEffectTemplate.register();
