@@ -11,6 +11,7 @@ import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.registry.Registries;
 import net.minecraft.world.World;
 import net.sploder12.potioncraft.util.FluidHelper;
@@ -61,7 +62,10 @@ public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldro
         FluidRenderHandler fluidRenderHandler = FluidRenderHandlerRegistry.INSTANCE.get(still);
 
         if (fluidRenderHandler == null) {
-            Main.warn("Could not create fluid render handler for "  + Registries.FLUID.getId(still) + "!");
+            if (still != Fluids.EMPTY) {
+                Main.warn("Could not create fluid render handler for " + Registries.FLUID.getId(still) + "!");
+            }
+
             return;
         }
 
