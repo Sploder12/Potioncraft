@@ -22,7 +22,7 @@ import net.minecraft.world.World;
 import net.sploder12.potioncraft.*;
 import net.sploder12.potioncraft.meta.parsers.*;
 import net.sploder12.potioncraft.meta.templates.MetaEffectTemplate;
-import net.sploder12.potioncraft.util.BehaviorAccessor;
+import net.sploder12.potioncraft.mixin.BehaviorAccessor;
 import net.sploder12.potioncraft.util.FluidHelper;
 import net.sploder12.potioncraft.util.HeatHelper;
 
@@ -44,7 +44,7 @@ public class MetaMixing {
             return null;
         }
 
-        return BehaviorAccessor.getBehaviorMap(id);
+        return ((BehaviorAccessor) id).getBehaviorMap();
     }
 
     public static CauldronBehavior addInteraction(Item item, Map<Item, CauldronBehavior> behaviorMap, Collection<MetaEffect> effects, boolean keepOld, int potency) {

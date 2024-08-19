@@ -16,6 +16,8 @@ public class PotionEffectInstance {
     public boolean showParticles;
     public boolean showIcon;
 
+    public boolean isInstant = false;
+
     public static final float epsilon = 0.001f;
 
     PotionEffectInstance(StatusEffect type) {
@@ -45,6 +47,9 @@ public class PotionEffectInstance {
         this.ambient = ambient;
         this.showParticles = showParticles;
         this.showIcon = showIcon;
+
+        if (Math.abs(duration - 1.0f) <= epsilon)
+            isInstant = true;
     }
 
     // WARNING: ONLY WORKS WITH POTIONS WITH ONLY 1 EFFECT
@@ -55,7 +60,11 @@ public class PotionEffectInstance {
     }
 
     public PotionEffectInstance combine(PotionEffectInstance other) {
-        this.duration += other.duration;
+        this.isInstant |= other.isInstant;
+
+        if (!isInstant)
+            this.duration += other.duration;
+
         this.amplifier += other.amplifier;
         this.showIcon |= other.showIcon;
         this.showParticles |= other.showParticles;
@@ -76,6 +85,10 @@ public class PotionEffectInstance {
         else {
             float fract = amplifier - effectiveAmplifier;
             effectiveDuration = (int)(duration * (1.0f + fract)); // adjust duration based of fraction of amplifier
+        }
+
+        if (effectiveDuration > 1 && isInstant) {
+            effectiveDuration = 1;
         }
 
         // there is an implicit +1 to amplifiers (to make fractions work better)
@@ -137,6 +150,7 @@ public class PotionEffectInstance {
         nbt.putBoolean("Ambient", this.ambient);
         nbt.putBoolean("ShowParticles", this.showParticles);
         nbt.putBoolean("ShowIcon", this.showIcon);
+        nbt.putBoolean("IsInstant", this.isInstant);
     }
 
     @Nullable
@@ -162,6 +176,10 @@ public class PotionEffectInstance {
         boolean icon = particles;
         if (nbt.contains("ShowIcon", 1)) {
             icon = nbt.getBoolean("ShowIcon");
+        }
+
+        if (nbt.getBoolean("IsInstant")) {
+            dur = 1.0f;
         }
 
         return new PotionEffectInstance(type, dur, amp, ambient, particles, icon);

@@ -4,6 +4,7 @@
   "package": "net.sploder12.potioncraft.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "BehaviorAccessor",
     "BrewingStandMixin",
     "LingeringMixin",
     "TippedArrowMixin"

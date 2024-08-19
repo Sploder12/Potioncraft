@@ -201,7 +201,9 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
         for (PotionEffectInstance effect : this.effects.values()) {
             // there should be some balance but that's for future me to do
-            effect.duration += portion;
+            if (!effect.isInstant) {
+                effect.duration += portion;
+            }
         }
 
         markDirty();
