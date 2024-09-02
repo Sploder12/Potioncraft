@@ -1,0 +1,9 @@
+{
+  "block.potioncraft.potion_cauldron_block": "Котёл для зельеварения",
+
+  "item.minecraft.tipped_arrow.effect.crafted_potion": "Созданная стрела",
+
+  "item.minecraft.potion.effect.crafted_potion": "Созданное зелье",
+  "item.minecraft.splash_potion.effect.crafted_potion": "Созданное взрывное зелье",
+  "item.minecraft.lingering_potion.effect.crafted_potion": "Созданное туманное зелье"
+}
