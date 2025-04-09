@@ -244,4 +244,22 @@ public interface Effect {
             return ActionResult.success(world.isClient);
         };
     };
+
+    // sets the fluid contained by the cauldron
+    // params: "fluid" - Identifier
+    MetaEffectTemplate SET_FLUID = (params, file) -> {
+        final Fluid new_fluid = Json.getRegistryEntry(params.get("fluid"), Registries.FLUID, file);
+
+        return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+            if (new_fluid == null) {
+                Main.warn("SET_FLUID effect has invalid fluid identifier! " + file);
+                return ActionResult.PASS;
+            }
+
+            data.entity.setFluid(new_fluid);
+
+            return ActionResult.success(world.isClient);
+        };
+
+    };
 }
