@@ -8,6 +8,7 @@ import net.minecraft.block.AbstractCauldronBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -65,6 +66,7 @@ public class MetaMixing {
             }
 
             int initLevel = data.entity.getLevel();
+            Fluid initFluid = data.entity.getFluid();
 
             int tmpPotency = getTmpPotency(potency, itemStack, data);
 
@@ -83,7 +85,7 @@ public class MetaMixing {
                 data.entity.setPotency(newPotency);
             }
 
-            data.transformBlock(world, initLevel);
+            data.transformBlock(world, initLevel, initFluid);
 
             if (keepOldFinal && prev == ActionResult.PASS) {
                 return prevBehavior.interact(state, world, pos, player, hand, itemStack);

@@ -245,6 +245,8 @@ public interface Effect {
         };
     };
 
+    // sets the fluid contained by the cauldron
+    // params: "fluid" - Identifier
     MetaEffectTemplate SET_FLUID = (params, file) -> {
         final Fluid new_fluid = Json.getRegistryEntry(params.get("fluid"), Registries.FLUID, file);
 

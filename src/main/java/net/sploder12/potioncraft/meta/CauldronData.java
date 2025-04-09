@@ -96,7 +96,7 @@ public class CauldronData {
         }
     }
 
-    public void transformBlock(World world, int initialLevel) {
+    public void transformBlock(World world, int initialLevel, Fluid initialFluid) {
         // turn empty cauldrons into cauldrons
         if (getFluid() == Fluids.EMPTY || getLevel() < PotionCauldronBlock.MIN_LEVEL) {
             if (source != Blocks.CAULDRON) {
@@ -121,7 +121,7 @@ public class CauldronData {
         }
 
         // update existing cauldron
-        if (getLevel() != initialLevel) {
+        if (getLevel() != initialLevel || getFluid() != initialFluid) {
             placeCauldron(world);
         }
     }

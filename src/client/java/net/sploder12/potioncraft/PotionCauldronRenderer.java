@@ -54,8 +54,6 @@ public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldro
             lightAbove |= Math.max(blockLuminance, entity.getLuminance()) << 4;
         }
 
-        // alpha is set to opaque since the texture handles transluscency
-        int color = entity.getColor() | (0xff << 24);
 
         // get the still texture of our fluid
         Fluid still = FluidHelper.getStill(entity.getFluid());
@@ -68,6 +66,15 @@ public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldro
 
             return;
         }
+
+        // alpha is set to opaque since the texture handles transluscency
+        int color;
+        if (entity.getColor() == 0xffffff){
+            color = fluidRenderHandler.getFluidColor(world,entity.getPos(),still.getDefaultState()) | (0xff << 24);
+        } else {
+            color = entity.getColor() | (0xff << 24);
+        }
+
 
         Sprite fluid = fluidRenderHandler.getFluidSprites(world, entity.getPos(), still.getDefaultState())[0];
 
