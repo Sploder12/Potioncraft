@@ -54,6 +54,7 @@ public interface MetaEffectTemplate {
 
         templates.put("ADD_LEVEL", Effect.ADD_LEVEL);
         templates.put("REMOVE_LEVEL", Effect.REMOVE_LEVEL);
+        templates.put("SET_FLUID", Effect.SET_FLUID);
 
         templates.put("AMPLIFY", Effect.AMPLIFY);
         templates.put("EXTEND", Effect.EXTEND);
