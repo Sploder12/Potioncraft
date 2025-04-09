@@ -106,19 +106,21 @@ public class CauldronData {
             return;
         }
 
+        // turn normal cauldrons into potion cauldrons if there are effects or the potion cauldron is the default
+        // cauldron for the fluid
+        if (hasEffects() || FluidHelper.getBlock(getFluid()) == PotionCauldronBlock.POTION_CAULDRON_BLOCK) {
+            placePotionCauldron(world);
+            return;
+        }
+
+        // turn potion cauldrons into normal cauldrons
         if (source == PotionCauldronBlock.POTION_CAULDRON_BLOCK) {
             if (!hasEffects()) {
-                // turn potion cauldrons into normal cauldrons
                 placeCauldron(world);
             }
             return;
         }
 
-        // turn normal cauldrons into potion cauldrons
-        if (hasEffects()) {
-            placePotionCauldron(world);
-            return;
-        }
 
         // update existing cauldron
         if (getLevel() != initialLevel || getFluid() != initialFluid) {
