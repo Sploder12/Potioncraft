@@ -17,6 +17,7 @@ import net.sploder12.potioncraft.PotionCauldronBlock;
 import net.sploder12.potioncraft.meta.CauldronData;
 import net.sploder12.potioncraft.meta.MetaEffect;
 import net.sploder12.potioncraft.meta.parsers.EffectParser;
+import net.sploder12.potioncraft.util.ActionResultUtils;
 import net.sploder12.potioncraft.util.Json;
 
 import java.util.Collection;
@@ -26,7 +27,7 @@ public interface Conditional {
     // hand swinging is controlled by the LAST event, thus why FORCE_SWING_HAND exists.
     // FORCE_SWING_HAND can also be used to generate a guaranteed SUCCESS
 
-    MetaEffectTemplate FORCE_SWING_HAND = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.success(world.isClient);
+    MetaEffectTemplate FORCE_SWING_HAND = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResultUtils.success(world.isClient);
 
     // always returns "false"
     MetaEffectTemplate PASS = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> ActionResult.PASS;
@@ -38,7 +39,7 @@ public interface Conditional {
 
     MetaEffectTemplate INVERT_COND = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
         if (prev == ActionResult.PASS) {
-            return ActionResult.success(world.isClient);
+            return ActionResultUtils.success(world.isClient);
         }
 
         return ActionResult.PASS;
@@ -64,7 +65,7 @@ public interface Conditional {
             boolean success = true;
 
             for (MetaEffect effect : effects) {
-                ActionResult cond = effect.interact(ActionResult.success(world.isClient), data, world, pos, player, hand, stack);
+                ActionResult cond = effect.interact(ActionResultUtils.success(world.isClient), data, world, pos, player, hand, stack);
 
                 if (cond == ActionResult.PASS) {
                     success = false;
@@ -75,7 +76,7 @@ public interface Conditional {
             }
 
             if (success) {
-                return ActionResult.success(world.isClient);
+                return ActionResultUtils.success(world.isClient);
             }
 
             return ActionResult.PASS;
@@ -102,9 +103,9 @@ public interface Conditional {
             boolean success = false;
 
             for (MetaEffect effect : effects) {
-                ActionResult cond = effect.interact(ActionResult.success(world.isClient), data, world, pos, player, hand, stack);
+                ActionResult cond = effect.interact(ActionResultUtils.success(world.isClient), data, world, pos, player, hand, stack);
 
-                if (cond == ActionResult.success(world.isClient)) {
+                if (cond == ActionResultUtils.success(world.isClient)) {
                     success = true;
                     if (shortCircuit) {
                         break;
@@ -113,7 +114,7 @@ public interface Conditional {
             }
 
             if (success) {
-                return ActionResult.success(world.isClient);
+                return ActionResultUtils.success(world.isClient);
             }
 
             return ActionResult.PASS;
@@ -135,7 +136,7 @@ public interface Conditional {
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             ActionResult res = effect.interact(prev, data, world, pos, player, hand, stack);
             if (res == ActionResult.PASS) {
-                return ActionResult.success(world.isClient);
+                return ActionResultUtils.success(world.isClient);
             }
 
             return ActionResult.PASS;
@@ -144,7 +145,7 @@ public interface Conditional {
 
     MetaEffectTemplate IS_FROM_VANILLA = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
         if (Registries.BLOCK.getId(data.source).getNamespace().equalsIgnoreCase("minecraft")) {
-            return ActionResult.success(world.isClient);
+            return ActionResultUtils.success(world.isClient);
         }
         else {
             return ActionResult.PASS;
@@ -159,14 +160,14 @@ public interface Conditional {
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (finalTarget == null) {
                 if (data.getLevel() > 0) {
-                    return ActionResult.success(world.isClient);
+                    return ActionResultUtils.success(world.isClient);
                 }
 
                 return ActionResult.PASS;
             }
 
             if (finalTarget == data.getLevel()) {
-                return ActionResult.success(world.isClient);
+                return ActionResultUtils.success(world.isClient);
             }
 
             return ActionResult.PASS;
@@ -183,7 +184,7 @@ public interface Conditional {
             // target heat is positive
             if (finalTarget > 0) {
                 if (data.heat >= finalTarget) {
-                    return ActionResult.success(world.isClient);
+                    return ActionResultUtils.success(world.isClient);
                 }
 
                 return ActionResult.PASS;
@@ -192,7 +193,7 @@ public interface Conditional {
             // target heat is negative
             if (finalTarget < 0) {
                 if (data.heat <= finalTarget) {
-                    return ActionResult.success(world.isClient);
+                    return ActionResultUtils.success(world.isClient);
                 }
 
                 return ActionResult.PASS;
@@ -200,7 +201,7 @@ public interface Conditional {
 
             // target heat is 0
             if (finalTarget == data.heat) {
-                return ActionResult.success(world.isClient);
+                return ActionResultUtils.success(world.isClient);
             }
 
             return ActionResult.PASS;
@@ -241,7 +242,7 @@ public interface Conditional {
         if (fluids == null) {
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
                 if (data.getFluid() != Fluids.EMPTY) {
-                    return ActionResult.success(world.isClient);
+                    return ActionResultUtils.success(world.isClient);
                 }
 
                 return ActionResult.PASS;
@@ -251,7 +252,7 @@ public interface Conditional {
         HashSet<Fluid> finalFluids = fluids;
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (finalFluids.contains(data.getFluid())) {
-                return ActionResult.success(world.isClient);
+                return ActionResultUtils.success(world.isClient);
             }
 
             return ActionResult.PASS;
@@ -260,7 +261,7 @@ public interface Conditional {
 
     MetaEffectTemplate IS_FULL = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
         if (data.getLevel() >= PotionCauldronBlock.MAX_LEVEL) {
-            return ActionResult.success(world.isClient);
+            return ActionResultUtils.success(world.isClient);
         }
 
         return ActionResult.PASS;
@@ -276,7 +277,7 @@ public interface Conditional {
         final int finalTarget = num.intValue();
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (data.getLevel() >= finalTarget) {
-                return ActionResult.success(world.isClient);
+                return ActionResultUtils.success(world.isClient);
             }
 
             return ActionResult.PASS;
@@ -293,7 +294,7 @@ public interface Conditional {
         final int finalTarget = num.intValue();
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (data.getLevel() <= finalTarget) {
-                return ActionResult.success(world.isClient);
+                return ActionResultUtils.success(world.isClient);
             }
 
             return ActionResult.PASS;
@@ -310,7 +311,7 @@ public interface Conditional {
         final int finalTarget = num.intValue();
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (data.heat >= finalTarget) {
-                return ActionResult.success(world.isClient);
+                return ActionResultUtils.success(world.isClient);
             }
 
             return ActionResult.PASS;
@@ -327,7 +328,7 @@ public interface Conditional {
         final int finalTarget = num.intValue();
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (data.heat <= finalTarget) {
-                return ActionResult.success(world.isClient);
+                return ActionResultUtils.success(world.isClient);
             }
 
             return ActionResult.PASS;
@@ -339,6 +340,6 @@ public interface Conditional {
             return ActionResult.PASS;
         }
 
-        return ActionResult.success(world.isClient);
+        return ActionResultUtils.success(world.isClient);
     };
 }

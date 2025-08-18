@@ -24,6 +24,7 @@ import net.sploder12.potioncraft.*;
 import net.sploder12.potioncraft.meta.parsers.*;
 import net.sploder12.potioncraft.meta.templates.MetaEffectTemplate;
 import net.sploder12.potioncraft.mixin.BehaviorAccessor;
+import net.sploder12.potioncraft.util.ActionResultUtils;
 import net.sploder12.potioncraft.util.FluidHelper;
 import net.sploder12.potioncraft.util.HeatHelper;
 
@@ -76,7 +77,7 @@ public class MetaMixing {
                 return ActionResult.PASS;
             }
 
-            ActionResult prev = ActionResult.success(world.isClient);
+            ActionResult prev = ActionResultUtils.success(world.isClient);
             for (MetaEffect effect : effects) {
                 prev = effect.interact(prev, data, world, pos, player, hand, itemStack);
             }

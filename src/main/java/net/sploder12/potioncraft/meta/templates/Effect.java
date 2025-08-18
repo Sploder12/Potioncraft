@@ -22,6 +22,7 @@ import net.sploder12.potioncraft.PotionCauldronBlock;
 import net.sploder12.potioncraft.PotionCauldronBlockEntity;
 import net.sploder12.potioncraft.PotionEffectInstance;
 import net.sploder12.potioncraft.meta.CauldronData;
+import net.sploder12.potioncraft.util.ActionResultUtils;
 import net.sploder12.potioncraft.util.Json;
 
 import java.util.List;
@@ -71,7 +72,7 @@ public interface Effect {
                 world.playSound(null, pos, sound, SoundCategory.BLOCKS, 1.0F, 1.0F);
             }
 
-            return ActionResult.success(world.isClient);
+            return ActionResultUtils.success(world.isClient);
         };
     };
 
@@ -85,7 +86,7 @@ public interface Effect {
                     world.playSound(null, pos, sound, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 }
 
-                return ActionResult.success(world.isClient);
+                return ActionResultUtils.success(world.isClient);
             };
         }
 
@@ -97,14 +98,14 @@ public interface Effect {
     MetaEffectTemplate CLEAR_EFFECTS = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
         data.entity.clearEffects();
 
-        return ActionResult.success(world.isClient);
+        return ActionResultUtils.success(world.isClient);
     };
 
     // think spider eye
     MetaEffectTemplate INVERT_EFFECTS = (params, file) -> (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
         data.entity.invertEffects();
 
-        return ActionResult.success(world.isClient);
+        return ActionResultUtils.success(world.isClient);
     };
 
     // params: "id": Identifier - status effect to add
@@ -133,7 +134,7 @@ public interface Effect {
                 data.entity.addEffect(dilution, effect);
 
 
-                return ActionResult.success(world.isClient);
+                return ActionResultUtils.success(world.isClient);
             };
         }
 
@@ -157,7 +158,7 @@ public interface Effect {
                 float dilution = 1.0f / data.getLevel();
                 data.entity.addEffect(dilution, effect);
 
-                return ActionResult.success(world.isClient);
+                return ActionResultUtils.success(world.isClient);
             };
         }
 
@@ -176,7 +177,7 @@ public interface Effect {
             data.entity.addEffects(effects);
         }
 
-        return ActionResult.success(world.isClient);
+        return ActionResultUtils.success(world.isClient);
     };
 
     // params: "dilute": boolean - should dilution occur
@@ -199,7 +200,7 @@ public interface Effect {
                 data.setFluid(fluid);
                 data.addLevel(dilute);
 
-                return ActionResult.success(world.isClient);
+                return ActionResultUtils.success(world.isClient);
             };
         }
 
@@ -208,7 +209,7 @@ public interface Effect {
                 return ActionResult.PASS;
             }
 
-            return ActionResult.success(world.isClient);
+            return ActionResultUtils.success(world.isClient);
         };
     };
 
@@ -218,7 +219,7 @@ public interface Effect {
             return ActionResult.PASS;
         }
 
-        return ActionResult.success(world.isClient);
+        return ActionResultUtils.success(world.isClient);
     };
 
     // amplifies the effect level (evenly adds "amplifier" to all effects)
@@ -229,7 +230,7 @@ public interface Effect {
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             data.entity.amplify(amplifier);
 
-            return ActionResult.success(world.isClient);
+            return ActionResultUtils.success(world.isClient);
         };
     };
 
@@ -241,7 +242,7 @@ public interface Effect {
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             data.entity.extendDuration(duration);
 
-            return ActionResult.success(world.isClient);
+            return ActionResultUtils.success(world.isClient);
         };
     };
 
@@ -258,7 +259,7 @@ public interface Effect {
 
             data.entity.setFluid(new_fluid);
 
-            return ActionResult.success(world.isClient);
+            return ActionResultUtils.success(world.isClient);
         };
 
     };

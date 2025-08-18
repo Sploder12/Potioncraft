@@ -11,6 +11,7 @@ import net.sploder12.potioncraft.Main;
 import net.sploder12.potioncraft.meta.CauldronData;
 import net.sploder12.potioncraft.meta.MetaEffect;
 import net.sploder12.potioncraft.meta.parsers.EffectParser;
+import net.sploder12.potioncraft.util.ActionResultUtils;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -60,7 +61,7 @@ public interface ControlFlow {
             ActionResult cond = condition.interact(prev, data, world, pos, player, hand, stack);
 
             if (cond != ActionResult.PASS) { // then
-                ActionResult res = ActionResult.success(world.isClient);
+                ActionResult res = ActionResultUtils.success(world.isClient);
 
                 for (MetaEffect effect : thens) {
                     res = effect.interact(res, data, world, pos, player, hand, stack);
@@ -69,7 +70,7 @@ public interface ControlFlow {
                 return res;
             }
             else if (finalElse.isPresent()) { // else
-                ActionResult res = ActionResult.success(world.isClient);
+                ActionResult res = ActionResultUtils.success(world.isClient);
 
                 for (MetaEffect effect : finalElse.get()) {
                     res = effect.interact(res, data, world, pos, player, hand, stack);
