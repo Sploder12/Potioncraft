@@ -164,10 +164,11 @@ public class Json {
             return Optional.of(ActionResult.FAIL);
         }
         else if (str.equalsIgnoreCase("CONSUME_PARTIAL")) {
-            return Optional.of(ActionResult.CONSUME_PARTIAL);
+            Main.warn("CONSUME_PARTIAL is no longer an action result! " + location);
         }
-
-        Main.warn(str + " is not an action result! " + location);
+        else {
+            Main.warn(str + " is not an action result! " + location);
+        }
         return Optional.empty();
     }
 

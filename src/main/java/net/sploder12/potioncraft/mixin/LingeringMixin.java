@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(PotionEntity.class)
 abstract class LingeringMixin {
-
+/*
     @Redirect(method = "applyLingeringPotion(Lnet/minecraft/item/ItemStack;Lnet/minecraft/potion/Potion;)V",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/AreaEffectCloudEntity;addEffect(Lnet/minecraft/entity/effect/StatusEffectInstance;)V"))
     private void LingeringDurationFix(AreaEffectCloudEntity areaEffectCloudEntity, StatusEffectInstance effect) {
@@ -27,5 +27,5 @@ abstract class LingeringMixin {
         ));
 
         // note: hidden effects get removed, however, the game already does this and nobody cares.
-    }
+    }*/
 }

@@ -13,6 +13,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.registry.Registries;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.sploder12.potioncraft.util.FluidHelper;
 import org.joml.Matrix4f;
@@ -36,7 +37,7 @@ public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldro
     }
 
     @Override
-    public void render(PotionCauldronBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+    public void render(PotionCauldronBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Vec3d idk) {
 
         World world = entity.getWorld();
 
@@ -91,10 +92,10 @@ public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldro
 
         Matrix4f matrix = matrices.peek().getPositionMatrix();
 
-        buffer.vertex(matrix, -fluidWidth, 0.0f, fluidWidth).color(color).texture(fluid.getMinU() + uOffset, fluid.getMaxV() - vOffset).light(lightAbove).overlay(overlay).normal(0.0f, 1.0f, 0.0f).next();
-        buffer.vertex(matrix, fluidWidth, 0.0f, fluidWidth).color(color).texture(fluid.getMaxU() - uOffset, fluid.getMaxV() - vOffset).light(lightAbove).overlay(overlay).normal(0.0f, 1.0f, 0.0f).next();
-        buffer.vertex(matrix, fluidWidth, 0.0f, -fluidWidth).color(color).texture(fluid.getMaxU() - uOffset, fluid.getMinV() + vOffset).light(lightAbove).overlay(overlay).normal(0.0f, 1.0f, 0.0f).next();
-        buffer.vertex(matrix, -fluidWidth, 0.0f, -fluidWidth).color(color).texture(fluid.getMinU() + uOffset, fluid.getMinV() + vOffset).light(lightAbove).overlay(overlay).normal(0.0f, 1.0f, 0.0f).next();
+        buffer.vertex(matrix, -fluidWidth, 0.0f, fluidWidth).color(color).texture(fluid.getMinU() + uOffset, fluid.getMaxV() - vOffset).light(lightAbove).overlay(overlay).normal(0.0f, 1.0f, 0.0f);
+        buffer.vertex(matrix, fluidWidth, 0.0f, fluidWidth).color(color).texture(fluid.getMaxU() - uOffset, fluid.getMaxV() - vOffset).light(lightAbove).overlay(overlay).normal(0.0f, 1.0f, 0.0f);
+        buffer.vertex(matrix, fluidWidth, 0.0f, -fluidWidth).color(color).texture(fluid.getMaxU() - uOffset, fluid.getMinV() + vOffset).light(lightAbove).overlay(overlay).normal(0.0f, 1.0f, 0.0f);
+        buffer.vertex(matrix, -fluidWidth, 0.0f, -fluidWidth).color(color).texture(fluid.getMinU() + uOffset, fluid.getMinV() + vOffset).light(lightAbove).overlay(overlay).normal(0.0f, 1.0f, 0.0f);
 
         matrices.pop();
     }

@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(ArrowEntity.class)
 abstract class TippedArrowMixin {
-
+    /*
     @Redirect(method = "onHit(Lnet/minecraft/entity/LivingEntity;)V",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;addStatusEffect(Lnet/minecraft/entity/effect/StatusEffectInstance;Lnet/minecraft/entity/Entity;)Z"))
     private boolean TippedDurationFix(LivingEntity target, StatusEffectInstance effect, Entity entity) {
@@ -23,5 +23,5 @@ abstract class TippedArrowMixin {
                 effect.shouldShowParticles(),
                 effect.shouldShowIcon()),
             entity);
-    }
+    }*/
 }

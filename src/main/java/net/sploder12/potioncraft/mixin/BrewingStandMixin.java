@@ -2,9 +2,10 @@ package net.sploder12.potioncraft.mixin;
 
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.PotionUtil;
+
 import net.minecraft.recipe.BrewingRecipeRegistry;
 
+import net.sploder12.potioncraft.util.PotionUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,7 +18,7 @@ import java.util.List;
 public abstract class BrewingStandMixin {
     @Inject(method = "craft(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Lnet/minecraft/item/ItemStack;",
             at = @At("RETURN"), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
-    private static void CustomEffectFix(ItemStack ingredient, ItemStack input, CallbackInfoReturnable<ItemStack> cir) {
+    private void CustomEffectFix(ItemStack ingredient, ItemStack input, CallbackInfoReturnable<ItemStack> cir) {
         if (input.isEmpty()) {
             cir.cancel();
             return;

@@ -8,7 +8,6 @@ import net.minecraft.fluid.Fluids;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundCategory;
@@ -24,6 +23,7 @@ import net.sploder12.potioncraft.PotionEffectInstance;
 import net.sploder12.potioncraft.meta.CauldronData;
 import net.sploder12.potioncraft.util.ActionResultUtils;
 import net.sploder12.potioncraft.util.Json;
+import net.sploder12.potioncraft.util.PotionUtil;
 
 import java.util.List;
 
@@ -147,7 +147,7 @@ public interface Effect {
     MetaEffectTemplate ADD_POTION_EFFECT = (params, file) -> {
         final Potion potion = Json.getRegistryEntry(params.get("id"), Registries.POTION, file);
 
-        if (potion != null && potion != Potions.EMPTY) {
+        if (potion != null) {
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
                 if (data.getLevel() == 0) {
                     return ActionResult.PASS;

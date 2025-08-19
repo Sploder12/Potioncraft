@@ -7,6 +7,8 @@ import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.block.AbstractCauldronBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.cauldron.CauldronBehavior;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
@@ -103,9 +105,11 @@ public class MetaMixing {
 
         // if using the item's potency, it uses the max of current and held
         if (tmpPotency == -1337) {
-            NbtCompound nbt = itemStack.getNbt();
-            if (nbt != null && nbt.contains("potency")) {
-                tmpPotency = nbt.getInt("potency");
+            NbtComponent nbtComponent = itemStack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+            NbtCompound nbt = nbtComponent.copyNbt();
+
+            if (nbt.contains("potency")) {
+                tmpPotency = nbt.getInt("potency").orElse( Config.getInteger(Config.FieldID.DEFAULT_POTION_POTENCY));
             }
             else {
                 tmpPotency = Config.getInteger(Config.FieldID.DEFAULT_POTION_POTENCY);
@@ -130,7 +134,7 @@ public class MetaMixing {
         ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
             public Identifier getFabricId() {
-                return new Identifier("potioncraft", "metamixing");
+                return Identifier.of("potioncraft", "metamixing");
             }
 
             @Override

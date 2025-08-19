@@ -1,11 +1,10 @@
 package net.sploder12.potioncraft;
 
 import com.mojang.serialization.MapCodec;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.*;
 import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.EntityCollisionHandler;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
@@ -14,9 +13,12 @@ import net.minecraft.fluid.Fluids;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
@@ -43,12 +45,12 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
     public static final IntProperty LUMINANCE = IntProperty.of("luminance", 0, 15);
 
     public static final PotionCauldronBlock POTION_CAULDRON_BLOCK = new PotionCauldronBlock(
-            FabricBlockSettings.copyOf(Blocks.CAULDRON).luminance(
+            Blocks.CAULDRON.getSettings().luminance(
                     (BlockState state) -> state.get(LUMINANCE)
             )
     );
 
-    public static final Identifier POTION_CAULDRON_ID = new Identifier("potioncraft", "potion_cauldron_block");
+    public static final Identifier POTION_CAULDRON_ID = Identifier.of("potioncraft", "potion_cauldron_block");
 
 
     /** Behavior of Potion Cauldron */
@@ -72,10 +74,12 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
                 POTION_CAULDRON_ID,
                 POTION_CAULDRON_BLOCK);
 
+        RegistryKey<Item> itemKey = RegistryKey.of(RegistryKeys.ITEM, POTION_CAULDRON_ID);
+
         Registry.register(
                 Registries.ITEM,
                 POTION_CAULDRON_ID,
-                new BlockItem(POTION_CAULDRON_BLOCK, new FabricItemSettings()));
+                new BlockItem(POTION_CAULDRON_BLOCK, new Item.Settings().registryKey(itemKey)));
 
         PotionCauldronBlockEntity.register();
     }
@@ -163,8 +167,8 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
 
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        ActionResult out = super.onUse(state, world, pos, player, hand, hit);
+    public ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        ActionResult out = super.onUseWithItem(stack, state, world, pos, player, hand, hit);
 
         if (!world.isClient()) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
@@ -177,7 +181,7 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
     }
 
     @Override
-    public void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
+    public void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler) {
         if (!Config.getBoolean(Config.FieldID.ALLOW_DROP_MIXING)) {
             return;
         }
@@ -228,11 +232,11 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
 
 
                 for (int i = 0; i < 3; ++i) {
-                    world.addParticle(ParticleTypes.SPLASH, d + 0.25 + random.nextDouble() * 0.5, e, f + 0.25 + random.nextDouble() * 0.5, r, g, b);
+                    world.addParticleClient(ParticleTypes.SPLASH, d + 0.25 + random.nextDouble() * 0.5, e, f + 0.25 + random.nextDouble() * 0.5, r, g, b);
                 }
 
                 if (random.nextInt(2) == 0) {
-                    world.playSound(d + 0.5, e, f + 0.5, SoundEvents.BLOCK_BUBBLE_COLUMN_UPWARDS_AMBIENT, SoundCategory.BLOCKS, 0.2F + random.nextFloat() * 0.2F, 0.9F + random.nextFloat() * 0.15F, false);
+                    world.playSoundClient(d + 0.5, e, f + 0.5, SoundEvents.BLOCK_BUBBLE_COLUMN_UPWARDS_AMBIENT, SoundCategory.BLOCKS, 0.2F + random.nextFloat() * 0.2F, 0.9F + random.nextFloat() * 0.15F, false);
                 }
             }
         }

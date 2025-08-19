@@ -4,6 +4,11 @@ import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityT
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.component.ComponentMap;
+import net.minecraft.component.ComponentType;
+import net.minecraft.component.ComponentsAccess;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.fluid.Fluid;
@@ -17,14 +22,15 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.sploder12.potioncraft.meta.parsers.InversionsParser;
 import net.sploder12.potioncraft.util.FluidHelper;
+import net.sploder12.potioncraft.util.PotionUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -42,9 +48,9 @@ public class PotionCauldronBlockEntity extends BlockEntity {
     final public static BlockEntityType<PotionCauldronBlockEntity> POTION_CAULDRON_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(PotionCauldronBlockEntity::new, PotionCauldronBlock.POTION_CAULDRON_BLOCK)
             .build();
 
-    final public static Potion CRAFTED_POTION = Registry.register(Registries.POTION,
-            new Identifier("potioncraft", "crafted_potion"),
-            new Potion());
+    final public static RegistryEntry<Potion> CRAFTED_POTION = Registry.registerReference(Registries.POTION,
+            Identifier.of("potioncraft", "crafted_potion"),
+            new Potion("crafted_potion"));
 
     public PotionCauldronBlockEntity(BlockPos pos, BlockState state) {
         super(POTION_CAULDRON_BLOCK_ENTITY, pos, state);
@@ -111,10 +117,11 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         ItemStack effected = PotionUtil.setCustomPotionEffects(target, effects);
 
         if (!effects.isEmpty()) {
-            NbtCompound nbt = effected.getNbt();
-            if (nbt == null) nbt = createNbt();
-            nbt.putInt("potency", getPotency());
-            effected.setNbt(nbt);
+            effected.apply(
+                    DataComponentTypes.CUSTOM_DATA,
+                    NbtComponent.DEFAULT,
+                    nbtComponent -> nbtComponent.apply(
+                            nbt -> nbt.putInt("potency", getPotency())));
         }
 
         return effected;
@@ -293,7 +300,11 @@ public class PotionCauldronBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void writeNbt(NbtCompound nbt) {
+    public void addComponents(ComponentMap.Builder components) {
+
+        NbtComponent nbtComponent = components.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+        NbtCompound nbt = nbtComponent.copyNbt();
+
         nbt.putInt("level", level);
         nbt.putInt("potency", potency);
 
@@ -308,14 +319,15 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
         nbt.putString("fluid", Registries.FLUID.getId(fluid).toString());
 
-        super.writeNbt(nbt);
+        components.add(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
     }
 
     @Override
-    public void readNbt(NbtCompound nbt) {
-        super.readNbt(nbt);
+    public void readComponents(ComponentsAccess components) {
+        NbtComponent nbtComponent = components.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
+        NbtCompound nbt = nbtComponent.copyNbt();
 
-        Identifier fluidId = Identifier.tryParse(nbt.getString("fluid"));
+        Identifier fluidId = Identifier.tryParse(nbt.getString("fluid").orElse(""));
 
         if (fluidId != null) {
             fluid = Registries.FLUID.get(fluidId);
@@ -325,29 +337,27 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         }
 
         effects.clear();
-        NbtList nbtList = nbt.getList("effects", NbtElement.COMPOUND_TYPE);
+        NbtList nbtList = nbt.getList("effects").orElse(new NbtList());
 
         for (int i = 0; i < nbtList.size(); ++i) {
-            NbtCompound nbtCompound = nbtList.getCompound(i);
+            NbtCompound nbtCompound = nbtList.getCompound(i).orElse(null);
+            if (nbtCompound == null)
+                continue;
+
             PotionEffectInstance effect = PotionEffectInstance.fromNbt(nbtCompound);
             if (effect != null) {
                 effects.put(effect.type, effect);
             }
         }
 
-        potency = nbt.getInt("potency");
-        level = nbt.getInt("level");
+        potency = nbt.getInt("potency").orElse(0);
+        level = nbt.getInt("level").orElse(3);
     }
 
     @Nullable
     @Override
     public Packet<ClientPlayPacketListener> toUpdatePacket() {
         return BlockEntityUpdateS2CPacket.create(this);
-    }
-
-    @Override
-    public NbtCompound toInitialChunkDataNbt() {
-        return createNbt();
     }
 
     @Override

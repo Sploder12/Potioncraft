@@ -35,7 +35,7 @@ public class PotionEffectInstance {
     }
 
     PotionEffectInstance(@NotNull StatusEffectInstance effect) {
-        this(effect.getEffectType(), effect.getDuration(), effect.getAmplifier() + 1, effect.isAmbient(), effect.shouldShowParticles(), effect.shouldShowIcon());
+        this(effect.getEffectType().value(), effect.getDuration(), effect.getAmplifier() + 1, effect.isAmbient(), effect.shouldShowParticles(), effect.shouldShowIcon());
     }
 
     PotionEffectInstance(PotionEffectInstance other) {
@@ -95,7 +95,7 @@ public class PotionEffectInstance {
 
         // there is an implicit +1 to amplifiers (to make fractions work better)
 
-        return new StatusEffectInstance(type, effectiveDuration, effectiveAmplifier - 1, ambient, showParticles, showIcon);
+        return new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(type), effectiveDuration, effectiveAmplifier - 1, ambient, showParticles, showIcon);
     }
 
     public void dilute(float ratio) {
@@ -157,7 +157,7 @@ public class PotionEffectInstance {
 
     @Nullable
     public static PotionEffectInstance fromNbt(NbtCompound nbt) {
-        String id = nbt.getString("Id");
+        String id = nbt.getString("Id").orElse("");
         StatusEffect type = Registries.STATUS_EFFECT.get(Identifier.tryParse(id));
         //int id = nbt.getInt("Id");
         //StatusEffect type = StatusEffect.byRawId(id);
@@ -166,21 +166,21 @@ public class PotionEffectInstance {
     }
 
     private static PotionEffectInstance fromNbt(StatusEffect type, NbtCompound nbt) {
-        float amp = nbt.getFloat("Amplifier");
-        float dur = nbt.getFloat("Duration");
+        float amp = nbt.getFloat("Amplifier").orElse(0.0f);
+        float dur = nbt.getFloat("Duration").orElse(0.0f);
 
-        boolean ambient = nbt.getBoolean("Ambient");
+        boolean ambient = nbt.getBoolean("Ambient").orElse(false);
         boolean particles = true;
-        if (nbt.contains("ShowParticles", 1)) {
-            particles = nbt.getBoolean("ShowParticles");
+        if (nbt.contains("ShowParticles")) {
+            particles = nbt.getBoolean("ShowParticles").orElse(true);
         }
 
         boolean icon = particles;
-        if (nbt.contains("ShowIcon", 1)) {
-            icon = nbt.getBoolean("ShowIcon");
+        if (nbt.contains("ShowIcon")) {
+            icon = nbt.getBoolean("ShowIcon").orElse(true);
         }
 
-        if (nbt.getBoolean("IsInstant")) {
+        if (nbt.getBoolean("IsInstant").orElse(false)) {
             dur = 1.0f;
         }
 

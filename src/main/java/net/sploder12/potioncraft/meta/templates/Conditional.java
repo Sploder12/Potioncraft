@@ -6,7 +6,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -19,6 +18,7 @@ import net.sploder12.potioncraft.meta.MetaEffect;
 import net.sploder12.potioncraft.meta.parsers.EffectParser;
 import net.sploder12.potioncraft.util.ActionResultUtils;
 import net.sploder12.potioncraft.util.Json;
+import net.sploder12.potioncraft.util.PotionUtil;
 
 import java.util.Collection;
 import java.util.HashSet;

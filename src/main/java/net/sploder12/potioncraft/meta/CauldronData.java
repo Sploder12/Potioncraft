@@ -74,11 +74,6 @@ public class CauldronData {
     private void placePotionCauldron(World world) {
         BlockPos pos = getPos();
         world.setBlockState(pos, PotionCauldronBlock.POTION_CAULDRON_BLOCK.getDefaultState());
-        BlockEntity dest = world.getBlockEntity(pos);
-
-        assert dest != null;
-
-        dest.readNbt(entity.createNbt());
     }
 
     private void placeCauldron(World world) {
