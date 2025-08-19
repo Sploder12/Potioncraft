@@ -1,5 +1,6 @@
 package net.sploder12.potioncraft.meta;
 
+import com.mojang.logging.LogUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.ItemEntity;
@@ -9,7 +10,12 @@ import net.minecraft.fluid.Fluids;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsage;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.stat.Stats;
+import net.minecraft.storage.NbtReadView;
+import net.minecraft.storage.NbtWriteView;
+import net.minecraft.storage.ReadView;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -17,6 +23,7 @@ import net.sploder12.potioncraft.util.FluidHelper;
 import net.sploder12.potioncraft.PotionCauldronBlock;
 import net.sploder12.potioncraft.PotionCauldronBlockEntity;
 import net.sploder12.potioncraft.util.HeatHelper;
+import org.slf4j.Logger;
 
 // class for cauldron item interactions
 public class CauldronData {
@@ -71,9 +78,25 @@ public class CauldronData {
         return entity.hasEffects();
     }
 
+    static final Logger LOGGER = LogUtils.getLogger();
+
     private void placePotionCauldron(World world) {
         BlockPos pos = getPos();
         world.setBlockState(pos, PotionCauldronBlock.POTION_CAULDRON_BLOCK.getDefaultState());
+        BlockEntity dest = world.getBlockEntity(pos);
+
+        assert dest != null;
+
+        try {
+            ErrorReporter.Logging logging = new ErrorReporter.Logging(dest.getReporterContext(), LOGGER);
+            NbtWriteView wv = NbtWriteView.create(logging);
+            entity.writeFullData(wv);
+            NbtCompound nbt = wv.getNbt();
+
+            ReadView rv = NbtReadView.create(logging, world.getRegistryManager(), nbt);
+            dest.read(rv);
+            dest.markDirty();
+        } catch (Throwable ignored) {}
     }
 
     private void placeCauldron(World world) {

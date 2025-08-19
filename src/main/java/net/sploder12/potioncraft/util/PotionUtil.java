@@ -42,9 +42,7 @@ public class PotionUtil {
     public static List<StatusEffectInstance> getCustomPotionEffects(ItemStack itemStack) {
         PotionContentsComponent potionContentsComponent = itemStack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
 
-        ArrayList<StatusEffectInstance> effects = new ArrayList<>();
-        potionContentsComponent.customEffects().forEach(effects::add);
-        return effects;
+        return new ArrayList<>(potionContentsComponent.customEffects());
     }
 
     public static int getColor(List<StatusEffectInstance> effects) {
