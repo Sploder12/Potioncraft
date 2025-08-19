@@ -21,11 +21,13 @@ public class PotionUtil {
     }
 
     public static ItemStack setCustomPotionEffects(ItemStack target, List<StatusEffectInstance> effects) {
+        PotionContentsComponent potionContentsComponent = target.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
+
         target.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(
-                Optional.empty(),
-                Optional.empty(),
+                potionContentsComponent.potion(),
+                potionContentsComponent.customColor(),
                 effects,
-                Optional.empty()
+                potionContentsComponent.customName()
         ));
 
         return target;
