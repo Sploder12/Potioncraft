@@ -16,10 +16,10 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"net.sploder12.potioncraft.fabric.Main"
+          "org.sploder.potioncraft.fabric.Main"
 		],
 		"client": [
-			"net.sploder12.potioncraft.fabric.MainClient"
+          "org.sploder.potioncraft.fabric.MainClient"
 		]
 	},
 	"mixins": [
