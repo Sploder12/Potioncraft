@@ -4,9 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.block.AbstractCauldronBlock;
-import net.minecraft.block.Block;
 import net.minecraft.block.cauldron.CauldronBehavior;
-import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -14,13 +12,11 @@ import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.sploder12.potioncraft.common.Common;
 import net.sploder12.potioncraft.common.Log;
-import net.sploder12.potioncraft.common.meta.MetaEffect;
 import net.sploder12.potioncraft.common.meta.MetaMixing;
 import net.sploder12.potioncraft.common.util.DefaultedHashSet;
 import net.sploder12.potioncraft.common.util.FluidHelper;
 import net.sploder12.potioncraft.common.util.Json;
 
-import java.util.Collection;
 import java.util.Map;
 
 public interface RecipesParser {
@@ -32,10 +28,10 @@ public interface RecipesParser {
             return false;
         }
 
-        Block block = Registries.BLOCK.get(bid);
+        var block = Registries.BLOCK.get(bid);
 
         if (block instanceof AbstractCauldronBlock cauldronBlock) {
-            Map<Item, CauldronBehavior> behaviorMap = Common.instance.getBehaviorMap(cauldronBlock);
+            var behaviorMap = Common.instance.getBehaviorMap(cauldronBlock);
 
             if (behaviorMap != null) {
                 parseBlockRecipes(behaviorMap, recipes, id);
@@ -44,7 +40,7 @@ public interface RecipesParser {
         }
 
         // maybe the id names a fluid?
-        Fluid fluid = Registries.FLUID.get(bid);
+        var fluid = Registries.FLUID.get(bid);
         if (fluid == Fluids.EMPTY) {
             Log.warn(blockId + " does not have cauldron behavior " + id);
             return false;
@@ -57,7 +53,7 @@ public interface RecipesParser {
         }
 
         blocks.forEach((AbstractCauldronBlock cauldronBlock) -> {
-            Map<Item, CauldronBehavior> behavior = Common.instance.getBehaviorMap(cauldronBlock);
+            var behavior = Common.instance.getBehaviorMap(cauldronBlock);
             if (behavior == null) {
                 return;
             }
@@ -82,7 +78,7 @@ public interface RecipesParser {
                 return;
             }
 
-            Item itemT = Registries.ITEM.get(idi);
+            var itemT = Registries.ITEM.get(idi);
             if (itemT == Items.AIR) {
                 Log.warn(item + " is not a valid item " + id);
                 return;
@@ -100,7 +96,7 @@ public interface RecipesParser {
         }
 
         JsonArray effects = effectsObj.getAsJsonArray();
-        Collection<MetaEffect> vals = EffectParser.parseEffects(effects, id);
+        var vals = EffectParser.parseEffects(effects, id);
         if (vals.isEmpty()) {
             return false;
         }
@@ -109,7 +105,7 @@ public interface RecipesParser {
 
         int potency = Json.getIntOr(recipe.get("potency"), 0);
 
-        CauldronBehavior old = MetaMixing.addInteraction(item, behaviorMap, vals, keepOld, potency);
+        var old = MetaMixing.addInteraction(item, behaviorMap, vals, keepOld, potency);
         return true;
     }
 

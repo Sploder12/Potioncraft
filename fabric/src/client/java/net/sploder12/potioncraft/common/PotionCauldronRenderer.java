@@ -4,10 +4,7 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.world.World;
 import net.sploder12.potioncraft.common.util.FluidHelper;
-import org.joml.Matrix4f;
 
 public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldronBlockEntity> {
     
@@ -29,7 +26,7 @@ public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldro
     @Override
     public void render(PotionCauldronBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
 
-        World world = entity.getWorld();
+        var world = entity.getWorld();
 
         int lightAbove = light;
         if (world != null) {
@@ -47,7 +44,7 @@ public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldro
 
 
         // get the still texture of our fluid
-        Fluid still = FluidHelper.getStill(entity.getFluid());
+        var still = FluidHelper.getStill(entity.getFluid());
         var fluidopt = CommonClient.instance.getFluidStillSprite(world, entity.getPos(), still);
         if (fluidopt.isEmpty()) {
             return;
@@ -69,12 +66,12 @@ public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldro
         matrices.push();
         matrices.translate(0.5, yOffset, 0.5);
 
-        VertexConsumer buffer = vertexConsumers.getBuffer(RenderLayer.getTranslucentMovingBlock());
+        var buffer = vertexConsumers.getBuffer(RenderLayer.getTranslucentMovingBlock());
 
         float uOffset = (fluid.getMaxU() - fluid.getMinU()) * uvCorrection;
         float vOffset = (fluid.getMaxV() - fluid.getMinV()) * uvCorrection;
 
-        Matrix4f matrix = matrices.peek().getPositionMatrix();
+        var matrix = matrices.peek().getPositionMatrix();
 
         buffer.vertex(matrix, -fluidWidth, 0.0f, fluidWidth).color(color).texture(fluid.getMinU() + uOffset, fluid.getMaxV() - vOffset).light(lightAbove).overlay(overlay).normal(0.0f, 1.0f, 0.0f).next();
         buffer.vertex(matrix, fluidWidth, 0.0f, fluidWidth).color(color).texture(fluid.getMaxU() - uOffset, fluid.getMaxV() - vOffset).light(lightAbove).overlay(overlay).normal(0.0f, 1.0f, 0.0f).next();

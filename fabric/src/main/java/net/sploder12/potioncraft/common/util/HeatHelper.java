@@ -16,7 +16,7 @@ public class HeatHelper {
 
     // returns the heating value from THIS block
     public static int getHeatFrom(WorldBlock block) {
-        Function<WorldBlock, Integer> mapping = heatMappings.get(block.getBlock());
+        var mapping = heatMappings.get(block.getBlock());
 
         if (mapping != null) {
             Integer heat = mapping.apply(block);
@@ -55,9 +55,9 @@ public class HeatHelper {
 
     public static void register() {
         addMapping(PotionCauldronBlock.POTION_CAULDRON_BLOCK, (WorldBlock info) -> {
-           Block effectiveBlock = FluidHelper.getBlock(FluidHelper.getFluid(info));
+           var effectiveBlock = FluidHelper.getBlock(FluidHelper.getFluid(info));
 
-           Function<WorldBlock, Integer> mapping = heatMappings.get(effectiveBlock);
+           var mapping = heatMappings.get(effectiveBlock);
            if (mapping != null) {
                return mapping.apply(info);
            }

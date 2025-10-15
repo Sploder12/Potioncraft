@@ -1,18 +1,13 @@
 package net.sploder12.potioncraft.common.meta.templates;
 
 import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -34,8 +29,8 @@ public interface Effect {
     // "count": attempt to use and give that many items
     MetaEffectTemplate USE_ITEM = (params, file) -> {
 
-        final Item replaceItem = Json.getRegistryEntry(params.get("id"), Registries.ITEM, file);
-        final SoundEvent sound = Json.getRegistryEntry(params.get("sound"), Registries.SOUND_EVENT, file);
+        final var replaceItem = Json.getRegistryEntry(params.get("id"), Registries.ITEM, file);
+        final var sound = Json.getRegistryEntry(params.get("sound"), Registries.SOUND_EVENT, file);
 
         final boolean finalApplyPotion = Json.getBoolOr(params.get("applyPotion"), false);
         final int finalCount = Json.getIntOr(params.get("count"), 1);
@@ -78,7 +73,7 @@ public interface Effect {
     // params: "id": Identifier - sound to play
     MetaEffectTemplate PLAY_SOUND = (params, file) -> {
 
-        final SoundEvent sound = Json.getRegistryEntry(params.get("id"), Registries.SOUND_EVENT, file);
+        final var sound = Json.getRegistryEntry(params.get("id"), Registries.SOUND_EVENT, file);
         if (sound != null) {
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
                 if (!world.isClient) {
@@ -144,7 +139,7 @@ public interface Effect {
     // params: "id": Identifier - potion effect to add
     // WARNING - ONLY works when the potion has a single effect.
     MetaEffectTemplate ADD_POTION_EFFECT = (params, file) -> {
-        final Potion potion = Json.getRegistryEntry(params.get("id"), Registries.POTION, file);
+        final var potion = Json.getRegistryEntry(params.get("id"), Registries.POTION, file);
 
         if (potion != null && potion != Potions.EMPTY) {
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
@@ -171,7 +166,7 @@ public interface Effect {
             return ActionResult.PASS;
         }
 
-        List<StatusEffectInstance> effects = PotionUtil.getPotionEffects(stack);
+        var effects = PotionUtil.getPotionEffects(stack);
         if (!effects.isEmpty()) {
             data.entity.addEffects(effects);
         }
@@ -184,7 +179,7 @@ public interface Effect {
     MetaEffectTemplate ADD_LEVEL = (params, file) -> {
         final boolean dilute = Json.getBoolOr(params.get("dilute"), true);
 
-        final Fluid fluid = Json.getRegistryEntry(params.get("fluid"), Registries.FLUID, file);
+        final var fluid = Json.getRegistryEntry(params.get("fluid"), Registries.FLUID, file);
 
         if (fluid != null && fluid != Fluids.EMPTY) {
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
@@ -248,7 +243,7 @@ public interface Effect {
     // sets the fluid contained by the cauldron
     // params: "fluid" - Identifier
     MetaEffectTemplate SET_FLUID = (params, file) -> {
-        final Fluid new_fluid = Json.getRegistryEntry(params.get("fluid"), Registries.FLUID, file);
+        final var new_fluid = Json.getRegistryEntry(params.get("fluid"), Registries.FLUID, file);
 
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (new_fluid == null) {

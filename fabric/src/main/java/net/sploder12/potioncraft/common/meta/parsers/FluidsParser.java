@@ -4,8 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.block.AbstractCauldronBlock;
-import net.minecraft.block.Block;
-import net.minecraft.fluid.Fluid;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.sploder12.potioncraft.common.Log;
@@ -23,13 +21,13 @@ public interface FluidsParser {
 
             JsonObject fluidEntry = elem.getAsJsonObject();
 
-            Fluid fluid = Json.getRegistryEntry(Identifier.tryParse(fluidId), Registries.FLUID, file);
+            var fluid = Json.getRegistryEntry(Identifier.tryParse(fluidId), Registries.FLUID, file);
             if (fluid == null) {
                 Log.warn(fluidId + " does not name a fluid " + file);
                 return;
             }
 
-            Block defaultBlock = Json.getRegistryEntry(fluidEntry.get("default"), Registries.BLOCK, file);
+            var defaultBlock = Json.getRegistryEntry(fluidEntry.get("default"), Registries.BLOCK, file);
             if (defaultBlock instanceof AbstractCauldronBlock cauldronBlock) {
                 FluidHelper.setDefaultFluidMapping(fluid, cauldronBlock);
             }
@@ -52,7 +50,7 @@ public interface FluidsParser {
                     return;
                 }
 
-                Block block = Json.getRegistryEntry(entry, Registries.BLOCK, file);
+                var block = Json.getRegistryEntry(entry, Registries.BLOCK, file);
                 if (block instanceof AbstractCauldronBlock cauldronBlock) {
                     FluidHelper.addFluidMapping(fluid, cauldronBlock);
                 }

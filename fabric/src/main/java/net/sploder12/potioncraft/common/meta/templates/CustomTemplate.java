@@ -18,7 +18,6 @@ import net.sploder12.potioncraft.common.util.Json;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 
 public class CustomTemplate implements MetaEffectTemplate {
@@ -82,7 +81,7 @@ public class CustomTemplate implements MetaEffectTemplate {
                 entry.apply(elem, fileLocation + "-" + id);
             });
 
-            final Collection<MetaEffect> effects = EffectParser.parseEffects(this.effects, fileLocation);
+            final var effects = EffectParser.parseEffects(this.effects, fileLocation);
 
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
                 for (MetaEffect effect : effects) {

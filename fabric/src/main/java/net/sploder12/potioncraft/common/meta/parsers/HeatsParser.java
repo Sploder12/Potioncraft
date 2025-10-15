@@ -3,7 +3,6 @@ package net.sploder12.potioncraft.common.meta.parsers;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
@@ -30,7 +29,7 @@ public interface HeatsParser {
                 return;
             }
 
-            Block block = Registries.BLOCK.get(blockId);
+            var block = Registries.BLOCK.get(blockId);
             if (block == Blocks.AIR && !blockId.getPath().equalsIgnoreCase("air")) {
                 Log.warn("block " + blockStr + " is not a block identifier " + id);
                 return;

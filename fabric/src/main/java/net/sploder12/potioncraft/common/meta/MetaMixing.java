@@ -1,10 +1,8 @@
 package net.sploder12.potioncraft.common.meta;
 
-import net.minecraft.block.AbstractCauldronBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -49,7 +47,7 @@ public class MetaMixing {
             }
 
             int initLevel = data.entity.getLevel();
-            Fluid initFluid = data.entity.getFluid();
+            var initFluid = data.entity.getFluid();
 
             int tmpPotency = getTmpPotency(potency, itemStack, data);
 
@@ -60,7 +58,7 @@ public class MetaMixing {
             }
 
             ActionResult prev = ActionResult.success(world.isClient);
-            for (MetaEffect effect : effects) {
+            for (var effect : effects) {
                 prev = effect.interact(prev, data, world, pos, player, hand, itemStack);
             }
 

@@ -1,7 +1,6 @@
 package net.sploder12.potioncraft.fabric;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.Map;
 
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -22,7 +21,7 @@ public class FabricLoaderImpl implements Loader {
     private final BlockEntityType<PotionCauldronBlockEntity> cauldronEntity;
 
     FabricLoaderImpl() {
-        Path path = FabricLoader.getInstance().getConfigDir();
+        var path = FabricLoader.getInstance().getConfigDir();
         configFile = path.resolve(Config.filename + ".properties").toFile();
 
         cauldronEntity = FabricBlockEntityTypeBuilder.create(PotionCauldronBlockEntity::new, PotionCauldronBlock.POTION_CAULDRON_BLOCK)

@@ -54,7 +54,7 @@ public interface ControlFlow {
             }
         }
 
-        final Optional<Collection<MetaEffect>> finalElse = elses;
+        final var finalElse = elses;
 
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             ActionResult cond = condition.interact(prev, data, world, pos, player, hand, stack);

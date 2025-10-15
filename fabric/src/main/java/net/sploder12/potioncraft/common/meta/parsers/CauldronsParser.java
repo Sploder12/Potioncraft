@@ -3,8 +3,6 @@ package net.sploder12.potioncraft.common.meta.parsers;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.block.AbstractCauldronBlock;
-import net.minecraft.block.Block;
-import net.minecraft.fluid.Fluid;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.sploder12.potioncraft.common.Log;
@@ -20,9 +18,9 @@ public interface CauldronsParser {
                 return;
             }
 
-            Block block = Registries.BLOCK.get(Identifier.tryParse(cauldronId));
+            var block = Registries.BLOCK.get(Identifier.tryParse(cauldronId));
             if (block instanceof AbstractCauldronBlock cauldronBlock) {
-                Fluid fluid = Json.getRegistryEntry(elem, Registries.FLUID, file);
+                var fluid = Json.getRegistryEntry(elem, Registries.FLUID, file);
                 if (fluid == null) {
                     return;
                 }

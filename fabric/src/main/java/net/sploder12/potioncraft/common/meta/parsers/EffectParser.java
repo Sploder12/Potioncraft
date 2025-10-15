@@ -17,7 +17,6 @@ import net.sploder12.potioncraft.common.util.Json;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Optional;
 
 public interface EffectParser {
     public static MetaEffect parseEffect(JsonObject effectObj, String location) {
@@ -34,7 +33,7 @@ public interface EffectParser {
             return null;
         }
 
-        Optional<ActionResult> quickfail = Json.getActionResult(effectObj.get("quickfail"), location + "-" + id);
+        var quickfail = Json.getActionResult(effectObj.get("quickfail"), location + "-" + id);
 
         JsonObject params = Json.getObj(effectObj.get("params"));
 

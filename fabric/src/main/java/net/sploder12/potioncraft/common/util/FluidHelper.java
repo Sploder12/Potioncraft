@@ -25,7 +25,7 @@ public class FluidHelper {
 
     public static Fluid getFluid(WorldBlock block) {
         if (block.getBlock() instanceof AbstractCauldronBlock cauldronBlock) {
-            Function<WorldBlock, Fluid> mapping = blockMappings.get(cauldronBlock);
+            var mapping = blockMappings.get(cauldronBlock);
 
             if (mapping != null) {
                 return mapping.apply(block);
@@ -52,7 +52,7 @@ public class FluidHelper {
     }
 
     public static AbstractCauldronBlock getBlock(Fluid fluid) {
-        DefaultedHashSet<AbstractCauldronBlock> cauldrons = fluidMappings.get(fluid);
+        var cauldrons = fluidMappings.get(fluid);
 
         if (cauldrons != null) {
             return cauldrons.getDefaultElement();
@@ -67,7 +67,7 @@ public class FluidHelper {
     }
 
     public static void setDefaultFluidMapping(Fluid fluid, AbstractCauldronBlock cauldron) {
-        DefaultedHashSet<AbstractCauldronBlock> cauldrons = fluidMappings.get(fluid);
+        var cauldrons = fluidMappings.get(fluid);
 
         if (cauldrons == null) {
             fluidMappings.put(fluid, new DefaultedHashSet<>(cauldron));
@@ -78,7 +78,7 @@ public class FluidHelper {
     }
 
     public static void addFluidMapping(Fluid fluid, AbstractCauldronBlock cauldron) {
-        DefaultedHashSet<AbstractCauldronBlock> cauldrons = fluidMappings.get(fluid);
+        var cauldrons = fluidMappings.get(fluid);
 
         if (cauldrons == null) {
             fluidMappings.put(fluid, new DefaultedHashSet<>(cauldron));

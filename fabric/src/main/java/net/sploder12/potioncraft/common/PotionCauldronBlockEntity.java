@@ -108,7 +108,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
     }
 
     public ItemStack setEffects(ItemStack target) {
-        ArrayList<StatusEffectInstance> effects = getEffects();
+        var effects = getEffects();
         ItemStack effected = PotionUtil.setCustomPotionEffects(target, effects);
 
         if (!effects.isEmpty()) {
@@ -174,7 +174,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
         boolean changed = false;
 
-        for (PotionEffectInstance effect : this.effects.values()) {
+        for (var effect : this.effects.values()) {
             if (InversionsParser.inversions.containsKey(effect.type)) {
                 changed = true;
                 effect.type = InversionsParser.inversions.get(effect.type);
@@ -200,7 +200,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
         float portion = (dur / this.effects.size()) / this.getLevel();
 
-        for (PotionEffectInstance effect : this.effects.values()) {
+        for (var effect : this.effects.values()) {
             // there should be some balance but that's for future me to do
             if (!effect.isInstant) {
                 effect.duration += portion;
@@ -215,7 +215,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
         float portion = (amp / this.effects.size()) / this.getLevel();
 
-        for (PotionEffectInstance effect : this.effects.values()) {
+        for (var effect : this.effects.values()) {
             // there should be some balance but that's for future me to do
             effect.amplifier += portion;
         }
@@ -226,12 +226,12 @@ public class PotionCauldronBlockEntity extends BlockEntity {
     public void addEffects(Collection<StatusEffectInstance> effects) {
 
         float newDilution = 1.0f / (float)(level);
-        for (StatusEffectInstance effect : effects) {
+        for (var effect : effects) {
             addEffect(newDilution, new PotionEffectInstance(effect));
         }
 
         // prune dead effects
-        for (PotionEffectInstance effect : this.effects.values()) {
+        for (var effect : this.effects.values()) {
             if (effect.amplifier <= PotionEffectInstance.epsilon || effect.duration < PotionEffectInstance.epsilon) {
                 this.effects.remove(effect.type);
             }
@@ -247,12 +247,12 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
         if (dilute) {
             float oldDilution = (float) (level - 1) / (float) (level);
-            for (PotionEffectInstance effect : this.effects.values()) {
+            for (var effect : this.effects.values()) {
                 effect.dilute(oldDilution);
             }
 
             // prune dead effects
-            for (PotionEffectInstance effect : this.effects.values()) {
+            for (var effect : this.effects.values()) {
                 if (effect.amplifier <= PotionEffectInstance.epsilon || effect.duration < PotionEffectInstance.epsilon) {
                     this.effects.remove(effect.type);
                 }
@@ -330,7 +330,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
         for (int i = 0; i < nbtList.size(); ++i) {
             NbtCompound nbtCompound = nbtList.getCompound(i);
-            PotionEffectInstance effect = PotionEffectInstance.fromNbt(nbtCompound);
+            var effect = PotionEffectInstance.fromNbt(nbtCompound);
             if (effect != null) {
                 effects.put(effect.type, effect);
             }
@@ -357,7 +357,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
         super.markDirty();
         if (world != null && !world.isClient()) {
-            BlockState state = world.getBlockState(pos);
+            var state = world.getBlockState(pos);
             world.updateListeners(pos, state, state, 1);
         }
     }
@@ -366,7 +366,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
     public String toString() {
         StringBuilder str = new StringBuilder();
 
-        for (PotionEffectInstance effect : effects.values()) {
+        for (var effect : effects.values()) {
             str.append(effect.toString());
         }
 

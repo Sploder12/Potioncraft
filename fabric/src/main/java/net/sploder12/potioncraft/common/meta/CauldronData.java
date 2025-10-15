@@ -1,12 +1,10 @@
 package net.sploder12.potioncraft.common.meta;
 
 import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsage;
 import net.minecraft.stat.Stats;
@@ -34,7 +32,7 @@ public class CauldronData {
         this.source = source;
         this.heat = heat;
 
-        BlockState state = PotionCauldronBlock.POTION_CAULDRON_BLOCK.getDefaultState();
+        var state = PotionCauldronBlock.POTION_CAULDRON_BLOCK.getDefaultState();
         this.entity = (PotionCauldronBlockEntity) PotionCauldronBlock.POTION_CAULDRON_BLOCK.createBlockEntity(pos, state);
 
         assert entity != null;
@@ -72,9 +70,9 @@ public class CauldronData {
     }
 
     private void placePotionCauldron(World world) {
-        BlockPos pos = getPos();
+        var pos = getPos();
         world.setBlockState(pos, PotionCauldronBlock.POTION_CAULDRON_BLOCK.getDefaultState());
-        BlockEntity dest = world.getBlockEntity(pos);
+        var dest = world.getBlockEntity(pos);
 
         assert dest != null;
 
@@ -82,7 +80,7 @@ public class CauldronData {
     }
 
     private void placeCauldron(World world) {
-        BlockState block = FluidHelper.getBlock(getFluid()).getDefaultState();
+        var block = FluidHelper.getBlock(getFluid()).getDefaultState();
 
         if (block.getBlock() instanceof LeveledCauldronBlock) {
             world.setBlockState(getPos(), block.with(LeveledCauldronBlock.LEVEL, getLevel()));
@@ -100,7 +98,7 @@ public class CauldronData {
         // turn empty cauldrons into cauldrons
         if (getFluid() == Fluids.EMPTY || getLevel() < PotionCauldronBlock.MIN_LEVEL) {
             if (source != Blocks.CAULDRON) {
-                BlockState cauldron = Blocks.CAULDRON.getDefaultState();
+                var cauldron = Blocks.CAULDRON.getDefaultState();
                 world.setBlockState(getPos(), cauldron);
             }
             return;
@@ -130,14 +128,14 @@ public class CauldronData {
 
     protected static CauldronData fromLeveledCauldron(BlockState state, World world, BlockPos pos, int heat) {
         int level = state.get(LeveledCauldronBlock.LEVEL);
-        Fluid fluid = FluidHelper.getFluid(state, world, pos);
+        var fluid = FluidHelper.getFluid(state, world, pos);
 
         return new CauldronData(fluid, state.getBlock(), pos, level, heat);
     }
 
     protected static CauldronData fromNonLeveledCauldron(BlockState state, World world, BlockPos pos, int heat) {
         int level = state.getBlock() == Blocks.CAULDRON ? 0 : PotionCauldronBlock.MAX_LEVEL;
-        Fluid fluid = FluidHelper.getFluid(state, world, pos);
+        var fluid = FluidHelper.getFluid(state, world, pos);
 
         return new CauldronData(fluid, state.getBlock(), pos, level, heat);
     }
@@ -150,9 +148,9 @@ public class CauldronData {
 
         int heat = HeatHelper.getHeatOf(state, world, pos);
 
-        Block block = state.getBlock();
+        var block = state.getBlock();
         if (block instanceof PotionCauldronBlock) {
-            BlockEntity entity = world.getBlockEntity(pos);
+            var entity = world.getBlockEntity(pos);
             if (entity instanceof PotionCauldronBlockEntity pbentity) {
                 return fromPotionCauldron(pbentity, heat);
             }
@@ -172,7 +170,7 @@ public class CauldronData {
     public static void itemUse(World world, BlockPos pos, Hand hand, ItemStack in, PlayerEntity player, ItemStack out, int count) {
         if (count == 0) return;
 
-        Item item = in.getItem();
+        var item = in.getItem();
 
         if (count > 1) {
             in.decrement(count - 1);
@@ -189,7 +187,7 @@ public class CauldronData {
             in.decrement(1);
 
             if (out != null && !out.isEmpty()) {
-                ItemEntity outEntity = new ItemEntity(world, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, out);
+                var outEntity = new ItemEntity(world, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, out);
                 outEntity.addVelocity(0.0f, 0.2f, 0.0f);
                 world.spawnEntity(outEntity);
             }

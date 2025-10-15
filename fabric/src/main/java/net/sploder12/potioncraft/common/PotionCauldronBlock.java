@@ -1,9 +1,7 @@
 package net.sploder12.potioncraft.common;
 
 import net.minecraft.block.*;
-import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
@@ -27,11 +25,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import net.sploder12.potioncraft.common.config.Config;
-import net.sploder12.potioncraft.common.meta.MetaMixing;
 import net.sploder12.potioncraft.common.util.FluidHelper;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Map;
 
 import static net.sploder12.potioncraft.common.meta.MetaMixing.interactions;
 
@@ -92,7 +87,7 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
 
     @Override
     public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
-        BlockEntity blockEntity = world.getBlockEntity(pos);
+        var blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof PotionCauldronBlockEntity cauldronEntity) {
             return cauldronEntity.getLevel();
         }
@@ -141,7 +136,7 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
             return;
         }
 
-        BlockEntity blockEntity = world.getBlockEntity(pos);
+        var blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof PotionCauldronBlockEntity cauldronEntity) {
             if (cauldronEntity.getFluid() == FluidHelper.getStill(fluid)) {
                 cauldronEntity.addLevel(true);
@@ -166,7 +161,7 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
         ActionResult out = super.onUse(state, world, pos, player, hand, hit);
 
         if (!world.isClient()) {
-            BlockEntity blockEntity = world.getBlockEntity(pos);
+            var blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof PotionCauldronBlockEntity cauldronEntity) {
                 updateLuminance(state, world, pos, cauldronEntity);
             }
@@ -182,21 +177,21 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
         }
 
         if (!world.isClient()) {
-            BlockEntity blockEntity = world.getBlockEntity(pos);
+            var blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof PotionCauldronBlockEntity cauldronEntity
                     && isEntityTouchingFluid(cauldronEntity.getLevel(), pos, entity)
                     && entity instanceof ItemEntity itemEntity) {
 
                 ItemStack items = itemEntity.getStack();
 
-                Map<Item, CauldronBehavior> behaviorMap = Common.instance.getBehaviorMap(PotionCauldronBlock.POTION_CAULDRON_BLOCK);
+                var behaviorMap = Common.instance.getBehaviorMap(PotionCauldronBlock.POTION_CAULDRON_BLOCK);
 
                 if (behaviorMap.containsKey(items.getItem())) {
-                    CauldronBehavior behavior = behaviorMap.get(items.getItem());
+                    var behavior = behaviorMap.get(items.getItem());
 
                     behavior.interact(state, world, pos, null, null, items);
 
-                    BlockEntity resultEntity = world.getBlockEntity(pos);
+                    var resultEntity = world.getBlockEntity(pos);
                     if (resultEntity instanceof PotionCauldronBlockEntity cauldronResultEntity) {
                         updateLuminance(state, world, pos, cauldronResultEntity);
                     }
@@ -208,7 +203,7 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
         if (Config.getBoolean(Config.FieldID.DO_BUBBLE_EFFECTS)) {
-            BlockEntity blockEntity = world.getBlockEntity(pos);
+            var blockEntity = world.getBlockEntity(pos);
             final int maxPotency = PotionCauldronBlockEntity.getMaxPotency();
             if (blockEntity instanceof PotionCauldronBlockEntity cauldronEntity &&
                             (cauldronEntity.getPotency() < maxPotency || maxPotency < 0) &&

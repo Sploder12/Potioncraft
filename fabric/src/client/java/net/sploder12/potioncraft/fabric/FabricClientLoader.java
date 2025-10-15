@@ -2,7 +2,6 @@ package net.sploder12.potioncraft.fabric;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.fluid.Fluid;
@@ -20,7 +19,7 @@ import java.util.Optional;
 class FabricClientLoader implements ClientLoader {
     @Override
     public Optional<Sprite> getFluidStillSprite(World world, BlockPos pos, Fluid fluid) {
-        FluidRenderHandler fluidRenderHandler = FluidRenderHandlerRegistry.INSTANCE.get(fluid);
+        var fluidRenderHandler = FluidRenderHandlerRegistry.INSTANCE.get(fluid);
 
         if (fluidRenderHandler == null) {
             if (fluid != Fluids.EMPTY) {
@@ -35,7 +34,7 @@ class FabricClientLoader implements ClientLoader {
 
     @Override
     public int getFluidColor(World world, BlockPos pos, FluidState fluid) {
-        FluidRenderHandler fluidRenderHandler = FluidRenderHandlerRegistry.INSTANCE.get(fluid.getFluid());
+        var fluidRenderHandler = FluidRenderHandlerRegistry.INSTANCE.get(fluid.getFluid());
 
         if (fluidRenderHandler == null) {
             if (fluid.getFluid() != Fluids.EMPTY) {

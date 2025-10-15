@@ -19,7 +19,6 @@ import net.sploder12.potioncraft.common.meta.MetaEffect;
 import net.sploder12.potioncraft.common.meta.parsers.EffectParser;
 import net.sploder12.potioncraft.common.util.Json;
 
-import java.util.Collection;
 import java.util.HashSet;
 
 public interface Conditional {
@@ -54,7 +53,7 @@ public interface Conditional {
 
         final boolean shortCircuit = Json.getBoolOr(params.get("short_circuit"), true);
 
-        final Collection<MetaEffect> effects = EffectParser.parseEffects(conditionsE.getAsJsonArray(), file);
+        final var effects = EffectParser.parseEffects(conditionsE.getAsJsonArray(), file);
         if (effects.isEmpty()) {
             Log.warn("AND has no conditions! " + file);
             return PASS.apply(params, file);
@@ -92,7 +91,7 @@ public interface Conditional {
 
         final boolean shortCircuit = Json.getBoolOr(params.get("short_circuit"), true);
 
-        final Collection<MetaEffect> effects = EffectParser.parseEffects(conditionsE.getAsJsonArray(), file);
+        final var effects = EffectParser.parseEffects(conditionsE.getAsJsonArray(), file);
         if (effects.isEmpty()) {
             Log.warn("OR has no conditions! " + file);
             return PASS.apply(params, file);
@@ -127,7 +126,7 @@ public interface Conditional {
             return PASS.apply(params, file);
         }
 
-        MetaEffect effect = EffectParser.parseEffect(conditionE.getAsJsonObject(), file + "-condition");
+        var effect = EffectParser.parseEffect(conditionE.getAsJsonObject(), file + "-condition");
         if (effect == null) {
             return PASS.apply(params, file);
         }
@@ -229,7 +228,7 @@ public interface Conditional {
                 }
             }
             else if (fluidsElem.isJsonPrimitive()) {
-                Fluid fluid = Json.getRegistryEntry(fluidsElem, Registries.FLUID, file);
+                var fluid = Json.getRegistryEntry(fluidsElem, Registries.FLUID, file);
 
                 if (fluid != null) {
                     fluids = new HashSet<>();
@@ -248,7 +247,7 @@ public interface Conditional {
             };
         }
 
-        HashSet<Fluid> finalFluids = fluids;
+        final var finalFluids = fluids;
         return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
             if (finalFluids.contains(data.getFluid())) {
                 return ActionResult.success(world.isClient);
