@@ -1,26 +1,14 @@
-package net.sploder12.potioncraft.fabric;
+package net.sploder12.potioncraft.common;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
-import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
-import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.registry.Registries;
 import net.minecraft.world.World;
-import net.sploder12.potioncraft.common.Log;
 import net.sploder12.potioncraft.common.util.FluidHelper;
-import net.sploder12.potioncraft.common.PotionCauldronBlock;
-import net.sploder12.potioncraft.common.PotionCauldronBlockEntity;
 import org.joml.Matrix4f;
 
-@Environment(EnvType.CLIENT)
 public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldronBlockEntity> {
     
     // fluid is 12 pixels of the texture out o 16
@@ -60,26 +48,20 @@ public class PotionCauldronRenderer implements BlockEntityRenderer<PotionCauldro
 
         // get the still texture of our fluid
         Fluid still = FluidHelper.getStill(entity.getFluid());
-        FluidRenderHandler fluidRenderHandler = FluidRenderHandlerRegistry.INSTANCE.get(still);
-
-        if (fluidRenderHandler == null) {
-            if (still != Fluids.EMPTY) {
-                Log.warn("Could not create fluid render handler for " + Registries.FLUID.getId(still) + "!");
-            }
-
+        var fluidopt = CommonClient.instance.getFluidStillSprite(world, entity.getPos(), still);
+        if (fluidopt.isEmpty()) {
             return;
         }
+
+        var fluid = fluidopt.get();
 
         // alpha is set to opaque since the texture handles transluscency
         int color;
         if (entity.getColor() == 0xffffff){
-            color = fluidRenderHandler.getFluidColor(world,entity.getPos(),still.getDefaultState()) | (0xff << 24);
+            color = CommonClient.instance.getFluidColor(world,entity.getPos(),still.getDefaultState()) | (0xff << 24);
         } else {
             color = entity.getColor() | (0xff << 24);
         }
-
-
-        Sprite fluid = fluidRenderHandler.getFluidSprites(world, entity.getPos(), still.getDefaultState())[0];
 
         double yOffset = PotionCauldronBlock.getFluidHeight(entity.getLevel());
 

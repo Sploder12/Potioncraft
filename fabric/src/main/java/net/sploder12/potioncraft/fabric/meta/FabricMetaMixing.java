@@ -24,7 +24,7 @@ import java.util.*;
 
 public class FabricMetaMixing {
     public static void register() {
-        net.sploder12.potioncraft.common.meta.MetaMixing.register();
+        MetaMixing.register();
 
         ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
