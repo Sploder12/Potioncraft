@@ -1,19 +1,33 @@
 package org.sploder.potioncraft.common.meta;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.resource.Resource;
+import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.sploder.potioncraft.common.Common;
+import org.sploder.potioncraft.common.Log;
 import org.sploder.potioncraft.common.PotionCauldronBlockEntity;
 import org.sploder.potioncraft.common.config.Config;
 import org.sploder.potioncraft.common.meta.parsers.*;
+import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
+import org.sploder.potioncraft.common.util.FluidHelper;
+import org.sploder.potioncraft.common.util.HeatHelper;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -106,5 +120,51 @@ public class MetaMixing {
         parsers.put("inversions", new Parser(InversionsParser::parse));
         parsers.put("heats", new Parser(HeatsParser::parse));
         parsers.put("recipes", new Parser(RecipesParser::parse));
+    }
+
+    public static void reload(ResourceManager manager) {
+        // Clear Caches Here
+
+        FluidHelper.reset();
+        HeatHelper.reset();
+
+        CauldronBehavior.EMPTY_CAULDRON_BEHAVIOR.clear();
+        CauldronBehavior.WATER_CAULDRON_BEHAVIOR.clear();
+        CauldronBehavior.LAVA_CAULDRON_BEHAVIOR.clear();
+        CauldronBehavior.POWDER_SNOW_CAULDRON_BEHAVIOR.clear();
+        CauldronBehavior.registerBehavior();
+
+        MetaMixing.interactions.clear();
+
+        InversionsParser.clear();
+        MetaEffectTemplate.register();
+
+        // @TODO clear custom behaviors
+
+        Config.loadConfig(Common.instance.getConfigFile()); // test this
+
+        Map<Identifier, Resource> resources = manager.findResources("metamixing", id -> id.toString().endsWith(".json"));
+        resources.forEach((id, resource) -> {
+            try (InputStream stream = resource.getInputStream(); JsonReader reader = new JsonReader(new InputStreamReader(stream))) {
+                // gson kinda blows ngl
+
+                JsonParser parser = new JsonParser();
+
+                JsonElement rootE = parser.parse(reader);
+                if (rootE == null || !rootE.isJsonObject()) {
+                    Log.warn("Encountered malformed resource " + id);
+                    return;
+                }
+
+                JsonObject root = rootE.getAsJsonObject();
+                String file = id.toString();
+
+                MetaMixing.parsers.forEach((String elemId, Parser elemParser) ->
+                        elemParser.parse(root.get(elemId), file));
+            }
+            catch (Exception e) {
+                Log.error("Error occurred while loading resource " + id + "\n" + e.getMessage());
+            }
+        });
     }
 }

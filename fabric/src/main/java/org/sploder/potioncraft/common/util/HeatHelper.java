@@ -47,10 +47,6 @@ public class HeatHelper {
         return heatMappings.put(block, mapping);
     }
 
-    public static void addStaticMapping(Block block, int heat) {
-        addMapping(block, (WorldBlock info) -> heat);
-    }
-
     // adds a dynamic mapping to the heat mappings, it is NOT safe to assume WorldBlock.block == Block
     public static void addMapping(Block block, Function<WorldBlock, Integer> mapping) {
         var prev = heatMappings.get(block);
