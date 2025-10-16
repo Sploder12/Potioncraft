@@ -38,13 +38,33 @@ public class HeatHelper {
         return getHeatFrom(below, world, belowPos);
     }
 
-    public static Function<WorldBlock, Integer> addStaticMapping(Block block, int heat) {
-        return heatMappings.put(block, (WorldBlock info) -> heat);
+    public static Function<WorldBlock, Integer> setStaticMapping(Block block, int heat) {
+        return setMapping(block, (WorldBlock info) -> heat);
     }
 
     // adds a dynamic mapping to the heat mappings, it is NOT safe to assume WorldBlock.block == Block
-    public static Function<WorldBlock, Integer> addMapping(Block block, Function<WorldBlock, Integer> mapping) {
+    public static Function<WorldBlock, Integer> setMapping(Block block, Function<WorldBlock, Integer> mapping) {
         return heatMappings.put(block, mapping);
+    }
+
+    public static void addStaticMapping(Block block, int heat) {
+        addMapping(block, (WorldBlock info) -> heat);
+    }
+
+    // adds a dynamic mapping to the heat mappings, it is NOT safe to assume WorldBlock.block == Block
+    public static void addMapping(Block block, Function<WorldBlock, Integer> mapping) {
+        var prev = heatMappings.get(block);
+        if (prev != null) {
+            setMapping(block, (WorldBlock info) -> {
+               var pres = prev.apply(info);
+               if (pres != null) {
+                   return pres;
+               }
+               return mapping.apply(info);
+            });
+            return;
+        }
+        setMapping(block, mapping);
     }
 
 

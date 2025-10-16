@@ -36,7 +36,7 @@
     "torch": 1,
     "torchflower": 1,
     "wall_torch": 1,
-    "campfire": 2,
+    "campfire[lit=true]": 2,
     "fire": 2,
     "magma_block": 2,
     "lava": 3,
