@@ -14,7 +14,6 @@ import net.minecraft.world.World;
 import org.sploder.potioncraft.common.util.FluidHelper;
 import org.sploder.potioncraft.common.PotionCauldronBlock;
 import org.sploder.potioncraft.common.PotionCauldronBlockEntity;
-import org.sploder.potioncraft.common.util.HeatHelper;
 
 // class for cauldron item interactions
 public class CauldronData {
@@ -146,7 +145,7 @@ public class CauldronData {
 
     public static CauldronData from(BlockState state, World world, BlockPos pos) {
 
-        int heat = HeatHelper.getHeatOf(state, world, pos);
+        int heat = MetaMixing.heatMapping.getHeatOf(state, world, pos);
 
         var block = state.getBlock();
         if (block instanceof PotionCauldronBlock) {

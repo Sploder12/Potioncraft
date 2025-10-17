@@ -3,31 +3,15 @@ package org.sploder.potioncraft.common.meta.parsers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import org.sploder.potioncraft.common.Log;
+import org.sploder.potioncraft.common.meta.data.InversionMapping;
 import org.sploder.potioncraft.common.util.Json;
 
-import java.util.HashMap;
-
 public interface InversionsParser {
-    HashMap<StatusEffect, StatusEffect> inversions = new HashMap<>();
 
-    static void addMutualInversion(StatusEffect first, StatusEffect second) {
-        inversions.put(first, second);
-        inversions.put(second, first);
-    }
-
-    static void addInversion(StatusEffect from, StatusEffect to) {
-        inversions.put(from, to);
-    }
-
-    static void clear() {
-        inversions.clear();
-    }
-
-    private static void parseInversions(JsonArray inversions, String id) {
+    private static void parseInversions(InversionMapping out, JsonArray inversions, String id) {
         for (JsonElement inversionE : inversions) {
             if (inversionE.isJsonObject()) {
                 JsonObject inversion = inversionE.getAsJsonObject();
@@ -43,33 +27,35 @@ public interface InversionsParser {
 
                 boolean mutual = Json.getBoolOr(inversion.get("mutual"), false);
 
-                StatusEffect fromE = Registries.STATUS_EFFECT.get(from);
-                StatusEffect toE = Registries.STATUS_EFFECT.get(to);
+                var fromE = Registries.STATUS_EFFECT.get(from);
+                var toE = Registries.STATUS_EFFECT.get(to);
 
                 // note: the default effect returned is luck.
                 // therefore there is no way to determine if it is valid or not.
 
                 if (mutual) {
-                    addMutualInversion(fromE, toE);
+                    out.addMutualInversion(fromE, toE);
                 }
                 else {
-                    addInversion(fromE, toE);
+                    out.addInversion(fromE, toE);
                 }
             }
         }
     }
 
-    static void parse(JsonElement elem, String file) {
+    static InversionMapping parse(JsonElement elem, String file) {
+        InversionMapping out = new InversionMapping();
         if (elem == null) {
             Log.debug("inversions not present " + file);
-            return;
+            return out;
         }
 
         if (!elem.isJsonArray()) {
             Log.warn("inversions is not an array " + file);
-            return;
+            return out;
         }
 
-        parseInversions(elem.getAsJsonArray(), file);
+        parseInversions(out, elem.getAsJsonArray(), file);
+        return out;
     }
 }

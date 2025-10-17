@@ -21,16 +21,18 @@ import org.sploder.potioncraft.common.Common;
 import org.sploder.potioncraft.common.Log;
 import org.sploder.potioncraft.common.PotionCauldronBlockEntity;
 import org.sploder.potioncraft.common.config.Config;
+import org.sploder.potioncraft.common.meta.data.HeatMapping;
+import org.sploder.potioncraft.common.meta.data.InversionMapping;
 import org.sploder.potioncraft.common.meta.parsers.*;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 import org.sploder.potioncraft.common.util.FluidHelper;
-import org.sploder.potioncraft.common.util.HeatHelper;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 public class MetaMixing {
 
@@ -39,9 +41,10 @@ public class MetaMixing {
     //public static final CauldronBehavior.CauldronBehaviorMap interactions = CauldronBehavior.createMap("potion");
     public static final Map<Item, CauldronBehavior> interactions = CauldronBehavior.createMap();
 
-    public static final LinkedHashMap<String, Parser> parsers = new LinkedHashMap<>();
+    public static InversionMapping inversionMapping = null;
+    public static HeatMapping heatMapping = null;
 
-
+    public static final LinkedHashMap<String, BiConsumer<JsonElement, String>> parsers = new LinkedHashMap<>();
 
     public static CauldronBehavior addInteraction(Item item, Map<Item, CauldronBehavior> behaviorMap, Collection<MetaEffect> effects, boolean keepOld, int potency) {
         CauldronBehavior prevBehavior = behaviorMap.get(item);
@@ -114,19 +117,25 @@ public class MetaMixing {
     public static void register() {
         parsers.clear();
 
-        parsers.put("templates", new Parser(TemplatesParser::parse));
-        parsers.put("fluids", new Parser(FluidsParser::parse));
-        parsers.put("cauldrons", new Parser(CauldronsParser::parse));
-        parsers.put("inversions", new Parser(InversionsParser::parse));
-        parsers.put("heats", new Parser(HeatsParser::parse));
-        parsers.put("recipes", new Parser(RecipesParser::parse));
+        parsers.put("templates", TemplatesParser::parse);
+        parsers.put("fluids", FluidsParser::parse);
+        parsers.put("cauldrons", CauldronsParser::parse);
+
+        parsers.put("inversions", ((JsonElement elem, String str) -> {
+            inversionMapping = InversionsParser.parse(elem, str);
+        }));
+
+        parsers.put("heats", ((JsonElement elem, String str) -> {
+            heatMapping = HeatsParser.parse(elem, str);
+        }));
+
+        parsers.put("recipes", RecipesParser::parse);
     }
 
     public static void reload(ResourceManager manager) {
         // Clear Caches Here
 
         FluidHelper.reset();
-        HeatHelper.reset();
 
         CauldronBehavior.EMPTY_CAULDRON_BEHAVIOR.clear();
         CauldronBehavior.WATER_CAULDRON_BEHAVIOR.clear();
@@ -134,9 +143,8 @@ public class MetaMixing {
         CauldronBehavior.POWDER_SNOW_CAULDRON_BEHAVIOR.clear();
         CauldronBehavior.registerBehavior();
 
-        MetaMixing.interactions.clear();
+        interactions.clear();
 
-        InversionsParser.clear();
         MetaEffectTemplate.register();
 
         // @TODO clear custom behaviors
@@ -159,8 +167,8 @@ public class MetaMixing {
                 JsonObject root = rootE.getAsJsonObject();
                 String file = id.toString();
 
-                MetaMixing.parsers.forEach((String elemId, Parser elemParser) ->
-                        elemParser.parse(root.get(elemId), file));
+                MetaMixing.parsers.forEach((String elemId, BiConsumer<JsonElement, String> elemParser) ->
+                        elemParser.accept(root.get(elemId), file));
             }
             catch (Exception e) {
                 Log.error("Error occurred while loading resource " + id + "\n" + e.getMessage());

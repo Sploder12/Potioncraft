@@ -4,16 +4,16 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import org.sploder.potioncraft.common.Log;
+import org.sploder.potioncraft.common.meta.data.HeatMapping;
 import org.sploder.potioncraft.common.util.BlockProperties;
-import org.sploder.potioncraft.common.util.HeatHelper;
 import org.sploder.potioncraft.common.util.WorldBlock;
 
 public interface HeatsParser {
 
-    private static void parseHeat(String blockstate, int heat, String id) {
+    private static void parseHeat(HeatMapping out, String blockstate, int heat, String id) {
         try {
             BlockProperties proplist = new BlockProperties(blockstate);
-            HeatHelper.addMapping(proplist.getBlock(), (WorldBlock b) -> {
+            out.addMapping(proplist.getBlock(), (WorldBlock b) -> {
                 if (!proplist.isEquivalent(b.state)) {
                     return null;
                 }
@@ -26,7 +26,7 @@ public interface HeatsParser {
         }
     }
 
-    private static void parseHeats(JsonObject heats, String id) {
+    private static void parseHeats(HeatMapping out, JsonObject heats, String id) {
         heats.asMap().forEach((String blockStr, JsonElement obj) -> {
             if (!obj.isJsonPrimitive()) {
                 return;
@@ -39,21 +39,23 @@ public interface HeatsParser {
 
             int heat = prim.getAsInt();
 
-            parseHeat(blockStr, heat, id);
+            parseHeat(out, blockStr, heat, id);
         });
     }
 
-    static void parse(JsonElement elem, String file) {
+    static HeatMapping parse(JsonElement elem, String file) {
+        HeatMapping out = HeatMapping.makeMapping();
         if (elem == null || !elem.isJsonObject()) {
             Log.debug("heats not present " + file);
-            return;
+            return out;
         }
 
         if (!elem.isJsonObject()) {
             Log.warn("heats resource not object " + file);
-            return;
+            return out;
         }
 
-        parseHeats(elem.getAsJsonObject(), file);
+        parseHeats(out, elem.getAsJsonObject(), file);
+        return out;
     }
 }

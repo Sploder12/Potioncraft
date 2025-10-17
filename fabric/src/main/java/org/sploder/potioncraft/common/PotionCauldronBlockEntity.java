@@ -23,6 +23,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import org.sploder.potioncraft.common.meta.MetaMixing;
 import org.sploder.potioncraft.common.meta.parsers.InversionsParser;
 import org.sploder.potioncraft.common.util.FluidHelper;
 import org.jetbrains.annotations.Nullable;
@@ -175,9 +176,9 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         boolean changed = false;
 
         for (var effect : this.effects.values()) {
-            if (InversionsParser.inversions.containsKey(effect.type)) {
+            if (MetaMixing.inversionMapping.has(effect.type)) {
                 changed = true;
-                effect.type = InversionsParser.inversions.get(effect.type);
+                effect.type = MetaMixing.inversionMapping.get(effect.type);
             }
 
             if (newEffects.containsKey(effect.type)) {
