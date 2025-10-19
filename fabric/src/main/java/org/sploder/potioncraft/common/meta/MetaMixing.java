@@ -122,11 +122,11 @@ public class MetaMixing {
         parsers.put("cauldrons", CauldronsParser::parse);
 
         parsers.put("inversions", ((JsonElement elem, String str) -> {
-            inversionMapping = InversionsParser.parse(elem, str);
+            inversionMapping = InversionMapping.parse(elem, str);
         }));
 
         parsers.put("heats", ((JsonElement elem, String str) -> {
-            heatMapping = HeatsParser.parse(elem, str);
+            heatMapping = HeatMapping.parse(elem, str);
         }));
 
         parsers.put("recipes", RecipesParser::parse);

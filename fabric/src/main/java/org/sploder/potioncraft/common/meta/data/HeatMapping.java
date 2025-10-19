@@ -1,10 +1,15 @@
 package org.sploder.potioncraft.common.meta.data;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.sploder.potioncraft.common.Log;
 import org.sploder.potioncraft.common.PotionCauldronBlock;
+import org.sploder.potioncraft.common.util.BlockProperties;
 import org.sploder.potioncraft.common.util.FluidHelper;
 import org.sploder.potioncraft.common.util.WorldBlock;
 
@@ -78,5 +83,54 @@ public class HeatMapping {
             return DEFAULT_HEAT;
         });
         return out;
+    }
+
+    public static HeatMapping parse(JsonElement elem, String file) {
+        HeatMapping out = makeMapping();
+        if (elem == null || !elem.isJsonObject()) {
+            Log.debug("heats not present " + file);
+            return out;
+        }
+
+        if (!elem.isJsonObject()) {
+            Log.warn("heats resource not object " + file);
+            return out;
+        }
+
+        parseHeats(out, elem.getAsJsonObject(), file);
+        return out;
+    }
+
+    private static void parseHeats(HeatMapping out, JsonObject heats, String id) {
+        heats.asMap().forEach((String blockStr, JsonElement obj) -> {
+            if (!obj.isJsonPrimitive()) {
+                return;
+            }
+
+            final JsonPrimitive prim = obj.getAsJsonPrimitive();
+            if (!prim.isNumber()) {
+                return;
+            }
+
+            int heat = prim.getAsInt();
+
+            parseHeat(out, blockStr, heat, id);
+        });
+    }
+
+    private static void parseHeat(HeatMapping out, String blockstate, int heat, String id) {
+        try {
+            final BlockProperties proplist = new BlockProperties(blockstate);
+            out.addMapping(proplist.getBlock(), (WorldBlock b) -> {
+                if (!proplist.isEquivalent(b.state)) {
+                    return null;
+                }
+
+                return heat;
+            });
+        }
+        catch(IllegalArgumentException e) {
+            Log.warn(e + id);
+        }
     }
 }
