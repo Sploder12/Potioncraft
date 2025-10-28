@@ -46,7 +46,7 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
             )
     );
 
-    public static final Identifier POTION_CAULDRON_ID = new Identifier("potioncraft", "potion_cauldron_block");
+    public static final Identifier POTION_CAULDRON_ID = new Identifier(Common.namespace, "potion_cauldron_block");
 
 
     /** Behavior of Potion Cauldron */

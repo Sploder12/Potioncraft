@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
+import org.sploder.potioncraft.common.Common;
 import org.sploder.potioncraft.common.meta.MetaMixing;
 
 public class FabricMetaMixing {
@@ -14,7 +15,7 @@ public class FabricMetaMixing {
         ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
             public Identifier getFabricId() {
-                return new Identifier("potioncraft", "metamixing");
+                return new Identifier(Common.namespace, "metamixing");
             }
 
             @Override

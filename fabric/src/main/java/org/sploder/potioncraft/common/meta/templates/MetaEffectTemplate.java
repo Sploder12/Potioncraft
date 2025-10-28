@@ -1,7 +1,10 @@
 package org.sploder.potioncraft.common.meta.templates;
 
-import com.google.gson.JsonObject;
+import net.minecraft.util.Identifier;
 import org.sploder.potioncraft.common.meta.MetaEffect;
+import org.sploder.potioncraft.common.meta.templates.conditional.*;
+import org.sploder.potioncraft.common.meta.templates.controlflow.If;
+import org.sploder.potioncraft.common.meta.templates.effect.*;
 
 import java.util.HashMap;
 
@@ -11,8 +14,11 @@ public interface MetaEffectTemplate {
     // { "quickfail":"PASS"/"SUCCESS"/"CONSUME"/"FAIL"/"CONSUME_PARTIAL" }
     // setting a value means if prev == that value, the effect will not occur.
     // having no value means the effect will ALWAYS occur
+    // it will never appear in `params`.
 
-    MetaEffect apply(JsonObject params, String file);
+    Identifier id();
+
+    MetaEffect apply(String id);
 
     // all the possible effects a meta file is capable of
     HashMap<String, MetaEffectTemplate> templates = new HashMap<>();
@@ -20,45 +26,45 @@ public interface MetaEffectTemplate {
     static void register() {
         templates.clear();
 
-        templates.put("FORCE_SWING_HAND", Conditional.FORCE_SWING_HAND);
-        templates.put("PASS", Conditional.PASS);
-        templates.put("FORWARD", Conditional.FORWARD);
-        templates.put("INVERT_COND", Conditional.INVERT_COND);
+        templates.put("FORCE_SWING_HAND", new ForceSwingHand());
+        templates.put("PASS", new Pass());
+        templates.put("FORWARD", new Forward());
+        templates.put("INVERT_COND", new Invert());
 
-        templates.put("AND", Conditional.AND);
-        templates.put("OR", Conditional.OR);
-        templates.put("NOT", Conditional.NOT);
+        templates.put("AND", new And());
+        templates.put("OR", new Or());
+        templates.put("NOT", new Not());
 
-        templates.put("IS_FROM_VANILLA", Conditional.IS_FROM_VANILLA);
-        templates.put("HAS_LEVEL", Conditional.HAS_LEVEL);
-        templates.put("HAS_HEAT", Conditional.HAS_HEAT);
-        templates.put("IS_FULL", Conditional.IS_FULL);
+        templates.put("IS_FROM_VANILLA", new IsFromVanilla());
+        templates.put("HAS_LEVEL", new HasLevel());
+        templates.put("HAS_HEAT", new HasHeat());
+        templates.put("IS_FULL", new IsFull());
 
-        templates.put("MIN_LEVEL", Conditional.MIN_LEVEL);
-        templates.put("MAX_LEVEL", Conditional.MAX_LEVEL);
-        templates.put("MIN_HEAT", Conditional.MIN_HEAT);
-        templates.put("MAX_HEAT", Conditional.MAX_HEAT);
+        templates.put("MIN_LEVEL", new MinLevel());
+        templates.put("MAX_LEVEL", new MaxLevel());
+        templates.put("MIN_HEAT", new MinHeat());
+        templates.put("MAX_HEAT", new MaxHeat());
 
-        templates.put("HAS_FLUID", Conditional.HAS_FLUID);
+        templates.put("HAS_FLUID", new HasFluid());
 
-        templates.put("ITEM_HAS_EFFECTS", Conditional.ITEM_HAS_EFFECTS);
+        templates.put("ITEM_HAS_EFFECTS", new ItemHasEffects());
 
-        templates.put("USE_ITEM", Effect.USE_ITEM);
-        templates.put("PLAY_SOUND", Effect.PLAY_SOUND);
+        templates.put("USE_ITEM", new UseItem());
+        templates.put("PLAY_SOUND", new PlaySound());
 
-        templates.put("CLEAR_EFFECTS", Effect.CLEAR_EFFECTS);
-        templates.put("INVERT_EFFECTS", Effect.INVERT_EFFECTS);
-        templates.put("ADD_STATUS_EFFECT", Effect.ADD_STATUS_EFFECT);
-        templates.put("ADD_POTION_EFFECT", Effect.ADD_POTION_EFFECT);
-        templates.put("APPLY_ITEM_EFFECTS", Effect.APPLY_ITEM_EFFECTS);
+        templates.put("CLEAR_EFFECTS", new ClearEffects());
+        templates.put("INVERT_EFFECTS", new InvertEffects());
+        templates.put("ADD_STATUS_EFFECT", new AddStatusEffect());
+        templates.put("ADD_POTION_EFFECT", new AddPotionEffect());
+        templates.put("APPLY_ITEM_EFFECTS", new ApplyItemEffects());
 
-        templates.put("ADD_LEVEL", Effect.ADD_LEVEL);
-        templates.put("REMOVE_LEVEL", Effect.REMOVE_LEVEL);
-        templates.put("SET_FLUID", Effect.SET_FLUID);
+        templates.put("ADD_LEVEL", new AddLevel());
+        templates.put("REMOVE_LEVEL", new RemoveLevel());
+        templates.put("SET_FLUID", new SetFluid());
 
-        templates.put("AMPLIFY", Effect.AMPLIFY);
-        templates.put("EXTEND", Effect.EXTEND);
+        templates.put("AMPLIFY", new Amplify());
+        templates.put("EXTEND", new Extend());
 
-        templates.put("IF", ControlFlow.IF);
+        templates.put("IF", new If());
     }
 }

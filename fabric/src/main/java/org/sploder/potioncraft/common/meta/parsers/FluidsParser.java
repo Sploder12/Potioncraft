@@ -21,13 +21,13 @@ public interface FluidsParser {
 
             JsonObject fluidEntry = elem.getAsJsonObject();
 
-            var fluid = Json.getRegistryEntry(Identifier.tryParse(fluidId), Registries.FLUID, file);
+            var fluid = Json.getRegistryEntry(Identifier.tryParse(fluidId), Registries.FLUID);
             if (fluid == null) {
                 Log.warn(fluidId + " does not name a fluid " + file);
                 return;
             }
 
-            var defaultBlock = Json.getRegistryEntry(fluidEntry.get("default"), Registries.BLOCK, file);
+            var defaultBlock = Json.getRegistryEntry(fluidEntry.get("default"), Registries.BLOCK);
             if (defaultBlock instanceof AbstractCauldronBlock cauldronBlock) {
                 FluidHelper.setDefaultFluidMapping(fluid, cauldronBlock);
             }
@@ -50,7 +50,7 @@ public interface FluidsParser {
                     return;
                 }
 
-                var block = Json.getRegistryEntry(entry, Registries.BLOCK, file);
+                var block = Json.getRegistryEntry(entry, Registries.BLOCK);
                 if (block instanceof AbstractCauldronBlock cauldronBlock) {
                     FluidHelper.addFluidMapping(fluid, cauldronBlock);
                 }

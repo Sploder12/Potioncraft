@@ -43,20 +43,20 @@ public class Json {
     }
 
     @Nullable
-    public static <T> T getRegistryEntry(Identifier id, Registry<T> registry, String file) {
+    public static <T> T getRegistryEntry(Identifier id, Registry<T> registry) {
         if (id == null) {
             return null;
         }
 
         T out = registry.get(id);
         if (out == null) {
-            Log.warn(id + " is not registered to " + registry + " " + file);
+            Log.warn(id + " is not registered to " + registry);
         }
         else if (registry instanceof DefaultedRegistry<T> defRegistry) {
             if (defRegistry.get(defRegistry.getDefaultId()) == out &&
                     defRegistry.getDefaultId() != id) {
 
-                Log.warn(id + " is not registered to " + registry + " " + file);
+                Log.warn(id + " is not registered to " + registry);
                 return null;
             }
         }
@@ -65,8 +65,8 @@ public class Json {
     }
 
     @Nullable
-    public static <T> T getRegistryEntry(JsonElement elem, Registry<T> registry, String file) {
-        return getRegistryEntry(getId(elem), registry, file);
+    public static <T> T getRegistryEntry(JsonElement elem, Registry<T> registry) {
+        return getRegistryEntry(getId(elem), registry);
     }
 
     @Nullable
@@ -146,33 +146,36 @@ public class Json {
         }
     }
 
-    public static Optional<ActionResult> getActionResult(JsonElement elem, String location) {
+    public static ActionResult getActionResult(JsonElement elem) {
         String str = getString(elem);
 
-        if (str == null) return Optional.empty();
+        if (str == null) return null;
 
         if (str.equalsIgnoreCase("SUCCESS")) {
-            return Optional.of(ActionResult.SUCCESS);
+            return ActionResult.SUCCESS;
         }
         else if (str.equalsIgnoreCase("PASS")) {
-            return Optional.of(ActionResult.PASS);
+            return ActionResult.PASS;
         }
         else if (str.equalsIgnoreCase("CONSUME")) {
-            return Optional.of(ActionResult.CONSUME);
+            return ActionResult.CONSUME;
         }
         else if (str.equalsIgnoreCase("FAIL")) {
-            return Optional.of(ActionResult.FAIL);
+            return ActionResult.FAIL;
         }
         else if (str.equalsIgnoreCase("CONSUME_PARTIAL")) {
-            return Optional.of(ActionResult.CONSUME_PARTIAL);
+            return ActionResult.CONSUME_PARTIAL;
         }
 
-        Log.warn(str + " is not an action result! " + location);
-        return Optional.empty();
+        Log.warn(str + " is not an action result! ");
+        return null;
     }
 
-    public static ActionResult getActionResultOr(JsonElement elem, ActionResult or, String location) {
-        Optional<ActionResult> ar = getActionResult(elem, location);
-        return ar.orElse(or);
+    public static ActionResult getActionResultOr(JsonElement elem, ActionResult or) {
+        ActionResult ar = getActionResult(elem);
+        if (ar == null) {
+            return or;
+        }
+        return ar;
     }
 }

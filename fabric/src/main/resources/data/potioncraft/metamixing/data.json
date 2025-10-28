@@ -57,7 +57,7 @@
       "defaults": {
         "fluids": "minecraft:water",
         "sound": "item.bottle.empty",
-        "returned_item": 0,
+        "returned_item": null,
         "count": 1,
         "applyPotion": false
       },

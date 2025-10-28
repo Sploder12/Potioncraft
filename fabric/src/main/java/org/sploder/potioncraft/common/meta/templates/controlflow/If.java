@@ -1,56 +1,59 @@
-package org.sploder.potioncraft.common.meta.templates;
+package org.sploder.potioncraft.common.meta.templates.controlflow;
 
-import com.google.gson.JsonElement;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.sploder.potioncraft.common.Common;
 import org.sploder.potioncraft.common.Log;
 import org.sploder.potioncraft.common.meta.CauldronData;
 import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.parsers.EffectParser;
+import org.sploder.potioncraft.common.meta.templates.Argument;
+import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
+import org.sploder.potioncraft.common.meta.templates.conditional.Pass;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
-public interface ControlFlow {
+public class If implements MetaEffectTemplate {
+    @Argument(key = "condition")
+    JsonObject conditionE;
 
-    // if statement that has a condition, then, and else
-    MetaEffectTemplate IF = (params, file) -> {
-        JsonElement conditionE = params.get("condition");
+    @Argument(key = "then")
+    JsonArray thenE;
 
-        if (conditionE == null || !conditionE.isJsonObject()) {
-            Log.warn("IF has no condition! " + file);
-            return Conditional.PASS.apply(params, file);
-        }
+    @Argument(key = "else", optional = true)
+    JsonArray elseE = null;
 
-        final MetaEffect condition = EffectParser.parseEffect(conditionE.getAsJsonObject(), file + "-condition");
+    @Override
+    public Identifier id() {
+        return new Identifier(Common.namespace, "controlflow/IF");
+    }
+
+    @Override
+    public MetaEffect apply(String id) {
+        final MetaEffect condition = EffectParser.parseEffect(conditionE, id + "-condition");
         if (condition == null) {
-            return Conditional.PASS.apply(params, file);
+            return new Pass().apply(id);
         }
 
-        JsonElement thenE = params.get("then");
-
-        if (thenE == null || !thenE.isJsonArray()) {
-            Log.warn("IF must have a \"then\" effects array field! " + file);
-            return Conditional.PASS.apply(params, file);
-        }
-
-        final Collection<MetaEffect> thens = EffectParser.parseEffects(thenE.getAsJsonArray(), file + "-then");
+        final List<MetaEffect> thens = EffectParser.parseEffects(thenE, id + "-then");
         if (thens.isEmpty()) {
-            Log.warn("IF has empty \"then\" field " + file);
+            Log.warn("IF has empty \"then\" field " + id);
         }
 
-        JsonElement elseE = params.get("else");
-        Optional<Collection<MetaEffect>> elses = Optional.empty();
-
-        if (elseE != null && elseE.isJsonArray()) {
-            elses = Optional.of(EffectParser.parseEffects(elseE.getAsJsonArray(), file + "-else"));
+        Optional<List<MetaEffect>> elses = Optional.empty();
+        if (elseE != null) {
+            elses = Optional.of(EffectParser.parseEffects(elseE, id + "-else"));
 
             if (elses.get().isEmpty()) {
-                Log.warn("IF has empty \"else\" field " + file);
+                Log.warn("IF has empty \"else\" field " + id);
             }
         }
 
@@ -80,5 +83,5 @@ public interface ControlFlow {
 
             return cond; // always ActionResult.PASS
         };
-    };
+    }
 }

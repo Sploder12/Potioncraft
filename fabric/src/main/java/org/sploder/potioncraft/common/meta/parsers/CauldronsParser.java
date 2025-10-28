@@ -20,7 +20,7 @@ public interface CauldronsParser {
 
             var block = Registries.BLOCK.get(Identifier.tryParse(cauldronId));
             if (block instanceof AbstractCauldronBlock cauldronBlock) {
-                var fluid = Json.getRegistryEntry(elem, Registries.FLUID, file);
+                var fluid = Json.getRegistryEntry(elem, Registries.FLUID);
                 if (fluid == null) {
                     return;
                 }

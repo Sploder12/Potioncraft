@@ -24,7 +24,6 @@ import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import org.sploder.potioncraft.common.meta.MetaMixing;
-import org.sploder.potioncraft.common.meta.parsers.InversionsParser;
 import org.sploder.potioncraft.common.util.FluidHelper;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,7 +42,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
     public static BlockEntityType<PotionCauldronBlockEntity> POTION_CAULDRON_BLOCK_ENTITY;
 
     final public static Potion CRAFTED_POTION = Registry.register(Registries.POTION,
-            new Identifier("potioncraft", "crafted_potion"),
+            new Identifier(Common.namespace, "crafted_potion"),
             new Potion());
 
     public PotionCauldronBlockEntity(BlockPos pos, BlockState state) {

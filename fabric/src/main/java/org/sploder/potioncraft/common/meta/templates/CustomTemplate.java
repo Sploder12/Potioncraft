@@ -7,13 +7,16 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.sploder.potioncraft.common.Common;
 import org.sploder.potioncraft.common.Log;
 import org.sploder.potioncraft.common.meta.CauldronData;
 import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.parsers.EffectParser;
+import org.sploder.potioncraft.common.meta.templates.conditional.Pass;
 import org.sploder.potioncraft.common.util.Json;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class CustomTemplate implements MetaEffectTemplate {
-
     protected static class ParameterEntry {
         public JsonElement defaultValue = null;
 
@@ -71,7 +73,23 @@ public class CustomTemplate implements MetaEffectTemplate {
         this.parameters = new HashMap<>();
     }
 
-    public MetaEffect apply(JsonObject params, String file) {
+    // called by AnnotationProcessor
+    private CustomTemplate() {
+        this.name = "UNDEFINED_ERROR";
+        this.effects = null;
+        this.parameters = null;
+    }
+
+    @RawArguments
+    private JsonObject params;
+
+    @Override
+    public Identifier id() {
+        return new Identifier(Common.namespace, "custom/" + name);
+    }
+
+    @Override
+    public MetaEffect apply(String file) {
         final String fileLocation = file;
 
         try {
@@ -93,7 +111,7 @@ public class CustomTemplate implements MetaEffectTemplate {
         }
         catch (StackOverflowError err) {
             Log.error("Infinite template detected! Check for recursion! " + fileLocation);
-            return Conditional.PASS.apply(params, file);
+            return new Pass().apply(file);
         }
     }
 

@@ -12,16 +12,18 @@ import net.minecraft.world.World;
 import org.sploder.potioncraft.common.Log;
 import org.sploder.potioncraft.common.meta.CauldronData;
 import org.sploder.potioncraft.common.meta.MetaEffect;
+import org.sploder.potioncraft.common.meta.templates.AnnotationProcessor;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 import org.sploder.potioncraft.common.util.Json;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 public interface EffectParser {
     public static MetaEffect parseEffect(JsonObject effectObj, String location) {
         String id = Json.getString(effectObj.get("id"));
 
+        Log.debug("Parsing " + location + "-" + id);
         if (id == null) {
             Log.warn("id field missing or malformed! " + location);
             return null;
@@ -33,7 +35,7 @@ public interface EffectParser {
             return null;
         }
 
-        var quickfail = Json.getActionResult(effectObj.get("quickfail"), location + "-" + id);
+        var quickfail = Json.getActionResult(effectObj.get("quickfail"));
 
         JsonObject params = Json.getObj(effectObj.get("params"));
 
@@ -41,21 +43,30 @@ public interface EffectParser {
             params = new JsonObject();
         }
 
-        MetaEffect effect = template.apply(params, location + "-" + id);
-        if (quickfail.isPresent()) {
+        try {
+            AnnotationProcessor.populateTemplate(template, params);
+            MetaEffect effect = template.apply(location);
+            if (quickfail != null) {
 
-            ActionResult finalQuickfail = quickfail.get();
-            return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
-                if (finalQuickfail == prev) {
-                    return ActionResult.PASS;
-                }
+                final ActionResult finalQuickfail = quickfail;
+                return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
+                    if (finalQuickfail == prev) {
+                        return ActionResult.PASS;
+                    }
 
-                return effect.interact(prev, data, world, pos, player, hand, stack);
-            };
+                    return effect.interact(prev, data, world, pos, player, hand, stack);
+                };
+            } else {
+                return effect;
+            }
         }
-        else {
-            return effect;
+        catch (IllegalArgumentException e) {
+            Log.warn(e.getMessage() + ": " + location);
         }
+        catch (RuntimeException e) {
+            Log.error(e.getMessage() + ": " + location);
+        }
+        return null;
     }
 
     private static void parseEffects(JsonArray effects, String id, ArrayList<MetaEffect> out) {
@@ -82,16 +93,23 @@ public interface EffectParser {
                         continue;
                     }
 
-                    out.add(template.apply(new JsonObject(), location));
+                    AnnotationProcessor.populateTemplate(template, new JsonObject());
+                    out.add(template.apply(location));
                 }
                 catch (AssertionError err) {
                     Log.warn("template id malformed! " + location);
+                }
+                catch (IllegalArgumentException e) {
+                    Log.warn(e + ": " + location);
+                }
+                catch (RuntimeException e) {
+                    Log.error(e + ": " + location);
                 }
             }
         }
     }
 
-    public static Collection<MetaEffect> parseEffects(JsonArray effects, String id) {
+    public static List<MetaEffect> parseEffects(JsonArray effects, String id) {
         ArrayList<MetaEffect> out = new ArrayList<>();
 
         parseEffects(effects, id, out);
