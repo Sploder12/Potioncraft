@@ -70,7 +70,7 @@ public class CauldronData {
 
     private void placePotionCauldron(World world) {
         var pos = getPos();
-        world.setBlockState(pos, PotionCauldronBlock.POTION_CAULDRON_BLOCK.getDefaultState());
+        world.setBlockState(pos, PotionCauldronBlock.stateFromEntity(entity));
         var dest = world.getBlockEntity(pos);
 
         assert dest != null;

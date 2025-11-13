@@ -130,6 +130,10 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
         return (BASE_FLUID_HEIGHT + level * FLUID_HEIGHT_PER_LEVEL) / 16.0;
     }
 
+    public static BlockState stateFromEntity(PotionCauldronBlockEntity entity) {
+        return POTION_CAULDRON_BLOCK.getDefaultState().with(LUMINANCE, entity.getLuminance());
+    }
+
     protected boolean isEntityTouchingFluid(int level, BlockPos pos, Entity entity) {
         return entity.getY() < (double)pos.getY() + getFluidHeight(level) && entity.getBoundingBox().maxY > (double)pos.getY() + 0.25;
     }
