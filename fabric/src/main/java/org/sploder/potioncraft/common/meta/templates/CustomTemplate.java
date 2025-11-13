@@ -23,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class CustomTemplate implements MetaEffectTemplate {
+public class CustomTemplate extends MetaEffectTemplate {
     protected static class ParameterEntry {
         public JsonElement defaultValue = null;
 
@@ -62,20 +62,23 @@ public class CustomTemplate implements MetaEffectTemplate {
         }
     }
 
+    final protected TemplateResolver resolver;
     final protected String name;
     final protected JsonArray effects;
 
     final protected HashMap<String, ParameterEntry> parameters;
 
-    protected CustomTemplate(JsonArray arr, String name) {
-        this.name = name;
+    protected CustomTemplate(TemplateResolver resolver, JsonArray arr, String name) {
+        this.resolver = resolver;
+        this.name = name.toLowerCase();
         this.effects = arr.deepCopy();
         this.parameters = new HashMap<>();
     }
 
     // called by AnnotationProcessor
     private CustomTemplate() {
-        this.name = "UNDEFINED_ERROR";
+        this.resolver = new BasicTemplateResolver();
+        this.name = "undefined_error";
         this.effects = null;
         this.parameters = null;
     }
@@ -89,6 +92,11 @@ public class CustomTemplate implements MetaEffectTemplate {
     }
 
     @Override
+    public String shortID() {
+        return "${" + name + "}";
+    }
+
+    @Override
     public MetaEffect apply(String file) {
         final String fileLocation = file;
 
@@ -99,7 +107,7 @@ public class CustomTemplate implements MetaEffectTemplate {
                 entry.apply(elem, fileLocation + "-" + id);
             });
 
-            final var effects = EffectParser.parseEffects(this.effects, fileLocation);
+            final var effects = EffectParser.parseEffects(resolver, this.effects, fileLocation);
 
             return (ActionResult prev, CauldronData data, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) -> {
                 for (MetaEffect effect : effects) {
@@ -158,13 +166,13 @@ public class CustomTemplate implements MetaEffectTemplate {
     }
 
     @Nullable
-    public static CustomTemplate parse(JsonObject template, String name, String file) {
+    public static CustomTemplate parse(TemplateResolver resolver, JsonObject template, String name, String file) {
         JsonElement effectsE = template.get("effects");
 
         if (effectsE != null && effectsE.isJsonArray()) {
             JsonArray effects = effectsE.getAsJsonArray();
 
-            CustomTemplate out = new CustomTemplate(effects, name);
+            CustomTemplate out = new CustomTemplate(resolver, effects, name);
 
             for (JsonElement elem : out.effects) {
                 parseRecurse(elem, out, effects, null);

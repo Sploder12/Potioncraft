@@ -1,14 +1,13 @@
 package org.sploder.potioncraft.common.meta.templates;
 
 import net.minecraft.util.Identifier;
+import org.sploder.potioncraft.common.Log;
 import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.conditional.*;
 import org.sploder.potioncraft.common.meta.templates.controlflow.If;
 import org.sploder.potioncraft.common.meta.templates.effect.*;
 
-import java.util.HashMap;
-
-public interface MetaEffectTemplate {
+public abstract class MetaEffectTemplate {
 
     // quickfail is an optional parameter that can be used on any template.
     // { "quickfail":"PASS"/"SUCCESS"/"CONSUME"/"FAIL"/"CONSUME_PARTIAL" }
@@ -16,55 +15,61 @@ public interface MetaEffectTemplate {
     // having no value means the effect will ALWAYS occur
     // it will never appear in `params`.
 
-    Identifier id();
+    public abstract Identifier id();
 
-    MetaEffect apply(String id);
+    public String shortID() {
+        var parts = id().getPath().split("/");
+        if (parts.length == 0 || parts[parts.length - 1].isEmpty()) {
+            Log.warn(this.getClass() + " has invalid short ID " + id());
+            return null;
+        }
 
-    // all the possible effects a meta file is capable of
-    HashMap<String, MetaEffectTemplate> templates = new HashMap<>();
+        return parts[parts.length - 1];
+    }
 
-    static void register() {
-        templates.clear();
+    public abstract MetaEffect apply(String id);
 
-        templates.put("FORCE_SWING_HAND", new ForceSwingHand());
-        templates.put("PASS", new Pass());
-        templates.put("FORWARD", new Forward());
-        templates.put("INVERT_COND", new Invert());
+    public static void register(TemplateResolver resolver) {
+        resolver.register(new ForceSwingHand());
 
-        templates.put("AND", new And());
-        templates.put("OR", new Or());
-        templates.put("NOT", new Not());
+        resolver.register(new Pass());
+        resolver.register(new Forward());
+        resolver.register(new Invert());
 
-        templates.put("IS_FROM_VANILLA", new IsFromVanilla());
-        templates.put("HAS_LEVEL", new HasLevel());
-        templates.put("HAS_HEAT", new HasHeat());
-        templates.put("IS_FULL", new IsFull());
+        resolver.register(new And(resolver));
+        resolver.register(new Or(resolver));
+        resolver.register(new Not(resolver));
 
-        templates.put("MIN_LEVEL", new MinLevel());
-        templates.put("MAX_LEVEL", new MaxLevel());
-        templates.put("MIN_HEAT", new MinHeat());
-        templates.put("MAX_HEAT", new MaxHeat());
+        resolver.register(new IsFromVanilla());
+        resolver.register(new HasLevel());
+        resolver.register(new HasHeat());
+        resolver.register(new IsFull());
 
-        templates.put("HAS_FLUID", new HasFluid());
+        resolver.register(new MinLevel());
+        resolver.register(new MaxLevel());
+        resolver.register(new MinHeat());
+        resolver.register(new MaxHeat());
 
-        templates.put("ITEM_HAS_EFFECTS", new ItemHasEffects());
+        resolver.register(new HasFluid());
 
-        templates.put("USE_ITEM", new UseItem());
-        templates.put("PLAY_SOUND", new PlaySound());
+        resolver.register(new ItemHasEffects());
 
-        templates.put("CLEAR_EFFECTS", new ClearEffects());
-        templates.put("INVERT_EFFECTS", new InvertEffects());
-        templates.put("ADD_STATUS_EFFECT", new AddStatusEffect());
-        templates.put("ADD_POTION_EFFECT", new AddPotionEffect());
-        templates.put("APPLY_ITEM_EFFECTS", new ApplyItemEffects());
+        resolver.register(new UseItem());
+        resolver.register(new PlaySound());
 
-        templates.put("ADD_LEVEL", new AddLevel());
-        templates.put("REMOVE_LEVEL", new RemoveLevel());
-        templates.put("SET_FLUID", new SetFluid());
+        resolver.register(new ClearEffects());
+        resolver.register(new InvertEffects());
+        resolver.register(new AddStatusEffect());
+        resolver.register(new AddPotionEffect());
+        resolver.register(new ApplyItemEffects());
 
-        templates.put("AMPLIFY", new Amplify());
-        templates.put("EXTEND", new Extend());
+        resolver.register(new AddLevel());
+        resolver.register(new RemoveLevel());
+        resolver.register(new SetFluid());
 
-        templates.put("IF", new If());
+        resolver.register(new Amplify());
+        resolver.register(new Extend());
+
+        resolver.register(new If(resolver));
     }
 }

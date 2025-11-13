@@ -14,10 +14,10 @@ import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
 // hand swinging is controlled by the LAST event, thus why FORCE_SWING_HAND exists.
 // FORCE_SWING_HAND can also be used to generate a guaranteed SUCCESS
-public class ForceSwingHand implements MetaEffectTemplate {
+public class ForceSwingHand extends MetaEffectTemplate {
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "conditional/FORCE_SWING_HAND");
+        return new Identifier(Common.namespace, "conditional/force_swing_hand");
     }
 
     @Override

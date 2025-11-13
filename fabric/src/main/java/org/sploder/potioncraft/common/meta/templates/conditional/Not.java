@@ -15,20 +15,27 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.parsers.EffectParser;
 import org.sploder.potioncraft.common.meta.templates.Argument;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
+import org.sploder.potioncraft.common.meta.templates.TemplateResolver;
 
-public class Not implements MetaEffectTemplate {
+public class Not extends MetaEffectTemplate {
+    final TemplateResolver resolver;
+
+    public Not(TemplateResolver resolver) {
+        super();
+        this.resolver = resolver;
+    }
 
     @Argument(key = "condition")
     JsonObject condition;
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "conditional/NOT");
+        return new Identifier(Common.namespace, "conditional/not");
     }
 
     @Override
     public MetaEffect apply(String id) {
-        final var effect = EffectParser.parseEffect(condition, id + "-condition");
+        final var effect = EffectParser.parseEffect(resolver, condition, id + "-condition");
         if (effect == null) {
             Log.warn("NOT has bad condition! " + id);
             return new Pass().apply(id);

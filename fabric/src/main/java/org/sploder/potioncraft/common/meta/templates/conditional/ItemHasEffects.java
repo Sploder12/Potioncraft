@@ -13,11 +13,11 @@ import org.sploder.potioncraft.common.meta.CauldronData;
 import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
-public class ItemHasEffects implements MetaEffectTemplate {
+public class ItemHasEffects extends MetaEffectTemplate {
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "conditional/ITEM_HAS_EFFECTS");
+        return new Identifier(Common.namespace, "conditional/item_has_effects");
     }
 
     @Override

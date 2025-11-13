@@ -15,14 +15,14 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.Argument;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
-public class PlaySound implements MetaEffectTemplate {
+public class PlaySound extends MetaEffectTemplate {
     // sound to play
     @Argument(key = "id")
     SoundEvent sound;
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "effect/PLAY_SOUND");
+        return new Identifier(Common.namespace, "effect/play_sound");
     }
 
     @Override

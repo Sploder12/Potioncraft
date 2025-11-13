@@ -13,7 +13,7 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.Argument;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
-public class HasHeat implements MetaEffectTemplate {
+public class HasHeat extends MetaEffectTemplate {
     // if set will only succeed when data.heat >= int
     // or == when int is 0, or <= when int is < 0
     // default is as if the parameter was 1
@@ -22,7 +22,7 @@ public class HasHeat implements MetaEffectTemplate {
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "conditional/HAS_LEVEL");
+        return new Identifier(Common.namespace, "conditional/has_heat");
     }
 
     @Override

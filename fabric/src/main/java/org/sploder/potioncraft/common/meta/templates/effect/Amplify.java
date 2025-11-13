@@ -14,14 +14,14 @@ import org.sploder.potioncraft.common.meta.templates.Argument;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
 // amplifies the effect level (evenly adds "amplifier" to all effects)
-public class Amplify implements MetaEffectTemplate {
+public class Amplify extends MetaEffectTemplate {
     // potion effect to add
     @Argument(key = "amplifier", optional = true)
     float amplifier = 3.0f;
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "effect/AMPLIFY");
+        return new Identifier(Common.namespace, "effect/amplify");
     }
 
     @Override

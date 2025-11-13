@@ -16,7 +16,7 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.Argument;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
-public class AddLevel implements MetaEffectTemplate {
+public class AddLevel extends MetaEffectTemplate {
     // potion effect to add
     @Argument(key = "dilute", optional = true)
     boolean dilute = true;
@@ -26,7 +26,7 @@ public class AddLevel implements MetaEffectTemplate {
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "effect/ADD_LEVEL");
+        return new Identifier(Common.namespace, "effect/add_level");
     }
 
     @Override

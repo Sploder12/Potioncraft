@@ -17,14 +17,14 @@ import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
 import java.util.Set;
 
-public class HasFluid implements MetaEffectTemplate {
+public class HasFluid extends MetaEffectTemplate {
     // array of identifiers to fluids
     @Argument(key="fluids", optional = true)
     Set<Fluid> fluids = null;
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "conditional/HAS_FLUID");
+        return new Identifier(Common.namespace, "conditional/has_fluid");
     }
 
     @Override

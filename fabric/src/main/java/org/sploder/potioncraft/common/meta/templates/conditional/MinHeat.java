@@ -13,14 +13,14 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.Argument;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
-public class MinHeat implements MetaEffectTemplate {
+public class MinHeat extends MetaEffectTemplate {
     // will only succeed when data.heat >= int
     @Argument(key="heat")
     int target;
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "conditional/MIN_HEAT");
+        return new Identifier(Common.namespace, "conditional/min_heat");
     }
 
     @Override

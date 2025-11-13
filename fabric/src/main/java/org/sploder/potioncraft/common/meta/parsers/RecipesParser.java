@@ -15,6 +15,7 @@ import org.sploder.potioncraft.common.Common;
 import org.sploder.potioncraft.common.Log;
 import org.sploder.potioncraft.common.PotionCauldronBlock;
 import org.sploder.potioncraft.common.meta.MetaMixing;
+import org.sploder.potioncraft.common.meta.templates.TemplateResolver;
 import org.sploder.potioncraft.common.mixin.BehaviorAccessor;
 import org.sploder.potioncraft.common.util.DefaultedHashSet;
 import org.sploder.potioncraft.common.util.FluidHelper;
@@ -23,7 +24,7 @@ import org.sploder.potioncraft.common.util.Json;
 import java.util.Map;
 
 public interface RecipesParser {
-    private static boolean parseBlockRecipes(JsonObject recipes, String blockId, String id) {
+    private static boolean parseBlockRecipes(TemplateResolver resolver, JsonObject recipes, String blockId, String id) {
         Identifier bid = Identifier.tryParse(blockId);
 
         if (bid == null) {
@@ -37,7 +38,7 @@ public interface RecipesParser {
             var behaviorMap = PotionCauldronBlock.getBehaviorMap(cauldronBlock);
 
             if (behaviorMap != null) {
-                parseBlockRecipes(behaviorMap, recipes, id);
+                parseBlockRecipes(resolver, behaviorMap, recipes, id);
                 return true;
             }
         }
@@ -61,13 +62,13 @@ public interface RecipesParser {
                 return;
             }
 
-            parseBlockRecipes(behavior, recipes, id + "[" + Registries.BLOCK.getId(cauldronBlock) + "]");
+            parseBlockRecipes(resolver, behavior, recipes, id + "[" + Registries.BLOCK.getId(cauldronBlock) + "]");
         });
 
         return true;
     }
 
-    private static void parseBlockRecipes(Map<Item, CauldronBehavior> behaviorMap, JsonObject recipes, String id) {
+    private static void parseBlockRecipes(TemplateResolver resolver, Map<Item, CauldronBehavior> behaviorMap, JsonObject recipes, String id) {
         recipes.asMap().forEach((String item, JsonElement elem) -> {
 
             if (!elem.isJsonObject()) {
@@ -87,11 +88,11 @@ public interface RecipesParser {
                 return;
             }
 
-            parseRecipe(itemT, behaviorMap, elem.getAsJsonObject(), id + "-" + item);
+            parseRecipe(resolver, itemT, behaviorMap, elem.getAsJsonObject(), id + "-" + item);
         });
     }
 
-    private static boolean parseRecipe(Item item, Map<Item, CauldronBehavior> behaviorMap, JsonObject recipe, String id) {
+    private static boolean parseRecipe(TemplateResolver resolver, Item item, Map<Item, CauldronBehavior> behaviorMap, JsonObject recipe, String id) {
         JsonElement effectsObj = recipe.get("effects");
         if (effectsObj == null || !effectsObj.isJsonArray()) {
             Log.warn("effects array not present! " + id);
@@ -99,7 +100,7 @@ public interface RecipesParser {
         }
 
         JsonArray effects = effectsObj.getAsJsonArray();
-        var vals = EffectParser.parseEffects(effects, id);
+        var vals = EffectParser.parseEffects(resolver, effects, id);
         if (vals.isEmpty()) {
             return false;
         }
@@ -112,7 +113,7 @@ public interface RecipesParser {
         return true;
     }
 
-    static void parse(JsonElement recipesE, String file) {
+    static void parse(TemplateResolver resolver, JsonElement recipesE, String file) {
         if (recipesE == null) {
             Log.debug("recipes resource not present " + file);
             return;
@@ -130,7 +131,7 @@ public interface RecipesParser {
                 return;
             }
 
-            parseBlockRecipes(elem.getAsJsonObject(), blockId, file + "-" + blockId);
+            parseBlockRecipes(resolver, elem.getAsJsonObject(), blockId, file + "-" + blockId);
         });
     }
 }

@@ -13,14 +13,14 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.Argument;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
-public class MaxLevel implements MetaEffectTemplate {
+public class MaxLevel extends MetaEffectTemplate {
     // will only succeed when data.getLevel() <= int
     @Argument(key="level")
     int target;
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "conditional/MAX_LEVEL");
+        return new Identifier(Common.namespace, "conditional/max_level");
     }
 
     @Override

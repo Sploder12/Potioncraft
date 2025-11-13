@@ -15,7 +15,7 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.Argument;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
-public class AddStatusEffect implements MetaEffectTemplate {
+public class AddStatusEffect extends MetaEffectTemplate {
     // potion effect to add
     @Argument(key = "id")
     StatusEffect type;
@@ -34,7 +34,7 @@ public class AddStatusEffect implements MetaEffectTemplate {
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "effect/ADD_STATUS_EFFECT");
+        return new Identifier(Common.namespace, "effect/add_status_effect");
     }
 
     @Override

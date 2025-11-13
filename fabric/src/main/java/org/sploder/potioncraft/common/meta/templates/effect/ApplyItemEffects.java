@@ -14,10 +14,10 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
 // takes the potion effects from item and applies to the cauldron
-public class ApplyItemEffects implements MetaEffectTemplate {
+public class ApplyItemEffects extends MetaEffectTemplate {
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "effect/APPLY_ITEM_EFFECTS");
+        return new Identifier(Common.namespace, "effect/apply_item_effects");
     }
 
     @Override

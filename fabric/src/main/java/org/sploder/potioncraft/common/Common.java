@@ -7,7 +7,7 @@ import org.sploder.potioncraft.fabric.meta.FabricMetaMixing;
 public abstract class Common {
     public static Loader instance = null;
 
-    public static String namespace = "potioncraft";
+    public static final String namespace = "potioncraft";
 
     public static void initialize(Loader loader) {
         instance = loader;

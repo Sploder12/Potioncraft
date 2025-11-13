@@ -14,14 +14,14 @@ import org.sploder.potioncraft.common.meta.templates.Argument;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
 // extends the effect (evenly adds "duration" to all effects)
-public class Extend implements MetaEffectTemplate {
+public class Extend extends MetaEffectTemplate {
     // potion effect to add
     @Argument(key = "duration", optional = true)
     float duration = 6000.0f;
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "effect/EXTEND");
+        return new Identifier(Common.namespace, "effect/extend");
     }
 
     @Override

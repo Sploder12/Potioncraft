@@ -24,7 +24,9 @@ import org.sploder.potioncraft.common.config.Config;
 import org.sploder.potioncraft.common.meta.data.HeatMapping;
 import org.sploder.potioncraft.common.meta.data.InversionMapping;
 import org.sploder.potioncraft.common.meta.parsers.*;
+import org.sploder.potioncraft.common.meta.templates.BasicTemplateResolver;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
+import org.sploder.potioncraft.common.meta.templates.TemplateResolver;
 import org.sploder.potioncraft.common.util.FluidHelper;
 
 import java.io.InputStream;
@@ -43,6 +45,7 @@ public class MetaMixing {
 
     public static InversionMapping inversionMapping = null;
     public static HeatMapping heatMapping = null;
+    public static TemplateResolver templateResolver = new BasicTemplateResolver();
 
     public static final LinkedHashMap<String, BiConsumer<JsonElement, String>> parsers = new LinkedHashMap<>();
 
@@ -117,7 +120,9 @@ public class MetaMixing {
     public static void register() {
         parsers.clear();
 
-        parsers.put("templates", TemplatesParser::parse);
+        parsers.put("templates", ((JsonElement elem, String str) -> {
+            TemplatesParser.parse(templateResolver, elem, str);
+        }));
         parsers.put("fluids", FluidsParser::parse);
         parsers.put("cauldrons", CauldronsParser::parse);
 
@@ -129,7 +134,9 @@ public class MetaMixing {
             heatMapping = HeatMapping.parse(elem, str);
         }));
 
-        parsers.put("recipes", RecipesParser::parse);
+        parsers.put("recipes", ((JsonElement elem, String str) -> {
+            RecipesParser.parse(templateResolver, elem, str);
+        }));
     }
 
     public static void reload(ResourceManager manager) {
@@ -145,7 +152,8 @@ public class MetaMixing {
 
         interactions.clear();
 
-        MetaEffectTemplate.register();
+        templateResolver.clear();
+        MetaEffectTemplate.register(templateResolver);
 
         // @TODO clear custom behaviors
 

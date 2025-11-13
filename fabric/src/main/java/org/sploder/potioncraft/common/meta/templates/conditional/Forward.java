@@ -13,10 +13,10 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
 // always returns prev
-public class Forward implements MetaEffectTemplate {
+public class Forward extends MetaEffectTemplate {
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "conditional/FORWARD");
+        return new Identifier(Common.namespace, "conditional/forward");
     }
 
     @Override

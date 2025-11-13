@@ -13,10 +13,10 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
 // removes a fluid level from the cauldron
-public class RemoveLevel implements MetaEffectTemplate {
+public class RemoveLevel extends MetaEffectTemplate {
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "effect/REMOVE_LEVEL");
+        return new Identifier(Common.namespace, "effect/remove_level");
     }
 
     @Override

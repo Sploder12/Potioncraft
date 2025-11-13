@@ -13,14 +13,14 @@ import org.sploder.potioncraft.common.Log;
 import org.sploder.potioncraft.common.meta.CauldronData;
 import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.AnnotationProcessor;
-import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
+import org.sploder.potioncraft.common.meta.templates.TemplateResolver;
 import org.sploder.potioncraft.common.util.Json;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public interface EffectParser {
-    public static MetaEffect parseEffect(JsonObject effectObj, String location) {
+    public static MetaEffect parseEffect(TemplateResolver resolver, JsonObject effectObj, String location) {
         String id = Json.getString(effectObj.get("id"));
 
         Log.debug("Parsing " + location + "-" + id);
@@ -29,7 +29,7 @@ public interface EffectParser {
             return null;
         }
 
-        MetaEffectTemplate template = MetaEffectTemplate.templates.get(id);
+        var template = resolver.get(id);
         if (template == null) {
             Log.warn(id + " does not name an effect template! " + location);
             return null;
@@ -69,25 +69,25 @@ public interface EffectParser {
         return null;
     }
 
-    private static void parseEffects(JsonArray effects, String id, ArrayList<MetaEffect> out) {
+    private static void parseEffects(TemplateResolver resolver, JsonArray effects, String id, ArrayList<MetaEffect> out) {
         for (int i = 0; i < effects.size(); ++i) {
             JsonElement elem = effects.get(i);
             String location = id + "-" + i;
 
             if (elem.isJsonObject()) {
-                MetaEffect effect = parseEffect(elem.getAsJsonObject(), location);
+                MetaEffect effect = parseEffect(resolver, elem.getAsJsonObject(), location);
                 if (effect != null) {
                     out.add(effect);
                 }
             }
             else if (elem.isJsonArray()) {
-                parseEffects(elem.getAsJsonArray(), location, out);
+                parseEffects(resolver, elem.getAsJsonArray(), location, out);
             }
             else if (elem.isJsonPrimitive()) {
                 try {
                     String templateId = elem.getAsString();
 
-                    MetaEffectTemplate template = MetaEffectTemplate.templates.get(templateId);
+                    var template = resolver.get(templateId);
                     if (template == null) {
                         Log.warn(templateId + " does not name an effect template! " + location);
                         continue;
@@ -109,10 +109,10 @@ public interface EffectParser {
         }
     }
 
-    public static List<MetaEffect> parseEffects(JsonArray effects, String id) {
+    public static List<MetaEffect> parseEffects(TemplateResolver resolver, JsonArray effects, String id) {
         ArrayList<MetaEffect> out = new ArrayList<>();
 
-        parseEffects(effects, id, out);
+        parseEffects(resolver, effects, id, out);
 
         return out;
     }

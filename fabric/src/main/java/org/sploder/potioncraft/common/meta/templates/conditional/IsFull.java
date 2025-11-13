@@ -13,11 +13,11 @@ import org.sploder.potioncraft.common.meta.CauldronData;
 import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
-public class IsFull implements MetaEffectTemplate {
+public class IsFull extends MetaEffectTemplate {
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "conditional/IS_FULL");
+        return new Identifier(Common.namespace, "conditional/is_full");
     }
 
     @Override

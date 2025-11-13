@@ -13,10 +13,10 @@ import org.sploder.potioncraft.common.meta.CauldronData;
 import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
-public class IsFromVanilla implements MetaEffectTemplate {
+public class IsFromVanilla extends MetaEffectTemplate {
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "conditional/IS_FROM_VANILLA");
+        return new Identifier(Common.namespace, "conditional/is_from_vanilla");
     }
 
     @Override

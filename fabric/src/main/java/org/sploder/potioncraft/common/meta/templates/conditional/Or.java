@@ -15,9 +15,17 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.parsers.EffectParser;
 import org.sploder.potioncraft.common.meta.templates.Argument;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
+import org.sploder.potioncraft.common.meta.templates.TemplateResolver;
 
 // shortcircuit eval ||
-public class Or implements MetaEffectTemplate {
+public class Or extends MetaEffectTemplate {
+    final TemplateResolver resolver;
+
+    public Or(TemplateResolver resolver) {
+        super();
+        this.resolver = resolver;
+    }
+
     @Argument(key = "short_circuit", optional = true)
     boolean shortCircuit = true;
 
@@ -26,13 +34,13 @@ public class Or implements MetaEffectTemplate {
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "conditional/OR");
+        return new Identifier(Common.namespace, "conditional/or");
     }
 
     @Override
     public MetaEffect apply(String id) {
         final boolean finalSS = shortCircuit;
-        final var effects = EffectParser.parseEffects(conditions, id);
+        final var effects = EffectParser.parseEffects(resolver, conditions, id);
         if (effects.isEmpty()) {
             Log.warn("OR has no conditions! " + id);
             return new Pass().apply(id);

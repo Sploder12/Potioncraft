@@ -19,7 +19,7 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.Argument;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
-public class UseItem implements MetaEffectTemplate {
+public class UseItem extends MetaEffectTemplate {
     // item to replace with
     @Argument(key = "id", optional = true)
     Item replaceItem = null;
@@ -38,7 +38,7 @@ public class UseItem implements MetaEffectTemplate {
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "effect/USE_ITEM");
+        return new Identifier(Common.namespace, "effect/use_item");
     }
 
     @Override

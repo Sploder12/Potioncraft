@@ -13,10 +13,10 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
 // always returns "false"
-public class Pass implements MetaEffectTemplate {
+public class Pass extends MetaEffectTemplate {
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "conditional/PASS");
+        return new Identifier(Common.namespace, "conditional/pass");
     }
 
     @Override

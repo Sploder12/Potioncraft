@@ -13,10 +13,10 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
 // think spider eye
-public class InvertEffects implements MetaEffectTemplate {
+public class InvertEffects extends MetaEffectTemplate {
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "effect/INVERT_EFFECTS");
+        return new Identifier(Common.namespace, "effect/invert_effects");
     }
 
     @Override

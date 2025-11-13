@@ -13,15 +13,24 @@ import org.sploder.potioncraft.common.Common;
 import org.sploder.potioncraft.common.Log;
 import org.sploder.potioncraft.common.meta.CauldronData;
 import org.sploder.potioncraft.common.meta.MetaEffect;
+import org.sploder.potioncraft.common.meta.MetaMixing;
 import org.sploder.potioncraft.common.meta.parsers.EffectParser;
 import org.sploder.potioncraft.common.meta.templates.Argument;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
+import org.sploder.potioncraft.common.meta.templates.TemplateResolver;
 import org.sploder.potioncraft.common.meta.templates.conditional.Pass;
 
 import java.util.List;
 import java.util.Optional;
 
-public class If implements MetaEffectTemplate {
+public class If extends MetaEffectTemplate {
+    final TemplateResolver resolver;
+
+    public If(TemplateResolver resolver) {
+        super();
+        this.resolver = resolver;
+    }
+
     @Argument(key = "condition")
     JsonObject conditionE;
 
@@ -33,24 +42,24 @@ public class If implements MetaEffectTemplate {
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "controlflow/IF");
+        return new Identifier(Common.namespace, "controlflow/if");
     }
 
     @Override
     public MetaEffect apply(String id) {
-        final MetaEffect condition = EffectParser.parseEffect(conditionE, id + "-condition");
+        final MetaEffect condition = EffectParser.parseEffect(resolver, conditionE, id + "-condition");
         if (condition == null) {
             return new Pass().apply(id);
         }
 
-        final List<MetaEffect> thens = EffectParser.parseEffects(thenE, id + "-then");
+        final List<MetaEffect> thens = EffectParser.parseEffects(resolver, thenE, id + "-then");
         if (thens.isEmpty()) {
             Log.warn("IF has empty \"then\" field " + id);
         }
 
         Optional<List<MetaEffect>> elses = Optional.empty();
         if (elseE != null) {
-            elses = Optional.of(EffectParser.parseEffects(elseE, id + "-else"));
+            elses = Optional.of(EffectParser.parseEffects(resolver, elseE, id + "-else"));
 
             if (elses.get().isEmpty()) {
                 Log.warn("IF has empty \"else\" field " + id);

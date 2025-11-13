@@ -13,10 +13,10 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
 // think milk bucket
-public class ClearEffects implements MetaEffectTemplate {
+public class ClearEffects extends MetaEffectTemplate {
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "effect/CLEAR_EFFECTS");
+        return new Identifier(Common.namespace, "effect/clear_effects");
     }
 
     @Override

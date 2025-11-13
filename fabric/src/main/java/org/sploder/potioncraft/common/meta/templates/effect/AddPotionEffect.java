@@ -19,14 +19,14 @@ import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 import org.sploder.potioncraft.common.meta.templates.conditional.Pass;
 
 // WARNING - ONLY works when the potion has a single effect.
-public class AddPotionEffect implements MetaEffectTemplate {
+public class AddPotionEffect extends MetaEffectTemplate {
     // potion effect to add
     @Argument(key = "id")
     Potion potion;
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "effect/ADD_POTION_EFFECT");
+        return new Identifier(Common.namespace, "effect/add_potion_effect");
     }
 
     @Override

@@ -15,14 +15,14 @@ import org.sploder.potioncraft.common.meta.templates.Argument;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
 // sets the fluid contained by the cauldron
-public class SetFluid implements MetaEffectTemplate {
+public class SetFluid extends MetaEffectTemplate {
     // fluid to set
     @Argument(key = "id")
     Fluid fluid;
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "effect/SET_FLUID");
+        return new Identifier(Common.namespace, "effect/set_fluid");
     }
 
     @Override

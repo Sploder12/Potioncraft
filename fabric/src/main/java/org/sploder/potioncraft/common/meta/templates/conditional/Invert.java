@@ -13,10 +13,10 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
 // Inverts the previous condition
-public class Invert implements MetaEffectTemplate {
+public class Invert extends MetaEffectTemplate {
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "conditional/INVERT_COND");
+        return new Identifier(Common.namespace, "conditional/invert_cond");
     }
 
     @Override

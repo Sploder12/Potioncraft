@@ -13,14 +13,14 @@ import org.sploder.potioncraft.common.meta.MetaEffect;
 import org.sploder.potioncraft.common.meta.templates.Argument;
 import org.sploder.potioncraft.common.meta.templates.MetaEffectTemplate;
 
-public class MinLevel implements MetaEffectTemplate {
+public class MinLevel extends MetaEffectTemplate {
     // will only succeed when data.getLevel() >= int
     @Argument(key="level")
     int target;
 
     @Override
     public Identifier id() {
-        return new Identifier(Common.namespace, "conditional/MIN_LEVEL");
+        return new Identifier(Common.namespace, "conditional/min_level");
     }
 
     @Override
