@@ -144,15 +144,11 @@ public class PotionCauldronBlock extends AbstractCauldronBlock implements BlockE
 
     @Override
     protected boolean canBeFilledByDripstone(Fluid fluid) {
-        return true;
+        return Config.getBoolean(Config.FieldID.FILL_FROM_DRIPSTONE);
     }
 
     @Override
     protected void fillFromDripstone(BlockState state, World world, BlockPos pos, Fluid fluid) {
-        if (!Config.getBoolean(Config.FieldID.FILL_FROM_DRIPSTONE)) {
-            return;
-        }
-
         var blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof PotionCauldronBlockEntity cauldronEntity) {
             if (cauldronEntity.getFluid() == FluidHelper.getStill(fluid)) {
